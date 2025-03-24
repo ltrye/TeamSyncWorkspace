@@ -183,8 +183,7 @@ namespace TeamSyncWorkspace.Services
         public async Task<List<TeamRole>> GetTeamSpecificRolesAsync(int teamId)
         {
             return await _context.TeamRoles
-                .Where(r => r.TeamId != null)
-                .Where(r => r.TeamId == teamId)
+                .Where(r => r.TeamId == teamId || r.TeamId == null)
                 .Include(r => r.Permissions)
                 .ToListAsync();
         }

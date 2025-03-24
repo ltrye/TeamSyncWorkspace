@@ -66,7 +66,7 @@ namespace TeamSyncWorkspace.Pages.Teams.Roles
             }
 
             // Get all roles
-            Roles = await _teamRoleService.GetAllRolesAsync();
+            Roles = await _teamRoleService.GetTeamSpecificRolesAsync(Team.TeamId);
 
             // Get team members
             TeamMembers = await _teamService.GetTeamMembersAsync(teamId);
