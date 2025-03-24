@@ -1,0 +1,634 @@
+@page
+@model TeamSyncWorkspace.Pages.HomeModel
+@{
+    ViewData["Title"] = "Welcome to TeamSyncWorkspace";
+}
+
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <section class="hero-section py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Collaborate Seamlessly with Your Team</h1>
+                    <p class="lead mb-4">TeamSyncWorkspace brings together documents, tasks, and team communication in one unified platform.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a asp-page="/Account/Register" class="btn btn-light btn-lg px-4 me-md-2">Get Started</a>
+                        <a asp-page="/Account/Login" class="btn btn-outline-light btn-lg px-4">Sign In</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div id="animated-svg-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="500" id="interactive-svg">
+                            <rect class="st0" width="800" height="600" fill="#F5F7FA"/>
+                            <circle class="st1 svg-element" cx="400" cy="300" r="150" fill="#4285F4" opacity="0.7"/>
+                            <circle class="st5 svg-element" cx="400" cy="300" r="120" fill="#FFFFFF"/>
+                            
+                            <!-- People icons -->
+                            <circle class="st1 person-circle svg-element" cx="315" cy="230" r="40" fill="#4285F4"/>
+                            <circle class="st2 person-circle svg-element" cx="485" cy="230" r="40" fill="#34A853"/>
+                            <circle class="st3 person-circle svg-element" cx="315" cy="370" r="40" fill="#EA4335"/>
+                            <circle class="st4 person-circle svg-element" cx="485" cy="370" r="40" fill="#FBBC05"/>
+                            
+                            <!-- Connection lines -->
+                            <line class="connection-line svg-element" x1="315" y1="230" x2="485" y2="230" stroke="#C4C4C4" stroke-width="5"/>
+                            <line class="connection-line svg-element" x1="315" y1="230" x2="315" y2="370" stroke="#C4C4C4" stroke-width="5"/>
+                            <line class="connection-line svg-element" x1="315" y1="370" x2="485" y2="370" stroke="#C4C4C4" stroke-width="5"/>
+                            <line class="connection-line svg-element" x1="485" y1="230" x2="485" y2="370" stroke="#C4C4C4" stroke-width="5"/>
+                            <line class="connection-line svg-element" x1="315" y1="230" x2="485" y2="370" stroke="#C4C4C4" stroke-width="5"/>
+                            <line class="connection-line svg-element" x1="485" y1="230" x2="315" y2="370" stroke="#C4C4C4" stroke-width="5"/>
+                            
+                            <!-- Document icon -->
+                            <rect class="document svg-element" x="375" y="275" width="50" height="70" rx="5" fill="#FFFFFF" stroke="#C4C4C4" stroke-width="2"/>
+                            <line class="document-line svg-element" x1="385" y1="290" x2="415" y2="290" stroke="#C4C4C4" stroke-width="2"/>
+                            <line class="document-line svg-element" x1="385" y1="305" x2="415" y2="305" stroke="#C4C4C4" stroke-width="2"/>
+                            <line class="document-line svg-element" x1="385" y1="320" x2="415" y2="320" stroke="#C4C4C4" stroke-width="2"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Everything Your Team Needs</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                                <i class="bi bi-people-fill fs-2"></i>
+                            </div>
+                            <h3 class="fs-4">Team Management</h3>
+                            <p class="mb-0">Create teams, assign roles, and collaborate with colleagues efficiently.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-success bg-gradient text-white rounded-circle mb-3">
+                                <i class="bi bi-file-earmark-text fs-2"></i>
+                            </div>
+                            <h3 class="fs-4">Document Collaboration</h3>
+                            <p class="mb-0">Work together on documents in real-time with version control.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-danger bg-gradient text-white rounded-circle mb-3">
+                                <i class="bi bi-calendar-check fs-2"></i>
+                            </div>
+                            <h3 class="fs-4">Task Management</h3>
+                            <p class="mb-0">Organize team tasks, track progress, and meet deadlines.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">How It Works</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="card h-100 border-0">
+                        <div class="card-body text-center">
+                            <div class="step-circle bg-primary text-white mx-auto mb-3">1</div>
+                            <h4>Create Account</h4>
+                            <p>Sign up with email or Google authentication.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 border-0">
+                        <div class="card-body text-center">
+                            <div class="step-circle bg-primary text-white mx-auto mb-3">2</div>
+                            <h4>Create a Team</h4>
+                            <p>Set up your workspace and invite team members.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 border-0">
+                        <div class="card-body text-center">
+                            <div class="step-circle bg-primary text-white mx-auto mb-3">3</div>
+                            <h4>Add Content</h4>
+                            <p>Create documents, upload files, set tasks.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 border-0">
+                        <div class="card-body text-center">
+                            <div class="step-circle bg-primary text-white mx-auto mb-3">4</div>
+                            <h4>Collaborate</h4>
+                            <p>Work together with your team in real-time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 bg-primary text-white text-center">
+        <div class="container">
+            <h2 class="mb-4">Ready to boost your team's productivity?</h2>
+            <a asp-page="/Account/Register" class="btn btn-light btn-lg px-5">Get Started For Free</a>
+        </div>
+    </section>
+</div>
+
+@section Styles {
+    <style>
+        .hero-section {
+            padding-top: 6rem;
+            padding-bottom: 6rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #animated-svg-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+        }
+
+        .step-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card {
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* SVG Animation Styles */
+        .svg-element {
+            transition: transform 0.3s ease, fill 0.5s ease, stroke 0.5s ease;
+        }
+
+        .person-circle {
+            cursor: pointer;
+            transition: transform 0.3s ease, r 0.3s ease;
+        }
+
+        .person-circle:hover {
+            transform: scale(1.2);
+        }
+
+        .connection-line {
+            transition: stroke-width 0.3s ease, stroke 0.3s ease;
+        }
+
+        .document {
+            transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
+        }
+
+        .document:hover {
+            transform: scale(1.1);
+        }
+
+        .document-line {
+            transition: stroke-width 0.3s ease, stroke 0.3s ease;
+        }
+    </style>
+}
+
+@section Scripts {
+    <!-- Add GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const svg = document.getElementById('interactive-svg');
+            const svgContainer = document.getElementById('animated-svg-container');
+            const personCircles = document.querySelectorAll('.person-circle');
+            const connectionLines = document.querySelectorAll('.connection-line');
+            const centerCircle = document.querySelector('.st1.svg-element:first-of-type');
+            const whiteCircle = document.querySelector('.st5.svg-element');
+            
+            // Original positions for reset
+            const originalPositions = [
+                { cx: 315, cy: 230 },
+                { cx: 485, cy: 230 },
+                { cx: 315, cy: 370 },
+                { cx: 485, cy: 370 }
+            ];
+            
+            // Store original line positions
+            const originalLines = [
+                { x1: 315, y1: 230, x2: 485, y2: 230 },
+                { x1: 315, y1: 230, x2: 315, y2: 370 },
+                { x1: 315, y1: 370, x2: 485, y2: 370 },
+                { x1: 485, y1: 230, x2: 485, y2: 370 },
+                { x1: 315, y1: 230, x2: 485, y2: 370 },
+                { x1: 485, y1: 230, x2: 315, y2: 370 }
+            ];
+            
+            // Initial animation for elements when page loads
+            gsap.from(personCircles, {
+                scale: 0,
+                duration: 0.8,
+                ease: "elastic.out(1, 0.5)",
+                stagger: 0.1
+            });
+            
+            gsap.from(connectionLines, {
+                attr: { "stroke-width": 0 },
+                opacity: 0,
+                duration: 1,
+                ease: "power2.inOut",
+                stagger: 0.05,
+                delay: 0.4
+            });
+            
+            gsap.from([centerCircle, whiteCircle], {
+                attr: { r: 0 },
+                duration: 1.2,
+                ease: "power2.out",
+                delay: 0.2
+            });
+            
+            // Initialize variables for tracking animation
+            let activeGlow = null;
+            let isDragging = false;
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+            
+            // Optimization: debounce function to limit the rate of animation updates
+            function debounce(func, wait = 10) {
+                let timeout;
+                return function() {
+                    const context = this;
+                    const args = arguments;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), wait);
+                };
+            }
+            
+            // Map mouse position to SVG coordinates
+            function getMousePosition(evt) {
+                const svgRect = svgContainer.getBoundingClientRect();
+                return {
+                    x: (evt.clientX - svgRect.left) / svgRect.width * 800,
+                    y: (evt.clientY - svgRect.top) / svgRect.height * 600
+                };
+            }
+            
+            // Update connection lines (optimized)
+            function updateConnectedLines(circle, newX, newY) {
+                const originalCx = originalPositions[Array.from(personCircles).indexOf(circle)].cx;
+                const originalCy = originalPositions[Array.from(personCircles).indexOf(circle)].cy;
+                
+                connectionLines.forEach((line, i) => {
+                    const lineData = originalLines[i];
+                    
+                    if (lineData.x1 === originalCx && lineData.y1 === originalCy) {
+                        line.setAttribute('x1', newX);
+                        line.setAttribute('y1', newY);
+                    }
+                    
+                    if (lineData.x2 === originalCx && lineData.y2 === originalCy) {
+                        line.setAttribute('x2', newX);
+                        line.setAttribute('y2', newY);
+                    }
+                });
+            }
+            
+            // Create a single timeline for smooth animations
+            const mouseMoveTimeline = gsap.timeline({ paused: true });
+            
+            // Animate circles based on mouse position (move this to document level)
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) return;
+                
+                // Store last mouse position for global use
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                
+                // Get SVG container position
+                const svgRect = svgContainer.getBoundingClientRect();
+                
+                // Check if we're close enough to the SVG to animate
+                const distanceToSvg = Math.min(
+                    Math.abs(e.clientX - svgRect.left),
+                    Math.abs(e.clientX - svgRect.right),
+                    Math.abs(e.clientY - svgRect.top),
+                    Math.abs(e.clientY - svgRect.bottom)
+                );
+                
+                // If we're far away, use reduced influence
+                const influenceFactor = distanceToSvg > 500 ? 0.2 : 
+                                       distanceToSvg > 300 ? 0.5 : 
+                                       distanceToSvg > 100 ? 0.8 : 1;
+                
+                const mousePos = {
+                    x: ((e.clientX - svgRect.left) / svgRect.width) * 800,
+                    y: ((e.clientY - svgRect.top) / svgRect.height) * 600
+                };
+                
+                // Only process if mouse is reasonably close to SVG
+                if (distanceToSvg < 1000) {
+                    // Reset timeline
+                    mouseMoveTimeline.clear();
+                    
+                    // Process each circle
+                    personCircles.forEach((circle, index) => {
+                        const cx = parseFloat(circle.getAttribute('cx'));
+                        const cy = parseFloat(circle.getAttribute('cy'));
+                        
+                        // Calculate direction vector
+                        const dx = mousePos.x - cx;
+                        const dy = mousePos.y - cy;
+                        
+                        // Distance and magnitude calculation
+                        const distance = Math.sqrt(dx*dx + dy*dy);
+                        const maxMove = 15 * influenceFactor;
+                        
+                        if (distance > 0) {
+                            const moveX = (dx / distance) * Math.min(maxMove, distance/8);
+                            const moveY = (dy / distance) * Math.min(maxMove, distance/8);
+                            
+                            const newX = cx + moveX;
+                            const newY = cy + moveY;
+                            
+                            // Add to timeline (using direct attribute setting for performance)
+                            mouseMoveTimeline.to(circle, {
+                                attr: { cx: newX, cy: newY },
+                                duration: 0.4,
+                                ease: "power1.out",
+                                onUpdate: function() {
+                                    if (this.progress() === 1) { // Only update at end of tween
+                                        updateConnectedLines(
+                                            circle,
+                                            parseFloat(circle.getAttribute('cx')),
+                                            parseFloat(circle.getAttribute('cy'))
+                                        );
+                                    }
+                                }
+                            }, 0); // Start all at the same time
+                        }
+                    });
+                    
+                    // Add center circle pulse to timeline
+                    const centerX = 400;
+                    const centerY = 300;
+                    const distanceFromCenter = Math.sqrt(Math.pow(mousePos.x - centerX, 2) + Math.pow(mousePos.y - centerY, 2));
+                    const maxDistance = 400;
+                    // Smoother pulse calculation with reduced effect
+                    const pulseScale = 1 + (0.08 * (1 - Math.min(distanceFromCenter, maxDistance) / maxDistance) * influenceFactor);
+                    
+                    mouseMoveTimeline.to([centerCircle, whiteCircle], {
+                        attr: { 
+                            r: (i) => i === 0 ? 150 * pulseScale : 120 * pulseScale 
+                        },
+                        duration: 0.5,
+                        ease: "sine.out"
+                    }, 0);
+                    
+                    // Find nearest circle for glow effect
+                    let minDistance = Infinity;
+                    let nearestCircle = null;
+                    
+                    personCircles.forEach(circle => {
+                        const cx = parseFloat(circle.getAttribute('cx'));
+                        const cy = parseFloat(circle.getAttribute('cy'));
+                        const dist = Math.sqrt(Math.pow(mousePos.x - cx, 2) + Math.pow(mousePos.y - cy, 2));
+                        
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            nearestCircle = circle;
+                        }
+                    });
+                    
+                    // Apply glow to nearest circle if close enough
+                    if (nearestCircle !== activeGlow && minDistance < 300) {
+                        if (activeGlow) {
+                            mouseMoveTimeline.to(activeGlow, {
+                                attr: { filter: '' },
+                                duration: 0.3
+                            }, 0);
+                        }
+                        
+                        activeGlow = nearestCircle;
+                        
+                        mouseMoveTimeline.to(nearestCircle, {
+                            attr: { filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.8))' },
+                            duration: 0.3
+                        }, 0);
+                    } else if (minDistance >= 300 && activeGlow) {
+                        mouseMoveTimeline.to(activeGlow, {
+                            attr: { filter: '' },
+                            duration: 0.3
+                        }, 0);
+                        activeGlow = null;
+                    }
+                    
+                    // Play the timeline
+                    mouseMoveTimeline.play(0);
+                }
+            });
+            
+            // Instead of resetting on mouseleave, we'll gradually return to original positions when mouse is far away
+            setInterval(function() {
+                if (isDragging) return;
+                
+                // Get current mouse position relative to document
+                const svgRect = svgContainer.getBoundingClientRect();
+                
+                // Check if mouse is far from the SVG
+                const distanceToSvg = Math.min(
+                    Math.abs(lastMouseX - svgRect.left),
+                    Math.abs(lastMouseX - svgRect.right),
+                    Math.abs(lastMouseY - svgRect.top),
+                    Math.abs(lastMouseY - svgRect.bottom)
+                );
+                
+                // If mouse is very far, gradually return to original positions
+                if (distanceToSvg > 800) {
+                    personCircles.forEach((circle, index) => {
+                        const origPos = originalPositions[index];
+                        const cx = parseFloat(circle.getAttribute('cx'));
+                        const cy = parseFloat(circle.getAttribute('cy'));
+                        
+                        // Calculate how far we are from original position
+                        const dx = origPos.cx - cx;
+                        const dy = origPos.cy - cy;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        // Only move if we're not already at original position
+                        if (dist > 0.5) {
+                            // Move 5% of the way back to original position
+                            const newX = cx + dx * 0.05;
+                            const newY = cy + dy * 0.05;
+                            
+                            circle.setAttribute('cx', newX);
+                            circle.setAttribute('cy', newY);
+                            updateConnectedLines(circle, newX, newY);
+                        }
+                    });
+                    
+                    // Return center circle to original size
+                    const centerR = parseFloat(centerCircle.getAttribute('r'));
+                    const whiteR = parseFloat(whiteCircle.getAttribute('r'));
+                    
+                    if (Math.abs(centerR - 150) > 0.5) {
+                        centerCircle.setAttribute('r', centerR + (150 - centerR) * 0.05);
+                    }
+                    
+                    if (Math.abs(whiteR - 120) > 0.5) {
+                        whiteCircle.setAttribute('r', whiteR + (120 - whiteR) * 0.05);
+                    }
+                    
+                    // Remove any remaining glow
+                    if (activeGlow) {
+                        activeGlow.setAttribute('filter', '');
+                        activeGlow = null;
+                    }
+                }
+            }, 50); // Check every 50ms
+            
+            // Add click animations for circles
+            personCircles.forEach(circle => {
+                circle.addEventListener('click', function() {
+                    const origR = parseFloat(circle.getAttribute('r'));
+                    
+                    // Create pulse animation with GSAP
+                    gsap.timeline()
+                        .to(circle, {
+                            attr: { r: origR * 1.3 },
+                            duration: 0.2,
+                            ease: "power2.out"
+                        })
+                        .to(circle, {
+                            attr: { r: origR },
+                            duration: 0.5,
+                            ease: "elastic.out(1.2, 0.5)"
+                        });
+                    
+                    // Add ripple effect
+                    const ripple = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    ripple.setAttribute("cx", circle.getAttribute("cx"));
+                    ripple.setAttribute("cy", circle.getAttribute("cy"));
+                    ripple.setAttribute("r", origR);
+                    ripple.setAttribute("fill", "none");
+                    ripple.setAttribute("stroke", circle.getAttribute("fill"));
+                    ripple.setAttribute("stroke-width", "2");
+                    ripple.setAttribute("opacity", "0.7");
+                    svg.appendChild(ripple);
+                    
+                    gsap.to(ripple, {
+                        attr: { r: origR * 3 },
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.out",
+                        onComplete: function() {
+                            svg.removeChild(ripple);
+                        }
+                    });
+                });
+            });
+            
+            // Make circles draggable with optimized code
+            personCircles.forEach(circle => {
+                let startX, startY, circleX, circleY;
+                
+                circle.addEventListener('mousedown', startDrag);
+                circle.addEventListener('touchstart', startDrag);
+                
+                function startDrag(e) {
+                    e.preventDefault();
+                    isDragging = true;
+                    
+                    // Kill any active GSAP animations for this circle
+                    gsap.killTweensOf(circle);
+                    
+                    const event = e.type === 'touchstart' ? e.touches[0] : e;
+                    const svgRect = svgContainer.getBoundingClientRect();
+                    const mouseX = ((event.clientX - svgRect.left) / svgRect.width) * 800;
+                    const mouseY = ((event.clientY - svgRect.top) / svgRect.height) * 600;
+                    
+                    startX = mouseX;
+                    startY = mouseY;
+                    circleX = parseFloat(circle.getAttribute('cx'));
+                    circleY = parseFloat(circle.getAttribute('cy'));
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('touchmove', drag);
+                    document.addEventListener('mouseup', endDrag);
+                    document.addEventListener('touchend', endDrag);
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    const event = e.type === 'touchmove' ? e.touches[0] : e;
+                    const svgRect = svgContainer.getBoundingClientRect();
+                    const mouseX = ((event.clientX - svgRect.left) / svgRect.width) * 800;
+                    const mouseY = ((event.clientY - svgRect.top) / svgRect.height) * 600;
+                    
+                    const newX = circleX + (mouseX - startX);
+                    const newY = circleY + (mouseY - startY);
+                    
+                    // Direct DOM manipulation for better performance during drag
+                    circle.setAttribute('cx', newX);
+                    circle.setAttribute('cy', newY);
+                    updateConnectedLines(circle, newX, newY);
+                }
+                
+                function endDrag() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('touchmove', drag);
+                    document.removeEventListener('mouseup', endDrag);
+                    document.removeEventListener('touchend', endDrag);
+                    
+                    // Animate back to original position
+                    const index = Array.from(personCircles).indexOf(circle);
+                    gsap.to(circle, {
+                        attr: {
+                            cx: originalPositions[index].cx,
+                            cy: originalPositions[index].cy
+                        },
+                        duration: 0.7,
+                        ease: "elastic.out(1, 0.5)",
+                        onUpdate: function() {
+                            updateConnectedLines(
+                                circle, 
+                                parseFloat(circle.getAttribute('cx')), 
+                                parseFloat(circle.getAttribute('cy'))
+                            );
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

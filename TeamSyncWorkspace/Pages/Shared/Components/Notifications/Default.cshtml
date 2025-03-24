@@ -1,0 +1,127 @@
+@model TeamSyncWorkspace.Pages.Shared.Components.Notifications.NotificationsViewModel
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell-fill"></i>
+        @if (Model.UnreadCount > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @(Model.UnreadCount > 99 ? "99+" : Model.UnreadCount.ToString())
+                <span class="visually-hidden">unread notifications</span>
+            </span>
+        }
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+        <li>
+            <h6 class="dropdown-header d-flex justify-content-between align-items-center">
+                Notifications
+                @if (Model.UnreadCount > 0)
+                {
+                    <a href="/Notifications/MarkAllAsRead" class="text-decoration-none small mark-all-read">Mark all as read</a>
+                }
+            </h6>
+        </li>
+        
+        @if (!Model.Notifications.Any())
+        {
+            <li><span class="dropdown-item text-center text-muted py-3">No notifications</span></li>
+        }
+        else
+        {
+            foreach (var notification in Model.Notifications)
+            {
+                <li>
+                    <a class="dropdown-item @(notification.IsRead ? "" : "bg-light") notification-item" 
+                       data-notification-id="@notification.NotificationId"
+                       href="@(string.IsNullOrEmpty(notification.Link) ? $"/Notifications/View/{notification.NotificationId}" : notification.Link)">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">@notification.Title</h6>
+                            <small class="text-muted">@((DateTime.Now - notification.CreatedDate).TotalHours < 24 
+                                ? (notification.CreatedDate).ToString("h:mm tt") 
+                                : (notification.CreatedDate).ToString("MMM d"))</small>
+                        </div>
+                        <p class="mb-1 text-truncate">@notification.Message</p>
+                    </a>
+                </li>
+            }
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-center" href="/Notifications">View all notifications</a></li>
+        }
+    </ul>
+</li>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add event listeners to notification items
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Don't prevent default - we still want to navigate to the link
+                
+                // Mark as read visually
+                this.classList.remove('bg-light');
+                
+                // If it's not already read, make AJAX request to mark as read
+                if (this.classList.contains('bg-light')) {
+                    const notificationId = this.getAttribute('data-notification-id');
+                    fetch(`/Notifications/MarkAsRead?id=${notificationId}`, { 
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Update the unread count badge if needed
+                            const badge = document.querySelector('#notificationsDropdown .badge');
+                            if (badge) {
+                                const currentCount = parseInt(badge.textContent);
+                                if (currentCount > 1) {
+                                    badge.textContent = (currentCount - 1).toString();
+                                } else {
+                                    badge.remove();
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error marking notification as read:', error));
+                }
+            });
+        });
+        
+        // Add event listener to "Mark all as read" button
+        const markAllAsReadBtn = document.querySelector('.mark-all-read');
+        if (markAllAsReadBtn) {
+            markAllAsReadBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Mark all as read visually
+                document.querySelectorAll('.notification-item').forEach(item => {
+                    item.classList.remove('bg-light');
+                });
+                
+                // Hide the badge
+                const badge = document.querySelector('#notificationsDropdown .badge');
+                if (badge) {
+                    badge.remove();
+                }
+                
+                // Make AJAX request to mark all as read
+                fetch('/Notifications/MarkAllAsRead', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Hide the "Mark all as read" button
+                        this.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error marking all notifications as read:', error));
+            });
+        }
+    });
+</script>

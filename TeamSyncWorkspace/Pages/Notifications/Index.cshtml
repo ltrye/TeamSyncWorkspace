@@ -1,0 +1,95 @@
+@page
+@model TeamSyncWorkspace.Pages.Notifications.IndexModel
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Your Notifications</h1>
+        @if (Model.Notifications.Any(n => !n.IsRead))
+        {
+            <a asp-page="./Index" asp-page-handler="MarkAllAsRead" class="btn btn-outline-primary">
+                <i class="bi bi-check-all me-2"></i> Mark all as read
+            </a>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @Model.StatusMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Notifications.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="display-1 text-muted mb-4">
+                    <i class="bi bi-bell-slash"></i>
+                </div>
+                <h4 class="text-muted">You don't have any notifications</h4>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="list-group list-group-flush">
+                @foreach (var notification in Model.Notifications)
+                {
+                    <div class="list-group-item @(notification.IsRead ? "" : "bg-light")">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="notification-icon me-2">
+                                        @switch (notification.Type)
+                                        {
+                                            case "TeamInvitation":
+                                                <i class="bi bi-people-fill text-primary"></i>
+                                                break;
+                                            case "InvitationAccepted":
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                                break;
+                                            case "InvitationDeclined":
+                                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                                break;
+                                            default:
+                                                <i class="bi bi-bell-fill text-secondary"></i>
+                                                break;
+                                        }
+                                    </span>
+                                    <h5 class="mb-0">@notification.Title</h5>
+                                </div>
+                                <p class="mb-1">@notification.Message</p>
+                                <small class="text-muted">@notification.CreatedDate.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                @if (!notification.IsRead)
+                                {
+                                    <a asp-page="./Index" asp-page-handler="MarkAsRead" asp-route-id="@notification.NotificationId" 
+                                       class="btn btn-sm btn-outline-secondary" title="Mark as read">
+                                        <i class="bi bi-check"></i>
+                                    </a>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(notification.Link))
+                                {
+                                    <a href="@notification.Link" class="btn btn-sm btn-primary">View</a>
+                                }
+                                
+                                <a asp-page="./Index" asp-page-handler="Delete" asp-route-id="@notification.NotificationId" 
+                                   class="btn btn-sm btn-outline-danger" title="Delete"
+                                   onclick="return confirm('Are you sure you want to delete this notification?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,89 @@
+@page
+@model TeamSyncWorkspace.Pages.Teams.InvitationModel
+@{
+    ViewData["Title"] = "Team Invitation";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Team Invitation</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+                    {
+                        <div class="alert @(Model.StatusMessage.Contains("success") ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
+                            @Model.StatusMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (Model.Invitation != null && !Model.IsExpired && !Model.IsProcessed)
+                    {
+                        <div class="text-center mb-4">
+                            <div class="display-1 text-primary mb-3">
+                                <i class="bi bi-envelope-paper-heart"></i>
+                            </div>
+                            <h4>You've been invited to join</h4>
+                            <h2 class="fw-bold text-primary">@Model.Invitation.Team.TeamName</h2>
+                            <p class="text-muted mb-4">
+                                Invitation from <strong>@Model.Invitation.InvitedBy.FirstName @Model.Invitation.InvitedBy.LastName</strong>
+                            </p>
+                        </div>
+                        
+                        <div class="d-flex justify-content-center gap-3">
+                            <form method="post" asp-page-handler="Accept" asp-route-token="@Model.Invitation.Token">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-check-circle me-2"></i> Accept
+                                </button>
+                            </form>
+                            <form method="post" asp-page-handler="Decline" asp-route-token="@Model.Invitation.Token">
+                                <button type="submit" class="btn btn-outline-danger btn-lg">
+                                    <i class="bi bi-x-circle me-2"></i> Decline
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else if (Model.Invitation != null && Model.IsExpired)
+                    {
+                        <div class="text-center">
+                            <div class="display-1 text-danger mb-3">
+                                <i class="bi bi-calendar-x"></i>
+                            </div>
+                            <h4 class="text-danger">This invitation has expired</h4>
+                            <p class="mb-4">Please ask the team admin to send you a new invitation.</p>
+                            <a href="/Teams/Index" class="btn btn-primary">
+                                <i class="bi bi-arrow-left me-2"></i> Back to Teams
+                            </a>
+                        </div>
+                    }
+                    else if (Model.Invitation != null && Model.IsProcessed)
+                    {
+                        <div class="text-center">
+                            <div class="display-1 text-success mb-3">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <h4>This invitation has already been @(Model.Invitation.IsAccepted ? "accepted" : "declined")</h4>
+                            <div class="mt-4">
+                                @if (Model.Invitation.IsAccepted)
+                                {
+                                    <a href="/Dashboard/Index?teamId=@Model.Invitation.TeamId" class="btn btn-primary">
+                                        Go to Team Dashboard
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="/Teams/Index" class="btn btn-primary">
+                                        <i class="bi bi-arrow-left me-2"></i> Back to Teams
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
