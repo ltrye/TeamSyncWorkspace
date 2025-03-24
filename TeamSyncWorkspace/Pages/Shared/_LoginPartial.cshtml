@@ -1,0 +1,46 @@
+@using Microsoft.AspNetCore.Identity
+@using TeamSyncWorkspace.Models  
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+            <span class="icon">
+                <i class="bi bi-person-circle"></i>
+            </span>
+            <span>@User.Identity?.Name</span>
+        </a>
+        <div class="navbar-dropdown is-right">
+            <a class="navbar-item" asp-area="Identity" asp-page="/Account/Profile" title="Manage">
+                <span class="icon is-small mr-2">
+                    <i class="bi bi-gear"></i>
+                </span>
+                <span>My Account</span>
+            </a>
+            <hr class="navbar-divider">
+            <form class="navbar-item p-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                <button type="submit" class="button is-white is-fullwidth has-text-left px-4">
+                    <span class="icon is-small mr-2">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </span>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="navbar-item">
+        <div class="buttons">
+            <a class="button is-primary" asp-area="Identity" asp-page="/Account/Register">
+                <strong>Register</strong>
+            </a>
+            <a class="button is-light" asp-area="Identity" asp-page="/Account/Login">
+                Login
+            </a>
+        </div>
+    </div>
+}

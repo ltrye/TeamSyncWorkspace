@@ -19,4 +19,151 @@ html {
 
 body {
   margin-bottom: 60px;
+  background-color: #f9fafb;
+  color: #333;
+}
+
+/* Professional Design Styles for TeamSyncWorkspace */
+
+/* Box and Container Styles */
+.has-shadow {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+.has-shadow:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.workspace-box {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Icon Styles */
+.icon-large {
+    font-size: 2.5rem;
+    display: inline-block;
+    height: 64px;
+    width: 64px;
+    line-height: 64px;
+    background-color: rgba(72, 95, 199, 0.1);
+    border-radius: 50%;
+}
+
+.icon-large.has-text-info {
+    background-color: rgba(32, 156, 238, 0.1);
+}
+
+.icon-large.has-text-success {
+    background-color: rgba(35, 209, 96, 0.1);
+}
+
+.icon-large.has-text-link {
+    background-color: rgba(50, 115, 220, 0.1);
+}
+
+.icon-large.has-text-warning {
+    background-color: rgba(255, 221, 87, 0.1);
+}
+
+.icon-large.has-text-danger {
+    background-color: rgba(255, 56, 96, 0.1);
+}
+
+/* List and Menu Styles */
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.admin-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background-color 0.2s ease;
+}
+
+.admin-menu-item:last-child {
+    border-bottom: none;
+}
+
+.admin-menu-item:hover {
+    background-color: #f9f9f9;
+}
+
+.admin-menu-item .icon {
+    margin-right: 1rem;
+}
+
+/* Notification Styles */
+.notification button.delete {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+}
+
+/* Custom Color Adjustments for Enterprise Look */
+.button.is-info {
+    background-color: #4a68bd;
+}
+
+.button.is-info.is-light {
+    background-color: #f0f4ff;
+    color: #4a68bd;
+}
+
+.button.is-success.is-light {
+    background-color: #f0faf4;
+    color: #3a9e6d;
+}
+
+.button.is-link.is-light {
+    background-color: #f0f4fa;
+    color: #3662b5;
+}
+
+.button.is-warning.is-light {
+    background-color: #fffbeb;
+    color: #947600;
+}
+
+.button.is-danger.is-light {
+    background-color: #fff0f3;
+    color: #cc0f35;
+}
+
+/* Additional Enterprise-level Components */
+.content-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.bg-white-bis {
+    background-color: #f8f8f8;
+}
+
+.card-header.has-background-white-bis {
+    background-color: #f8f8f8;
+}
+
+/* Form and Input Enhancements */
+.input:focus, .textarea:focus, .select select:focus {
+    border-color: #4a68bd;
+    box-shadow: 0 0 0 0.125em rgba(74, 104, 189, 0.25);
+}
+
+.tag.is-rounded {
+    border-radius: 9999px;
 }

@@ -58,5 +58,8 @@
     "bulma.scss",
     "LICENSE",
     "README.md"
-  ]
+  ],
+  "dependencies": {
+    "bulma": "file:"
+  }
 }

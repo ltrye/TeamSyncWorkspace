@@ -4,214 +4,404 @@
     ViewData["Title"] = $"{Model.Team.TeamName} Dashboard";
 }
 
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1>@Model.Team.TeamName</h1>
-                <span class="badge bg-secondary">Created @Model.Team.CreatedDate.ToString("MMMM dd, yyyy")</span>
-            </div>
-            <p class="text-muted">Team Dashboard</p>
-            @if (!string.IsNullOrEmpty(Model.StatusMessage))
-            {
-                <div class="alert @(Model.StatusMessage.StartsWith("Error") ? "alert-danger" : "alert-success")">
-                    @Model.StatusMessage
+<div class="container is-fluid">
+    <div class="section pt-4 pb-2">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <div>
+                        <h1 class="title is-3">@Model.Team.TeamName</h1>
+                        <p class="subtitle is-6 has-text-grey">Team Workspace</p>
+                    </div>
                 </div>
-            }
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <span class="tag is-medium is-light">Created @Model.Team.CreatedDate.ToString("MMMM dd, yyyy")</span>
+                </div>
+            </div>
         </div>
+        
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="notification @(Model.StatusMessage.StartsWith("Error") ? "is-danger is-light" : "is-success is-light")">
+                <button class="delete"></button>
+                @Model.StatusMessage
+            </div>
+        }
     </div>
 
-    <div class="row">
+    <div class="columns">
         <!-- Left sidebar with team members -->
-        <div class="col-md-3">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Team Members</h5>
-                    <span class="badge bg-light text-primary">@Model.TeamMembers.Count</span>
+        <div class="column is-3">
+            <div class="box has-shadow p-0">
+                <div class="p-4 has-background-white-bis">
+                    <p class="title is-5 mb-2">Team Members</p>
+                    <p class="subtitle is-7 has-text-grey mb-0">@Model.TeamMembers.Count members in this team</p>
                 </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        @foreach (var member in Model.TeamMembers)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="px-0 py-2">
+                    @foreach (var member in Model.TeamMembers)
+                    {
+                        <div class="list-item px-4">
+                            <div class="is-flex is-align-items-center">
+                                <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}"))&size=32&background=E5E5E5&color=707070" 
+                                     class="image is-32x32 is-rounded mr-3" alt="Avatar" />
                                 <div>
-                                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}"))&size=32&background=random" 
-                                         class="rounded-circle me-2" alt="Avatar" />
-                                    @member.User.FirstName @member.User.LastName
-                                    @if (member.UserId == Model.TeamMembers.First().UserId)
-                                    {
-                                        <span class="badge bg-primary ms-1">Admin</span>
-                                    }
+                                    <span class="has-text-weight-medium">@member.User.FirstName @member.User.LastName</span>
+                                    <p class="has-text-grey is-size-7 mb-0">Joined @member.JoinedDate.ToString("MMM dd, yyyy")</p>
                                 </div>
-                                <small class="text-muted">Joined @member.JoinedDate.ToString("MMM dd")</small>
-                            </li>
-                        }
-                    </ul>
+                            </div>
+                            @if (member.UserId == Model.TeamMembers.First().UserId)
+                            {
+                                <span class="tag is-light">Admin</span>
+                            }
+                        </div>
+                    }
                 </div>
                 @if (Model.IsTeamAdmin)
                 {
-                    <div class="card-footer bg-light">
+                    <div class="px-4 py-3 has-background-white-bis">
                         <form method="post" asp-page-handler="Invite" asp-route-teamId="@Model.Team.TeamId">
-                            <div class="input-group">
-                                <div asp-validation-summary="All" class="text-danger"></div>
-                                <input type="email" asp-for="InviteEmail" class="form-control" placeholder="Email to invite" required>
-                               <input type="hidden" name="teamId" value="@Model.Team.TeamId" />
-                                <button type="submit" class="btn btn-primary">Invite</button>
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <input type="email" asp-for="InviteEmail" class="input is-small" placeholder="Email to invite" required>
+                                    <input type="hidden" name="teamId" value="@Model.Team.TeamId" />
+                                </div>
+                                <div class="control">
+                                    <button type="submit" class="button is-small is-info">Invite</button>
+                                </div>
                             </div>
+                            <div asp-validation-summary="All" class="help is-danger mt-1"></div>
                         </form>
                     </div>
                 }
             </div>
-        </div>
 
-        <!-- Main content with workspace navigation tiles -->
-        <div class="col-md-9">
-            <!-- Workspace Section -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Workspace</h5>
-                    <span class="badge bg-light text-primary">ID: @Model.Workspace?.WorkspaceId.Substring(0, 8)</span>
-                </div>
-                <div class="card-body">
-                    @if (Model.Workspace == null)
-                    {
-                        <div class="text-center py-5">
-                            <i class="bi bi-folder-x display-1 text-muted"></i>
-                            <p class="mt-3">Workspace not found. Please contact an administrator.</p>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="d-flex justify-content-between align-items-start mb-4">
-                            <div>
-                                <h3>@Model.Workspace.WorkspaceName</h3>
-                                <p class="text-muted">@Model.Workspace.Description</p>
-                                <p class="text-muted small">Created on @Model.Workspace.CreatedDate.ToString("MMMM dd, yyyy")</p>
-                            </div>
-                            @if (Model.IsTeamAdmin)
-                            {
-                                <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editWorkspaceModal">
-                                    <i class="bi bi-pencil-square"></i> Edit Workspace
-                                </a>
-                            }
-                        </div>
-                        
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <div class="card h-100 hover-card">
-                                    <div class="card-body text-center">
-                                        <div class="display-1 mb-3 text-primary">
-                                            <i class="bi bi-file-earmark-text"></i>
-                                        </div>
-                                        <h5 class="card-title">Collaboration docs</h5>
-                                        <p class="card-text">Collaborate on documents with your team.</p>
-                                        <a href="/Documents/Index?workspaceId=@Model.Workspace.WorkspaceId" class="btn btn-primary">View Documents</a>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <div class="card h-100 hover-card">
-                                    <div class="card-body text-center">
-                                        <div class="display-1 mb-3 text-success">
-                                            <i class="bi bi-folder2-open"></i>
-                                        </div>
-                                        <h5 class="card-title">Team drive</h5>
-                                        <p class="card-text">Access and share files with your team.</p>
-                                        <a href="/Files/Index?workspaceId=@Model.Workspace.WorkspaceId" class="btn btn-success">Browse Files</a>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <div class="card h-100 hover-card">
-                                    <div class="card-body text-center">
-                                        <div class="display-1 mb-3 text-danger">
-                                            <i class="bi bi-calendar-check"></i>
-                                        </div>
-                                        <h5 class="card-title">Timeline</h5>
-                                        <p class="card-text">View and manage tasks and deadlines.</p>
-                                        <a href="/Timeline/Index?workspaceId=@Model.Workspace.WorkspaceId" class="btn btn-danger">Open Timeline</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Add Edit Workspace Modal -->
             @if (Model.IsTeamAdmin)
             {
-                <div class="modal fade" id="editWorkspaceModal" tabindex="-1" aria-labelledby="editWorkspaceModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form method="post" asp-page-handler="UpdateWorkspace" asp-route-teamId="@Model.Team.TeamId">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="editWorkspaceModalLabel">Edit Workspace</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <input type="hidden" name="WorkspaceId" value="@Model.Workspace?.WorkspaceId" />
-                                    <div class="mb-3">
-                                        <label for="workspaceName" class="form-label">Workspace Name</label>
-                                        <input type="text" class="form-control" id="workspaceName" name="WorkspaceName" value="@Model.Workspace?.WorkspaceName" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="workspaceDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="workspaceDescription" name="Description" rows="3">@Model.Workspace?.Description</textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
+                <div class="box has-shadow p-0 mt-5">
+                    <div class="p-4 has-background-white-bis">
+                        <p class="title is-5 mb-0">Administration</p>
+                    </div>
+                    <div>
+                        <a href="#" class="admin-menu-item">
+                            <span class="icon has-text-grey"><i class="bi bi-people"></i></span>
+                            <div>
+                                <span class="has-text-weight-medium">Members</span>
+                                <p class="is-size-7 has-text-grey mb-0">Manage team members</p>
+                            </div>
+                        </a>
+                        <a href="/Teams/Roles/Index?teamId=@Model.Team.TeamId" class="admin-menu-item">
+                            <span class="icon has-text-grey"><i class="bi bi-shield-lock"></i></span>
+                            <div>
+                                <span class="has-text-weight-medium">Roles & Permissions</span>
+                                <p class="is-size-7 has-text-grey mb-0">Configure access control</p>
+                            </div>
+                        </a>
+                        <a href="#" class="admin-menu-item">
+                            <span class="icon has-text-grey"><i class="bi bi-gear"></i></span>
+                            <div>
+                                <span class="has-text-weight-medium">Team Settings</span>
+                                <p class="is-size-7 has-text-grey mb-0">Configure team options</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
             }
         </div>
-    </div>
 
-    <!-- Add this to the Team Management section of Dashboard/Index.cshtml -->
-    @if (Model.IsTeamAdmin)
-    {
-        <div class="list-group mb-4">
-            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                <div>
-                    <i class="bi bi-people me-2"></i> Members
-                    <small class="text-muted d-block">Manage team members</small>
-                </div>
-                <span class="badge bg-primary rounded-pill">@Model.TeamMembers.Count</span>
-            </a>
-            <a href="/Teams/Roles/Index?teamId=@Model.Team.TeamId" class="list-group-item list-group-item-action">
-                <i class="bi bi-shield-lock me-2"></i> Roles & Permissions
-                <small class="text-muted d-block">Manage team roles and permissions</small>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action">
-                <i class="bi bi-gear me-2"></i> Team Settings
-                <small class="text-muted d-block">Edit team settings</small>
-            </a>
+        <!-- Main content area -->
+        <div class="column is-9">
+            <!-- Workspace Section -->
+            <div class="box has-shadow">
+                @if (Model.Workspace == null)
+                {
+                    <div class="has-text-centered py-5">
+                        <i class="bi bi-folder-x" style="font-size: 3rem; color: #dbdbdb;"></i>
+                        <p class="mt-3">Workspace not found. Please contact an administrator.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="level mb-5">
+                        <div class="level-left">
+                            <div class="level-item">
+                                <div>
+                                    <h3 class="title is-4">@Model.Workspace.WorkspaceName</h3>
+                                    <p class="subtitle is-6 has-text-grey mb-1">@Model.Workspace.Description</p>
+                                    <p class="has-text-grey-light is-size-7">
+                                        <span class="icon is-small"><i class="bi bi-clock"></i></span>
+                                        Created on @Model.Workspace.CreatedDate.ToString("MMMM dd, yyyy")
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            @if (Model.IsTeamAdmin)
+                            {
+                                <div class="level-item">
+                                    <button class="button is-small is-light js-modal-trigger" data-target="editWorkspaceModal">
+                                        <span class="icon is-small"><i class="bi bi-pencil"></i></span>
+                                        <span>Edit</span>
+                                    </button>
+                                </div>
+                            }
+                            <div class="level-item">
+                                <span class="tag is-light">ID: @Model.Workspace.WorkspaceId.Substring(0, 8)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="columns is-multiline">
+                        <div class="column is-4">
+                            <div class="box has-shadow workspace-box">
+                                <div class="has-text-centered mb-4">
+                                    <span class="icon-large has-text-info">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </span>
+                                </div>
+                                <h5 class="title is-5 has-text-centered mb-2">Documents</h5>
+                                <p class="has-text-centered has-text-grey mb-4">Collaborate with your team on documents</p>
+                                <a href="/Documents/Index?workspaceId=@Model.Workspace.WorkspaceId" class="button is-info is-light is-fullwidth">
+                                    Open Documents
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="column is-4">
+                            <div class="box has-shadow workspace-box">
+                                <div class="has-text-centered mb-4">
+                                    <span class="icon-large has-text-success">
+                                        <i class="bi bi-folder2-open"></i>
+                                    </span>
+                                </div>
+                                <h5 class="title is-5 has-text-centered mb-2">File Storage</h5>
+                                <p class="has-text-centered has-text-grey mb-4">Access and share files securely</p>
+                                <a href="/Files/Index?workspaceId=@Model.Workspace.WorkspaceId" class="button is-success is-light is-fullwidth">
+                                    Browse Files
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="column is-4">
+                            <div class="box has-shadow workspace-box">
+                                <div class="has-text-centered mb-4">
+                                    <span class="icon-large has-text-link">
+                                        <i class="bi bi-calendar-check"></i>
+                                    </span>
+                                </div>
+                                <h5 class="title is-5 has-text-centered mb-2">Timeline</h5>
+                                <p class="has-text-centered has-text-grey mb-4">View and manage your team's schedule</p>
+                                <a href="/Timeline/Index?workspaceId=@Model.Workspace.WorkspaceId" class="button is-link is-light is-fullwidth">
+                                    View Timeline
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
-    }
+    </div>
 </div>
 
+<!-- Edit Workspace Modal -->
+@if (Model.IsTeamAdmin)
+{
+    <div class="modal" id="editWorkspaceModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <form method="post" asp-page-handler="UpdateWorkspace" asp-route-teamId="@Model.Team.TeamId">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Edit Workspace</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <input type="hidden" name="WorkspaceId" value="@Model.Workspace?.WorkspaceId" />
+                    <div class="field">
+                        <label class="label" for="workspaceName">Workspace Name</label>
+                        <div class="control">
+                            <input type="text" class="input" id="workspaceName" name="WorkspaceName" value="@Model.Workspace?.WorkspaceName" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="workspaceDescription">Description</label>
+                        <div class="control">
+                            <textarea class="textarea" id="workspaceDescription" name="Description" rows="3">@Model.Workspace?.Description</textarea>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-info">Save Changes</button>
+                    <button type="button" class="button is-light">Cancel</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+}
+
 @section Styles {
+    <link rel="stylesheet" href="~/lib/bulma/css/bulma.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        .hover-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        /* Professional Design Styles */
+        body {
+            background-color: #f9fafb;
+            color: #333;
         }
-        .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        
+        .has-shadow {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s ease;
         }
+        
+        .has-shadow:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .workspace-box {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .icon-large {
+            font-size: 2.5rem;
+            display: inline-block;
+            height: 64px;
+            width: 64px;
+            line-height: 64px;
+            background-color: rgba(72, 95, 199, 0.1);
+            border-radius: 50%;
+        }
+        
+        .icon-large.has-text-info {
+            background-color: rgba(32, 156, 238, 0.1);
+        }
+        
+        .icon-large.has-text-success {
+            background-color: rgba(35, 209, 96, 0.1);
+        }
+        
+        .icon-large.has-text-link {
+            background-color: rgba(50, 115, 220, 0.1);
+        }
+        
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .admin-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f5f5f5;
+            transition: background-color 0.2s ease;
+        }
+        
+        .admin-menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .admin-menu-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .admin-menu-item .icon {
+            margin-right: 1rem;
+        }
+        
+        .notification button.delete {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+        }
+        
+        /* Subtle color adjustments */
+        .button.is-info {
+            background-color: #4a68bd;
+        }
+        
+        .button.is-info.is-light {
+            background-color: #f0f4ff;
+            color: #4a68bd;
+        }
+        
+        .button.is-success.is-light {
+            background-color: #f0faf4;
+            color: #3a9e6d;
+        }
+        
+        .button.is-link.is-light {
+            background-color: #f0f4fa;
+            color: #3662b5;
+        }
+        
+        /* Add any dashboard-specific styles here */
     </style>
 }
 
 @section Scripts {
     <script>
-        // Any JavaScript you need can go here
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delete notification functionality
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.parentNode;
+                $delete.addEventListener('click', () => {
+                    $notification.parentNode.removeChild($notification);
+                });
+            });
+            
+            // Modal functionality
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+
+            // Open modal triggers
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                    openModal($target);
+                });
+            });
+
+            // Close modal elements
+            (document.querySelectorAll('.modal-background, .modal-card-head .delete, .modal-card-foot .button.is-light') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Keyboard event to close modals
+            document.addEventListener('keydown', (event) => {
+                if (event.keyCode === 27) { // Escape key
+                    closeAllModals();
+                }
+            });
+        });
+        
+        // Any dashboard-specific scripts
     </script>
 }

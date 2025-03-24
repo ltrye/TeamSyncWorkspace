@@ -4,37 +4,58 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
-<h4 id="external-login-title">Associate your @Model.ProviderDisplayName account.</h4>
-<hr />
-
-<p id="external-login-description" class="text-info">
-    You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
-    Please enter an email address for this site below and click the Register button to finish
-    logging in.
-</p>
-
-<div class="row">
-    <div class="col-md-6">
-        <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="email" />
-                <label asp-for="Input.Email" class="form-label"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+<div class="container is-fluid">
+    <div class="columns is-centered mt-6">
+        <div class="column is-5">
+            <div class="box has-shadow">
+                <div class="p-5 has-text-centered">
+                    <h1 class="title is-3">@ViewData["Title"]</h1>
+                    <h4 class="subtitle is-5 has-text-info">Associate your @Model.ProviderDisplayName account</h4>
+                    
+                    <p class="is-size-6 has-text-grey my-4">
+                        You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
+                        Please enter your information below to complete the registration.
+                    </p>
+                    
+                    <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="has-text-danger mb-3"></div>
+                        
+                        <div class="field">
+                            <label asp-for="Input.Email" class="label">Email</label>
+                            <div class="control has-icons-left">
+                                <input asp-for="Input.Email" class="input" autocomplete="email" placeholder="name@example.com" />
+                                <span class="icon is-small is-left">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                            </div>
+                            <span asp-validation-for="Input.Email" class="help is-danger"></span>
+                        </div>
+                        
+                        <div class="field">
+                            <label asp-for="Input.FirstName" class="label">First Name</label>
+                            <div class="control">
+                                <input asp-for="Input.FirstName" class="input" autocomplete="given-name" placeholder="First Name" />
+                            </div>
+                            <span asp-validation-for="Input.FirstName" class="help is-danger"></span>
+                        </div>
+                        
+                        <div class="field">
+                            <label asp-for="Input.LastName" class="label">Last Name</label>
+                            <div class="control">
+                                <input asp-for="Input.LastName" class="input" autocomplete="family-name" placeholder="Last Name" />
+                            </div>
+                            <span asp-validation-for="Input.LastName" class="help is-danger"></span>
+                        </div>
+                        
+                        <div class="field mt-5">
+                            <div class="control">
+                                <button type="submit" class="button is-info is-fullwidth">Register</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.FirstName" class="form-control" autocomplete="given-name" />
-                <label asp-for="Input.FirstName" class="form-label"></label>
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.LastName" class="form-control" autocomplete="family-name" />
-                <label asp-for="Input.LastName" class="form-label"></label>
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
+        </div>
     </div>
 </div>
 

@@ -1,109 +1,162 @@
 @page
 @model TeamSyncWorkspace.Pages.Account.ProfileModel
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "My Profile";
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-4">
-            <div class="card mb-4 shadow">
-                <div class="card-body text-center">
-                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{Model.CurrentUser.FirstName} {Model.CurrentUser.LastName}"))&size=90&background=random" 
-                         alt="avatar" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px;" />
-                    <h5 class="my-3">@Model.CurrentUser.FirstName @Model.CurrentUser.LastName</h5>
-                    <p class="text-muted mb-1">@Model.CurrentUser.Email</p>
-                    <div class="d-flex justify-content-center mt-4">
-                        <form method="post" asp-page-handler="Logout">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-box-arrow-right me-2"></i>Logout
-                            </button>
-                        </form>
+<div class="container is-fluid">
+    <div class="section pt-4 pb-2">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <div>
+                        <h1 class="title is-3">My Profile</h1>
+                        <p class="subtitle is-6 has-text-grey">Manage your account settings</p>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Profile Details</h5>
-                </div>
-                <div class="card-body">
-                    @if (!string.IsNullOrEmpty(Model.StatusMessage))
-                    {
-                        <div class="alert @(Model.StatusMessage.Contains("error") ? "alert-danger" : "alert-success") alert-dismissible fade show" role="alert">
-                            @Model.StatusMessage
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-                    <form method="post" asp-page-handler="UpdateProfile">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <div class="row mb-3">
-                            <div class="col-sm-3">
-                                <label asp-for="Input.FirstName" class="form-label">First Name</label>
-                            </div>
-                            <div class="col-sm-9">
-                                <input asp-for="Input.FirstName" class="form-control" />
-                                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-sm-3">
-                                <label asp-for="Input.LastName" class="form-label">Last Name</label>
-                            </div>
-                            <div class="col-sm-9">
-                                <input asp-for="Input.LastName" class="form-control" />
-                                <span asp-validation-for="Input.LastName" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-sm-3">
-                                <label asp-for="Input.Email" class="form-label">Email</label>
-                            </div>
-                            <div class="col-sm-9">
-                                <input asp-for="Input.Email" class="form-control" readonly />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-9 offset-sm-3">
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                            </div>
-                        </div>
+        
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="notification @(Model.StatusMessage.Contains("error") ? "is-danger is-light" : "is-success is-light")">
+                <button class="delete"></button>
+                @Model.StatusMessage
+            </div>
+        }
+    </div>
+
+    <div class="columns">
+        <!-- Profile sidebar -->
+        <div class="column is-3">
+            <div class="box has-shadow">
+                <div class="has-text-centered">
+                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{Model.CurrentUser.FirstName} {Model.CurrentUser.LastName}"))&size=128&background=E5E5E5&color=707070" 
+                         alt="avatar" class="image is-128x128 is-rounded mx-auto mb-4" />
+                    <h4 class="title is-4 mb-2">@Model.CurrentUser.FirstName @Model.CurrentUser.LastName</h4>
+                    <p class="has-text-grey mb-4">@Model.CurrentUser.Email</p>
+                    <form method="post" asp-page-handler="Logout">
+                        <button type="submit" class="button is-danger is-light is-fullwidth">
+                            <span class="icon">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </span>
+                            <span>Logout</span>
+                        </button>
                     </form>
                 </div>
             </div>
-            
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Account Security</h5>
+        </div>
+
+        <!-- Main content area -->
+        <div class="column is-9">
+            <!-- Profile Details Section -->
+            <div class="box has-shadow mb-5">
+                <div class="p-4 has-background-white-bis mb-4">
+                    <p class="title is-5 mb-0">Profile Details</p>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <p class="mb-0">Password</p>
+                
+                <form method="post" asp-page-handler="UpdateProfile" class="px-4 pb-4">
+                    <div asp-validation-summary="ModelOnly" class="help is-danger"></div>
+                    
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label" asp-for="Input.FirstName">First Name</label>
                         </div>
-                        <div class="col-sm-9 d-flex align-items-center justify-content-between">
-                            <p class="text-muted mb-0">••••••••</p>
-                            <a asp-page="./ChangePassword" class="btn btn-outline-primary btn-sm">Change Password</a>
+                        <div class="field-body">
+                            <div class="field">
+                                <div class="control">
+                                    <input asp-for="Input.FirstName" class="input" />
+                                </div>
+                                <span asp-validation-for="Input.FirstName" class="help is-danger"></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <p class="mb-0">Connected Accounts</p>
+                    
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label" asp-for="Input.LastName">Last Name</label>
                         </div>
-                        <div class="col-sm-9 d-flex align-items-center">
-                            <div class="d-flex gap-2">
-                                @if (await Model.HasPasswordAsync(Model.CurrentUser))
-                                {
-                                    <span class="badge bg-secondary">Password Login</span>
-                                }
-                                @foreach (var login in await Model.GetLoginsAsync(Model.CurrentUser))
-                                {
-                                    @if (login.LoginProvider == "Google")
+                        <div class="field-body">
+                            <div class="field">
+                                <div class="control">
+                                    <input asp-for="Input.LastName" class="input" />
+                                </div>
+                                <span asp-validation-for="Input.LastName" class="help is-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label" asp-for="Input.Email">Email</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field">
+                                <div class="control">
+                                    <input asp-for="Input.Email" class="input" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="field is-horizontal">
+                        <div class="field-label">
+                            <!-- Left empty for spacing -->
+                        </div>
+                        <div class="field-body">
+                            <div class="field">
+                                <div class="control">
+                                    <button type="submit" class="button is-info">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Account Security Section -->
+            <div class="box has-shadow">
+                <div class="p-4 has-background-white-bis mb-4">
+                    <p class="title is-5 mb-0">Account Security</p>
+                </div>
+                
+                <div class="px-4 pb-4">
+                    <div class="field is-horizontal mb-4">
+                        <div class="field-label is-normal">
+                            <label class="label">Password</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field is-flex is-align-items-center is-justify-content-space-between">
+                                <span class="has-text-grey">••••••••</span>
+                                <a asp-page="./ChangePassword" class="button is-small is-info is-light">Change Password</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Connected Accounts</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field">
+                                <div class="is-flex is-align-items-center gap-2">
+                                    @if (await Model.HasPasswordAsync(Model.CurrentUser))
                                     {
-                                        <span class="badge bg-danger">Google</span>
+                                        <span class="tag is-medium is-light">Password Login</span>
                                     }
-                                }
+                                    @foreach (var login in await Model.GetLoginsAsync(Model.CurrentUser))
+                                    {
+                                        @if (login.LoginProvider == "Google")
+                                        {
+                                            <span class="tag is-medium is-danger is-light">
+                                                <span class="icon is-small mr-1">
+                                                    <i class="bi bi-google"></i>
+                                                </span>
+                                                <span>Google</span>
+                                            </span>
+                                        }
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -114,5 +167,16 @@
 </div>
 
 @section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delete notification functionality
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.parentNode;
+                $delete.addEventListener('click', () => {
+                    $notification.parentNode.removeChild($notification);
+                });
+            });
+        });
+    </script>
     <partial name="_ValidationScriptsPartial" />
 }

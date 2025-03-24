@@ -6,44 +6,108 @@
 
 <div class="container-fluid p-0">
     <!-- Hero Section -->
-    <section class="hero-section py-5 bg-primary text-white">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-4">Collaborate Seamlessly with Your Team</h1>
-                    <p class="lead mb-4">TeamSyncWorkspace brings together documents, tasks, and team communication in one unified platform.</p>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                        <a asp-page="/Account/Register" class="btn btn-light btn-lg px-4 me-md-2">Get Started</a>
-                        <a asp-page="/Account/Login" class="btn btn-outline-light btn-lg px-4">Sign In</a>
+    <section class="hero is-medium is-primary">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns is-vcentered">
+                    <div class="column is-6">
+                        <h1 class="title is-2 mb-4">Collaborate Seamlessly with Your Team</h1>
+                        <p class="subtitle is-4 mb-5">TeamSyncWorkspace brings together documents, tasks, and team communication in one unified platform.</p>
+                        <div class="buttons">
+                            <a href="/Account/Register" class="button is-white is-medium">Get Started</a>
+                            <a href="/Account/Login" class="button is-outlined is-white is-medium">Sign In</a>
+                        </div>
                     </div>
-                </div>
-                <div class="col-lg-6 d-none d-lg-block">
-                    <div id="animated-svg-container">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="500" id="interactive-svg">
-                            <rect class="st0" width="800" height="600" fill="#F5F7FA"/>
-                            <circle class="st1 svg-element" cx="400" cy="300" r="150" fill="#4285F4" opacity="0.7"/>
-                            <circle class="st5 svg-element" cx="400" cy="300" r="120" fill="#FFFFFF"/>
-                            
-                            <!-- People icons -->
-                            <circle class="st1 person-circle svg-element" cx="315" cy="230" r="40" fill="#4285F4"/>
-                            <circle class="st2 person-circle svg-element" cx="485" cy="230" r="40" fill="#34A853"/>
-                            <circle class="st3 person-circle svg-element" cx="315" cy="370" r="40" fill="#EA4335"/>
-                            <circle class="st4 person-circle svg-element" cx="485" cy="370" r="40" fill="#FBBC05"/>
-                            
-                            <!-- Connection lines -->
-                            <line class="connection-line svg-element" x1="315" y1="230" x2="485" y2="230" stroke="#C4C4C4" stroke-width="5"/>
-                            <line class="connection-line svg-element" x1="315" y1="230" x2="315" y2="370" stroke="#C4C4C4" stroke-width="5"/>
-                            <line class="connection-line svg-element" x1="315" y1="370" x2="485" y2="370" stroke="#C4C4C4" stroke-width="5"/>
-                            <line class="connection-line svg-element" x1="485" y1="230" x2="485" y2="370" stroke="#C4C4C4" stroke-width="5"/>
-                            <line class="connection-line svg-element" x1="315" y1="230" x2="485" y2="370" stroke="#C4C4C4" stroke-width="5"/>
-                            <line class="connection-line svg-element" x1="485" y1="230" x2="315" y2="370" stroke="#C4C4C4" stroke-width="5"/>
-                            
-                            <!-- Document icon -->
-                            <rect class="document svg-element" x="375" y="275" width="50" height="70" rx="5" fill="#FFFFFF" stroke="#C4C4C4" stroke-width="2"/>
-                            <line class="document-line svg-element" x1="385" y1="290" x2="415" y2="290" stroke="#C4C4C4" stroke-width="2"/>
-                            <line class="document-line svg-element" x1="385" y1="305" x2="415" y2="305" stroke="#C4C4C4" stroke-width="2"/>
-                            <line class="document-line svg-element" x1="385" y1="320" x2="415" y2="320" stroke="#C4C4C4" stroke-width="2"/>
-                        </svg>
+                    <div class="column is-6 is-hidden-touch">
+                        <div id="animated-svg-container" class="has-background-white is-rounded box p-0 overflow-hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="400" id="interactive-svg">
+                                <!-- Background -->
+                                <rect width="800" height="500" fill="#f9fafb" />
+                                
+                                <!-- Grid lines -->
+                                <g class="grid-lines">
+                                    <line x1="100" y1="0" x2="100" y2="500" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="200" y1="0" x2="200" y2="500" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="300" y1="0" x2="300" y2="500" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="400" y1="0" x2="400" y2="500" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="500" y1="0" x2="500" y2="500" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="600" y1="0" x2="600" y2="500" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="700" y1="0" x2="700" y2="500" stroke="#f0f0f0" stroke-width="1" />
+                                    
+                                    <line x1="0" y1="100" x2="800" y2="100" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="0" y1="200" x2="800" y2="200" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="0" y1="300" x2="800" y2="300" stroke="#f0f0f0" stroke-width="1" />
+                                    <line x1="0" y1="400" x2="800" y2="400" stroke="#f0f0f0" stroke-width="1" />
+                                </g>
+                                
+                                <!-- Workspace elements -->
+                                <g class="workspace-elements">
+                                    <!-- Central workspace area -->
+                                    <rect x="200" y="100" width="400" height="300" rx="8" fill="#f0f4ff" stroke="#4a68bd" stroke-width="2" class="workspace" />
+                                    
+                                    <!-- Document icons -->
+                                    <g class="document" transform="translate(300, 150)">
+                                        <rect x="0" y="0" width="60" height="80" rx="4" fill="white" stroke="#4a68bd" stroke-width="1.5" />
+                                        <line x1="10" y1="20" x2="50" y2="20" stroke="#4a68bd" stroke-width="1.5" />
+                                        <line x1="10" y1="35" x2="50" y2="35" stroke="#4a68bd" stroke-width="1.5" />
+                                        <line x1="10" y1="50" x2="50" y2="50" stroke="#4a68bd" stroke-width="1.5" />
+                                        <line x1="10" y1="65" x2="30" y2="65" stroke="#4a68bd" stroke-width="1.5" />
+                                    </g>
+                                    
+                                    <g class="chart" transform="translate(440, 150)">
+                                        <rect x="0" y="0" width="60" height="80" rx="4" fill="white" stroke="#3a9e6d" stroke-width="1.5" />
+                                        <line x1="10" y1="20" x2="50" y2="20" stroke="#3a9e6d" stroke-width="1" />
+                                        <rect x="10" y1="30" width="10" height="40" fill="#3a9e6d" />
+                                        <rect x="25" y1="40" width="10" height="30" fill="#3a9e6d" />
+                                        <rect x="40" y1="35" width="10" height="35" fill="#3a9e6d" />
+                                    </g>
+                                    
+                                    <!-- Task cards -->
+                                    <g class="task-card" transform="translate(300, 260)">
+                                        <rect x="0" y="0" width="200" height="100" rx="4" fill="white" stroke="#e5e5e5" stroke-width="1.5" />
+                                        <circle cx="20" cy="20" r="10" fill="#4a68bd" opacity="0.2" class="avatar" />
+                                        <circle cx="50" cy="20" r="10" fill="#3a9e6d" opacity="0.2" class="avatar" />
+                                        <circle cx="80" cy="20" r="10" fill="#f0ad4e" opacity="0.2" class="avatar" />
+                                        <line x1="20" y1="50" x2="180" y2="50" stroke="#f0f0f0" stroke-width="1.5" />
+                                        <rect x="20" y="70" width="120" height="10" rx="2" fill="#f0f4ff" />
+                                        <rect x="20" y="70" width="80" height="10" rx="2" fill="#4a68bd" class="progress-bar" />
+                                    </g>
+                                    
+                                    <!-- People icons (simplified) -->
+                                    <g class="people-icons">
+                                        <circle cx="170" cy="150" r="25" fill="#4a68bd" opacity="0.8" class="person" />
+                                        <circle cx="170" cy="250" r="25" fill="#3a9e6d" opacity="0.8" class="person" />
+                                        <circle cx="170" cy="350" r="25" fill="#f0ad4e" opacity="0.8" class="person" />
+                                        
+                                        <circle cx="630" cy="150" r="25" fill="#4a68bd" opacity="0.8" class="person" />
+                                        <circle cx="630" cy="250" r="25" fill="#3a9e6d" opacity="0.8" class="person" />
+                                        <circle cx="630" cy="350" r="25" fill="#f0ad4e" opacity="0.8" class="person" />
+                                    </g>
+                                    
+                                    <!-- Connection lines -->
+                                    <g class="connection-lines">
+                                        <path d="M195,150 C250,150 250,120 300,120" stroke="#4a68bd" stroke-width="2" fill="none" class="connection" />
+                                        <path d="M195,250 C250,250 250,300 300,300" stroke="#3a9e6d" stroke-width="2" fill="none" class="connection" />
+                                        <path d="M195,350 C250,350 250,330 300,330" stroke="#f0ad4e" stroke-width="2" fill="none" class="connection" />
+                                        
+                                        <path d="M605,150 C550,150 550,120 500,120" stroke="#4a68bd" stroke-width="2" fill="none" class="connection" />
+                                        <path d="M605,250 C550,250 550,300 500,300" stroke="#3a9e6d" stroke-width="2" fill="none" class="connection" />
+                                        <path d="M605,350 C550,350 550,330 500,330" stroke="#f0ad4e" stroke-width="2" fill="none" class="connection" />
+                                    </g>
+                                    
+                                    <!-- Floating notifications -->
+                                    <g class="notification" transform="translate(230, 80)" opacity="0">
+                                        <rect x="0" y="0" width="120" height="30" rx="15" fill="#4a68bd" />
+                                        <text x="60" y="19" font-family="Arial" font-size="12" fill="white" text-anchor="middle">New Document</text>
+                                    </g>
+                                    
+                                    <g class="notification" transform="translate(450, 80)" opacity="0">
+                                        <rect x="0" y="0" width="120" height="30" rx="15" fill="#3a9e6d" />
+                                        <text x="60" y="19" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Task Completed</text>
+                                    </g>
+                                </g>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -51,41 +115,41 @@
     </section>
 
     <!-- Features Section -->
-    <section class="py-5">
+    <section class="section">
         <div class="container">
-            <h2 class="text-center mb-5">Everything Your Team Needs</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
-                                <i class="bi bi-people-fill fs-2"></i>
-                            </div>
-                            <h3 class="fs-4">Team Management</h3>
-                            <p class="mb-0">Create teams, assign roles, and collaborate with colleagues efficiently.</p>
+            <h2 class="title is-3 has-text-centered mb-6">Everything Your Team Needs</h2>
+            <div class="columns is-multiline">
+                <div class="column is-4">
+                    <div class="box has-shadow h-100">
+                        <div class="has-text-centered mb-4">
+                            <span class="icon-large has-text-info">
+                                <i class="bi bi-people-fill"></i>
+                            </span>
                         </div>
+                        <h3 class="title is-4 has-text-centered mb-3">Team Management</h3>
+                        <p class="has-text-centered has-text-grey">Create teams, assign roles, and collaborate with colleagues efficiently.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <div class="feature-icon bg-success bg-gradient text-white rounded-circle mb-3">
-                                <i class="bi bi-file-earmark-text fs-2"></i>
-                            </div>
-                            <h3 class="fs-4">Document Collaboration</h3>
-                            <p class="mb-0">Work together on documents in real-time with version control.</p>
+                <div class="column is-4">
+                    <div class="box has-shadow h-100">
+                        <div class="has-text-centered mb-4">
+                            <span class="icon-large has-text-success">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </span>
                         </div>
+                        <h3 class="title is-4 has-text-centered mb-3">Document Collaboration</h3>
+                        <p class="has-text-centered has-text-grey">Work together on documents in real-time with version control.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <div class="feature-icon bg-danger bg-gradient text-white rounded-circle mb-3">
-                                <i class="bi bi-calendar-check fs-2"></i>
-                            </div>
-                            <h3 class="fs-4">Task Management</h3>
-                            <p class="mb-0">Organize team tasks, track progress, and meet deadlines.</p>
+                <div class="column is-4">
+                    <div class="box has-shadow h-100">
+                        <div class="has-text-centered mb-4">
+                            <span class="icon-large has-text-link">
+                                <i class="bi bi-calendar-check"></i>
+                            </span>
                         </div>
+                        <h3 class="title is-4 has-text-centered mb-3">Task Management</h3>
+                        <p class="has-text-centered has-text-grey">Organize team tasks, track progress, and meet deadlines.</p>
                     </div>
                 </div>
             </div>
@@ -93,44 +157,36 @@
     </section>
 
     <!-- How It Works Section -->
-    <section class="py-5 bg-light">
+    <section class="section has-background-white-bis">
         <div class="container">
-            <h2 class="text-center mb-5">How It Works</h2>
-            <div class="row g-4">
-                <div class="col-md-3">
-                    <div class="card h-100 border-0">
-                        <div class="card-body text-center">
-                            <div class="step-circle bg-primary text-white mx-auto mb-3">1</div>
-                            <h4>Create Account</h4>
-                            <p>Sign up with email or Google authentication.</p>
-                        </div>
+            <h2 class="title is-3 has-text-centered mb-6">How It Works</h2>
+            <div class="columns">
+                <div class="column is-3">
+                    <div class="box has-shadow has-text-centered">
+                        <div class="step-circle mb-4">1</div>
+                        <h4 class="title is-5 mb-3">Create Account</h4>
+                        <p class="has-text-grey">Sign up with email or Google authentication.</p>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card h-100 border-0">
-                        <div class="card-body text-center">
-                            <div class="step-circle bg-primary text-white mx-auto mb-3">2</div>
-                            <h4>Create a Team</h4>
-                            <p>Set up your workspace and invite team members.</p>
-                        </div>
+                <div class="column is-3">
+                    <div class="box has-shadow has-text-centered">
+                        <div class="step-circle mb-4">2</div>
+                        <h4 class="title is-5 mb-3">Create a Team</h4>
+                        <p class="has-text-grey">Set up your workspace and invite team members.</p>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card h-100 border-0">
-                        <div class="card-body text-center">
-                            <div class="step-circle bg-primary text-white mx-auto mb-3">3</div>
-                            <h4>Add Content</h4>
-                            <p>Create documents, upload files, set tasks.</p>
-                        </div>
+                <div class="column is-3">
+                    <div class="box has-shadow has-text-centered">
+                        <div class="step-circle mb-4">3</div>
+                        <h4 class="title is-5 mb-3">Add Content</h4>
+                        <p class="has-text-grey">Create documents, upload files, set tasks.</p>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card h-100 border-0">
-                        <div class="card-body text-center">
-                            <div class="step-circle bg-primary text-white mx-auto mb-3">4</div>
-                            <h4>Collaborate</h4>
-                            <p>Work together with your team in real-time.</p>
-                        </div>
+                <div class="column is-3">
+                    <div class="box has-shadow has-text-centered">
+                        <div class="step-circle mb-4">4</div>
+                        <h4 class="title is-5 mb-3">Collaborate</h4>
+                        <p class="has-text-grey">Work together with your team in real-time.</p>
                     </div>
                 </div>
             </div>
@@ -138,85 +194,89 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="py-5 bg-primary text-white text-center">
-        <div class="container">
-            <h2 class="mb-4">Ready to boost your team's productivity?</h2>
-            <a asp-page="/Account/Register" class="btn btn-light btn-lg px-5">Get Started For Free</a>
+    <section class="section has-background-primary">
+        <div class="container has-text-centered">
+            <h2 class="title is-3 has-text-white mb-5">Ready to boost your team's productivity?</h2>
+            <a href="/Account/Register" class="button is-white is-medium is-outlined px-5">Get Started For Free</a>
         </div>
     </section>
 </div>
 
 @section Styles {
     <style>
-        .hero-section {
-            padding-top: 6rem;
-            padding-bottom: 6rem;
-            overflow: hidden;
-            position: relative;
+        .hero {
+            background-color: #4a68bd;
         }
-
-        #animated-svg-container {
-            position: relative;
-            width: 100%;
-            height: 500px;
-            overflow: hidden;
+        
+        .hero.is-primary {
+            background-color: #4a68bd;
         }
-
-        .feature-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 4rem;
-            height: 4rem;
+        
+        .section.has-background-primary {
+            background-color: #4a68bd;
         }
-
+        
+        .h-100 {
+            height: 100%;
+        }
+        
         .step-circle {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 3rem;
-            height: 3rem;
+            width: 4rem;
+            height: 4rem;
             border-radius: 50%;
+            background-color: #4a68bd;
+            color: white;
             font-size: 1.5rem;
             font-weight: bold;
+            margin: 0 auto;
         }
-
-        .card {
+        
+        .box {
             transition: transform 0.3s ease;
         }
-
-        .card:hover {
+        
+        .box:hover {
             transform: translateY(-5px);
         }
-
+        
+        .overflow-hidden {
+            overflow: hidden;
+        }
+        
         /* SVG Animation Styles */
-        .svg-element {
-            transition: transform 0.3s ease, fill 0.5s ease, stroke 0.5s ease;
+        .connection {
+            stroke-dasharray: 200;
+            stroke-dashoffset: 0;
         }
-
-        .person-circle {
+        
+        .workspace {
+            transform-origin: center;
+        }
+        
+        .person {
             cursor: pointer;
-            transition: transform 0.3s ease, r 0.3s ease;
+            transform-origin: center;
+            transition: opacity 0.3s, transform 0.3s;
         }
-
-        .person-circle:hover {
-            transform: scale(1.2);
+        
+        .document, .chart, .task-card {
+            transform-origin: center;
         }
-
-        .connection-line {
-            transition: stroke-width 0.3s ease, stroke 0.3s ease;
+        
+        .progress-bar {
+            transform-origin: left;
         }
-
-        .document {
-            transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
+        
+        .grid-lines line {
+            opacity: 0.3;
         }
-
-        .document:hover {
-            transform: scale(1.1);
-        }
-
-        .document-line {
-            transition: stroke-width 0.3s ease, stroke 0.3s ease;
+        
+        /* Round the corners of the SVG container */
+        .is-rounded {
+            border-radius: 8px;
         }
     </style>
 }
@@ -334,7 +394,9 @@
                 lastMouseY = e.clientY;
                 
                 // Get SVG container position
-                const svgRect = svgContainer.getBoundingClientRect();
+                const svgRect = svgContainer?.getBoundingClientRect();
+                
+                if (!svgRect) return; // Exit if the element isn't available
                 
                 // Check if we're close enough to the SVG to animate
                 const distanceToSvg = Math.min(
@@ -356,6 +418,7 @@
                 
                 // Only process if mouse is reasonably close to SVG
                 if (distanceToSvg < 1000) {
+                    // Rest of animation code...
                     // Reset timeline
                     mouseMoveTimeline.clear();
                     
@@ -456,65 +519,6 @@
                 }
             });
             
-            // Instead of resetting on mouseleave, we'll gradually return to original positions when mouse is far away
-            setInterval(function() {
-                if (isDragging) return;
-                
-                // Get current mouse position relative to document
-                const svgRect = svgContainer.getBoundingClientRect();
-                
-                // Check if mouse is far from the SVG
-                const distanceToSvg = Math.min(
-                    Math.abs(lastMouseX - svgRect.left),
-                    Math.abs(lastMouseX - svgRect.right),
-                    Math.abs(lastMouseY - svgRect.top),
-                    Math.abs(lastMouseY - svgRect.bottom)
-                );
-                
-                // If mouse is very far, gradually return to original positions
-                if (distanceToSvg > 800) {
-                    personCircles.forEach((circle, index) => {
-                        const origPos = originalPositions[index];
-                        const cx = parseFloat(circle.getAttribute('cx'));
-                        const cy = parseFloat(circle.getAttribute('cy'));
-                        
-                        // Calculate how far we are from original position
-                        const dx = origPos.cx - cx;
-                        const dy = origPos.cy - cy;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        
-                        // Only move if we're not already at original position
-                        if (dist > 0.5) {
-                            // Move 5% of the way back to original position
-                            const newX = cx + dx * 0.05;
-                            const newY = cy + dy * 0.05;
-                            
-                            circle.setAttribute('cx', newX);
-                            circle.setAttribute('cy', newY);
-                            updateConnectedLines(circle, newX, newY);
-                        }
-                    });
-                    
-                    // Return center circle to original size
-                    const centerR = parseFloat(centerCircle.getAttribute('r'));
-                    const whiteR = parseFloat(whiteCircle.getAttribute('r'));
-                    
-                    if (Math.abs(centerR - 150) > 0.5) {
-                        centerCircle.setAttribute('r', centerR + (150 - centerR) * 0.05);
-                    }
-                    
-                    if (Math.abs(whiteR - 120) > 0.5) {
-                        whiteCircle.setAttribute('r', whiteR + (120 - whiteR) * 0.05);
-                    }
-                    
-                    // Remove any remaining glow
-                    if (activeGlow) {
-                        activeGlow.setAttribute('filter', '');
-                        activeGlow = null;
-                    }
-                }
-            }, 50); // Check every 50ms
-            
             // Add click animations for circles
             personCircles.forEach(circle => {
                 circle.addEventListener('click', function() {
@@ -556,7 +560,7 @@
                 });
             });
             
-            // Make circles draggable with optimized code
+            // Make circles draggable
             personCircles.forEach(circle => {
                 let startX, startY, circleX, circleY;
                 
@@ -628,6 +632,300 @@
                         }
                     });
                 }
+            });
+        });
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get SVG elements
+            const workspace = document.querySelector('.workspace');
+            const persons = document.querySelectorAll('.person');
+            const document = document.querySelector('.document');
+            const chart = document.querySelector('.chart');
+            const taskCard = document.querySelector('.task-card');
+            const connections = document.querySelectorAll('.connection');
+            const progressBar = document.querySelector('.progress-bar');
+            const notifications = document.querySelectorAll('.notification');
+            const avatars = document.querySelectorAll('.avatar');
+            const svg = document.getElementById('interactive-svg');
+            const svgContainer = document.getElementById('animated-svg-container');
+            
+            // Create main timeline for initial animation
+            const mainTimeline = gsap.timeline();
+            
+            // Initial animation
+            mainTimeline
+                .from(workspace, {
+                    scale: 0.8,
+                    opacity: 0,
+                    duration: 1,
+                    ease: "power3.out"
+                })
+                .from(persons, {
+                    scale: 0,
+                    opacity: 0,
+                    stagger: 0.1,
+                    duration: 0.6,
+                    ease: "back.out(1.7)"
+                }, "-=0.5")
+                .fromTo(connections, {
+                    strokeDasharray: 200,
+                    strokeDashoffset: 200
+                }, {
+                    strokeDashoffset: 0,
+                    duration: 1.2,
+                    stagger: 0.1,
+                    ease: "power2.inOut"
+                }, "-=0.3")
+                .from([document, chart], {
+                    y: 30,
+                    opacity: 0,
+                    stagger: 0.2,
+                    duration: 0.8,
+                    ease: "power2.out"
+                }, "-=0.8")
+                .from(taskCard, {
+                    y: 30,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power2.out"
+                }, "-=0.4")
+                .fromTo(progressBar, {
+                    scaleX: 0,
+                }, {
+                    scaleX: 1,
+                    duration: 1,
+                    ease: "power2.inOut"
+                }, "-=0.2");
+                
+            // Create repeating animations for UI elements
+            function createRepeatingAnimations() {
+                // Subtle breathing effect for workspace
+                gsap.to(workspace, {
+                    scale: 1.01,
+                    duration: 3,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut"
+                });
+                
+                // Person hover effect in sequence
+                gsap.to(persons, {
+                    y: -5,
+                    duration: 1.5,
+                    stagger: {
+                        each: 0.5,
+                        repeat: -1,
+                        yoyo: true
+                    },
+                    ease: "sine.inOut"
+                });
+                
+                // Rotating notifications
+                const notificationTimeline = gsap.timeline({repeat: -1, repeatDelay: 2});
+                notifications.forEach((notification, i) => {
+                    notificationTimeline
+                        .to(notification, {
+                            opacity: 1,
+                            y: 10,
+                            duration: 0.5,
+                            ease: "back.out"
+                        })
+                        .to(notification, {
+                            opacity: 0,
+                            y: -10,
+                            duration: 0.5,
+                            delay: 1.5,
+                            ease: "power2.in"
+                        }, "+=1.5");
+                });
+                
+                // Subtle avatar pulse
+                gsap.to(avatars, {
+                    scale: 1.2,
+                    opacity: 0.5,
+                    duration: 1.5,
+                    stagger: {
+                        each: 0.3,
+                        repeat: -1,
+                        yoyo: true
+                    },
+                    ease: "sine.inOut"
+                });
+            }
+            
+            // Start repeating animations after main timeline completes
+            mainTimeline.call(createRepeatingAnimations);
+            
+            // Variables for tracking mouse movement
+            let mouseX = 0;
+            let mouseY = 0;
+            let active = false;
+            let frameId = null;
+            
+            // Mouse movement tracking
+            svgContainer.addEventListener('mousemove', function(e) {
+                const rect = svgContainer.getBoundingClientRect();
+                mouseX = ((e.clientX - rect.left) / rect.width) - 0.5; // -0.5 to 0.5 range
+                mouseY = ((e.clientY - rect.top) / rect.height) - 0.5; // -0.5 to 0.5 range
+                active = true;
+                
+                // If no animation frame is running, start one
+                if (!frameId) {
+                    frameId = requestAnimationFrame(animateElements);
+                }
+            });
+            
+            // Mouse leave handling
+            svgContainer.addEventListener('mouseleave', function() {
+                active = false;
+                
+                // Animate all elements back to center
+                gsap.to(workspace, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.8,
+                    ease: "power2.out"
+                });
+                
+                gsap.to([document, chart], {
+                    x: 0,
+                    y: 0,
+                    duration: 0.7,
+                    ease: "power2.out"
+                });
+                
+                gsap.to(taskCard, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.7,
+                    ease: "power2.out"
+                });
+                
+                gsap.to(persons, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.8,
+                    ease: "elastic.out(0.5, 0.3)"
+                });
+            });
+            
+            // Animate elements based on mouse position
+            function animateElements() {
+                if (active) {
+                    // Movement multipliers for different elements (less movement = more stable feeling)
+                    const workspaceMove = 15;
+                    const documentMove = 8;
+                    const personMove = 6;
+                    
+                    // Calculate new positions with easing
+                    const easeAmount = 0.08; // Lower = smoother/slower follow
+                    
+                    // Move workspace slightly (feels like 3D perspective)
+                    gsap.to(workspace, {
+                        x: mouseX * workspaceMove, 
+                        y: mouseY * workspaceMove,
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
+                    
+                    // Move document and chart opposite to workspace (parallax effect)
+                    gsap.to([document, chart], {
+                        x: mouseX * -documentMove,
+                        y: mouseY * -documentMove,
+                        duration: 0.6,
+                        ease: "power2.out"
+                    });
+                    
+                    // Move task card with slight delay
+                    gsap.to(taskCard, {
+                        x: mouseX * documentMove,
+                        y: mouseY * documentMove,
+                        duration: 0.7,
+                        ease: "power2.out"
+                    });
+                    
+                    // Move person circles more dynamically
+                    persons.forEach((person, i) => {
+                        // Alternate directions for different persons to create interesting motion
+                        const xDirection = i % 2 === 0 ? 1 : -1;
+                        const yDirection = i < 3 ? 1 : -1;
+                        
+                        gsap.to(person, {
+                            x: mouseX * personMove * xDirection,
+                            y: mouseY * personMove * yDirection,
+                            duration: 0.3,
+                            ease: "power1.out"
+                        });
+                    });
+                    
+                    // Continue animation frame
+                    frameId = requestAnimationFrame(animateElements);
+                } else {
+                    // Stop animation frame when not active
+                    frameId = null;
+                }
+            }
+            
+            // Add click interactions for person circles
+            persons.forEach(person => {
+                person.addEventListener('click', function() {
+                    const originalR = parseFloat(this.getAttribute('r'));
+                    
+                    // Click animation
+                    gsap.timeline()
+                        .to(this, {
+                            scale: 1.3,
+                            duration: 0.2,
+                            ease: "power1.out"
+                        })
+                        .to(this, {
+                            scale: 1,
+                            duration: 0.5,
+                            ease: "elastic.out(1.2, 0.5)"
+                        });
+                    
+                    // Create ripple effect
+                    const ripple = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    ripple.setAttribute("cx", this.getAttribute("cx"));
+                    ripple.setAttribute("cy", this.getAttribute("cy"));
+                    ripple.setAttribute("r", originalR);
+                    ripple.setAttribute("fill", "none");
+                    ripple.setAttribute("stroke", this.getAttribute("fill"));
+                    ripple.setAttribute("stroke-width", "2");
+                    ripple.setAttribute("opacity", "0.7");
+                    svg.appendChild(ripple);
+                    
+                    gsap.to(ripple, {
+                        r: originalR * 3,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.out",
+                        onComplete: function() {
+                            svg.removeChild(ripple);
+                        }
+                    });
+                });
+                
+                // Hover effect for person circles
+                person.addEventListener('mouseenter', function() {
+                    gsap.to(this, {
+                        scale: 1.15,
+                        opacity: 1,
+                        duration: 0.3,
+                        ease: "power1.out"
+                    });
+                });
+                
+                person.addEventListener('mouseleave', function() {
+                    gsap.to(this, {
+                        scale: 1,
+                        opacity: 0.8,
+                        duration: 0.3,
+                        ease: "power1.out"
+                    });
+                });
             });
         });
     </script>

@@ -5,179 +5,190 @@
     ViewData["Title"] = "Team Roles Management";
 }
 
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a asp-page="/Teams/Index">My Teams</a></li>
-                    <li class="breadcrumb-item"><a asp-page="/Dashboard/Index" asp-route-teamId="@Model.Team.TeamId">@Model.Team.TeamName</a></li>
-                    <li class="breadcrumb-item active">Roles Management</li>
-                </ol>
-            </nav>
-            <h1 class="display-5 mb-0">@Model.Team.TeamName - Roles Management</h1>
-            <p class="text-muted mb-4">Manage team roles and member permissions</p>
+<div class="container is-fluid">
+    <div class="section pt-4 pb-2">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <div>
+                        <nav class="breadcrumb" aria-label="breadcrumbs">
+                            <ul>
+                                <li><a asp-page="/Teams/Index">My Teams</a></li>
+                                <li><a asp-page="/Dashboard/Index" asp-route-teamId="@Model.Team.TeamId">@Model.Team.TeamName</a></li>
+                                <li class="is-active"><a href="#" aria-current="page">Roles Management</a></li>
+                            </ul>
+                        </nav>
+                        <h1 class="title is-3">@Model.Team.TeamName</h1>
+                        <p class="subtitle is-6 has-text-grey">Roles Management</p>
+                    </div>
+                </div>
+            </div>
         </div>
+        
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="notification @(Model.StatusMessage.Contains("success") ? "is-success is-light" : "is-danger is-light")">
+                <button class="delete"></button>
+                @Model.StatusMessage
+            </div>
+        }
     </div>
 
-    @if (!string.IsNullOrEmpty(Model.StatusMessage))
-    {
-        <div class="alert @(Model.StatusMessage.Contains("success") ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
-            @Model.StatusMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <div class="row">
+    <div class="columns">
         <!-- Team Members Column -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Team Members</h5>
+        <div class="column is-6">
+            <div class="box has-shadow p-0">
+                <div class="p-4 has-background-white-bis">
+                    <p class="title is-5 mb-0">Team Members</p>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                <div class="table-container">
+                    <table class="table is-fullwidth is-hoverable">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var member in Model.TeamMembers)
+                            {
                                 <tr>
-                                    <th>Member</th>
-                                    <th>Current Role</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var member in Model.TeamMembers)
-                                {
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar me-3" style="width: 32px; height: 32px; border-radius: 50%; background-color: #@(string.Format("{0:X6}", member.User.FirstName.GetHashCode() & 0xFFFFFF)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                                                    @(member.User.FirstName[0])@(member.User.LastName[0])
-                                                </div>
-                                                <div>
-                                                    <div>@member.User.FirstName @member.User.LastName</div>
-                                                    <small class="text-muted">@member.User.Email</small>
-                                                </div>
+                                    <td>
+                                        <div class="is-flex is-align-items-center">
+                                            <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}"))&size=32&background=E5E5E5&color=707070" 
+                                                 class="image is-32x32 is-rounded mr-3" alt="Avatar" />
+                                            <div>
+                                                <p class="has-text-weight-medium mb-0">@member.User.FirstName @member.User.LastName</p>
+                                                <p class="has-text-grey is-size-7 mb-0">@member.User.Email</p>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge @(member.Role == "Owner" ? "bg-danger" : 
-                                                    member.Role == "Admin" ? "bg-warning text-dark" :
-                                                    member.Role == "Member" ? "bg-primary" : 
-                                                    member.Role == "Viewer" ? "bg-secondary" : "bg-info")">
-                                                @member.Role
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if (Model.CanManageRoles && (member.Role != "Owner" || member.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)))
-                                            {
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton@(member.UserId)" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        Change Role
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="tag @(member.Role == "Owner" ? "is-danger" : 
+                                                member.Role == "Admin" ? "is-warning" :
+                                                member.Role == "Member" ? "is-info" : 
+                                                member.Role == "Viewer" ? "is-light" : "is-info") is-light">
+                                            @member.Role
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (Model.CanManageRoles && (member.Role != "Owner" || member.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)))
+                                        {
+                                            <div class="dropdown is-hoverable">
+                                                <div class="dropdown-trigger">
+                                                    <button class="button is-small is-light" aria-haspopup="true" aria-controls="dropdown-menu-@member.UserId">
+                                                        <span>Change Role</span>
+                                                        <span class="icon is-small">
+                                                            <i class="bi bi-chevron-down"></i>
+                                                        </span>
                                                     </button>
-                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton@(member.UserId)">
+                                                </div>
+                                                <div class="dropdown-menu" id="dropdown-menu-@member.UserId" role="menu">
+                                                    <div class="dropdown-content">
                                                         @foreach (var role in Model.Roles)
                                                         {
                                                             @if (role.Name != member.Role)
                                                             {
-                                                                <li>
-                                                                    <form method="post" asp-page-handler="ChangeRole">
-                                                                        <input type="hidden" name="teamId" value="@Model.Team.TeamId" />
-                                                                        <input type="hidden" name="userId" value="@member.UserId" />
-                                                                        <input type="hidden" name="newRole" value="@role.Name" />
-                                                                        <button type="submit" class="dropdown-item">@role.Name</button>
-                                                                    </form>
-                                                                </li>
+                                                                <form method="post" asp-page-handler="ChangeRole">
+                                                                    <input type="hidden" name="teamId" value="@Model.Team.TeamId" />
+                                                                    <input type="hidden" name="userId" value="@member.UserId" />
+                                                                    <input type="hidden" name="newRole" value="@role.Name" />
+                                                                    <button type="submit" class="dropdown-item">@role.Name</button>
+                                                                </form>
                                                             }
                                                         }
-                                                    </ul>
+                                                    </div>
                                                 </div>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
         <!-- Roles Column -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Available Roles</h5>
+        <div class="column is-6">
+            <div class="box has-shadow p-0">
+                <div class="p-4 has-background-white-bis is-flex is-justify-content-space-between is-align-items-center">
+                    <p class="title is-5 mb-0">Available Roles</p>
                     @if (Model.CanManageRoles)
                     {
-                        <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#createRoleModal">
-                            <i class="bi bi-plus-circle me-1"></i> Create Custom Role
+                        <button class="button is-small is-info is-light js-modal-trigger" data-target="createRoleModal">
+                            <span class="icon is-small">
+                                <i class="bi bi-plus-circle"></i>
+                            </span>
+                            <span>Create Custom Role</span>
                         </button>
                     }
                 </div>
-                <div class="card-body">
-                    <div class="accordion" id="rolesAccordion">
-                        @foreach (var role in Model.Roles)
-                        {
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading@(role.RoleId)">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse@(role.RoleId)" aria-expanded="false" aria-controls="collapse@(role.RoleId)">
-                                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                                            <span>
-                                                <span class="badge @(role.Name == "Owner" ? "bg-danger" : 
-                                                        role.Name == "Admin" ? "bg-warning text-dark" :
-                                                        role.Name == "Member" ? "bg-primary" : 
-                                                        role.Name == "Viewer" ? "bg-secondary" : "bg-info") me-2">
-                                                    @role.Name
-                                                </span>
-                                                @role.Description
+                
+                @foreach (var role in Model.Roles)
+                {
+                    <div class="role-panel">
+                        <div class="role-header px-4 py-3 is-flex is-justify-content-space-between is-align-items-center" data-role-target="role-panel-@role.RoleId">
+                            <div>
+                                <span class="tag @(role.Name == "Owner" ? "is-danger" : 
+                                        role.Name == "Admin" ? "is-warning" :
+                                        role.Name == "Member" ? "is-info" : 
+                                        role.Name == "Viewer" ? "is-light" : "is-info") is-light mr-2">
+                                    @role.Name
+                                </span>
+                                <span>@role.Description</span>
+                            </div>
+                            <div class="is-flex is-align-items-center">
+                                <span class="tag is-light mr-3">@(role.Permissions?.Count ?? 0) permissions</span>
+                                <span class="icon role-toggle">
+                                    <i class="bi bi-chevron-down"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="role-body px-4 py-3" id="role-panel-@role.RoleId" style="display: none;">
+                            <div class="is-flex is-justify-content-space-between mb-3">
+                                <p class="has-text-weight-medium">Permissions</p>
+                                @if (Model.CanManageRoles && role.Name != "Owner" && role.Name != "Admin" && role.Name != "Member" && role.Name != "Viewer")
+                                {
+                                    <div>
+                                        <button type="button" class="button is-small is-info is-light mr-2 js-modal-trigger" 
+                                                data-target="editRoleModal" 
+                                                data-role-id="@role.RoleId" 
+                                                data-role-name="@role.Name" 
+                                                data-role-description="@role.Description"
+                                                data-role-permissions="@string.Join(",", role.Permissions.Select(p => p.Action))">
+                                            <span class="icon is-small">
+                                                <i class="bi bi-pencil"></i>
                                             </span>
-                                            <span class="badge bg-secondary">@(role.Permissions?.Count ?? 0) permissions</span>
-                                        </div>
-                                    </button>
-                                </h2>
-                                <div id="collapse@(role.RoleId)" class="accordion-collapse collapse" aria-labelledby="heading@(role.RoleId)" data-bs-parent="#rolesAccordion">
-                                    <div class="accordion-body">
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <h6 class="mb-0">Permissions</h6>
-                                            @if (Model.CanManageRoles && role.Name != "Owner" && role.Name != "Admin" && role.Name != "Member" && role.Name != "Viewer")
-                                            {
-                                                <div>
-                                                    <button type="button" class="btn btn-sm btn-outline-primary me-1" 
-                                                            data-bs-toggle="modal" data-bs-target="#editRoleModal" 
-                                                            data-role-id="@role.RoleId" 
-                                                            data-role-name="@role.Name" 
-                                                            data-role-description="@role.Description"
-                                                            data-role-permissions="@string.Join(",", role.Permissions.Select(p => p.Action))">
-                                                        <i class="bi bi-pencil"></i> Edit
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                            data-bs-toggle="modal" data-bs-target="#deleteRoleModal" 
-                                                            data-role-id="@role.RoleId" 
-                                                            data-role-name="@role.Name">
-                                                        <i class="bi bi-trash"></i> Delete
-                                                    </button>
-                                                </div>
-                                            }
-                                        </div>
-                                        <div class="row g-2">
-                                            @foreach (var permission in role.Permissions)
-                                            {
-                                                <div class="col-md-6">
-                                                    <div class="card bg-light">
-                                                        <div class="card-body py-2 px-3">
-                                                            <small>@permission.Action</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            }
+                                            <span>Edit</span>
+                                        </button>
+                                        <button type="button" class="button is-small is-danger is-light js-modal-trigger" 
+                                                data-target="deleteRoleModal" 
+                                                data-role-id="@role.RoleId" 
+                                                data-role-name="@role.Name">
+                                            <span class="icon is-small">
+                                                <i class="bi bi-trash"></i>
+                                            </span>
+                                            <span>Delete</span>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                            <div class="columns is-multiline">
+                                @foreach (var permission in role.Permissions)
+                                {
+                                    <div class="column is-6">
+                                        <div class="box has-background-light p-2 mb-2">
+                                            <p class="is-size-7 mb-0">@permission.Action</p>
                                         </div>
                                     </div>
-                                </div>
+                                }
                             </div>
-                        }
+                        </div>
                     </div>
-                </div>
+                }
             </div>
         </div>
     </div>
@@ -186,133 +197,212 @@
 @if (Model.CanManageRoles)
 {
     <!-- Create Custom Role Modal -->
-    <div class="modal fade" id="createRoleModal" tabindex="-1" aria-labelledby="createRoleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form method="post" asp-page-handler="CreateRole" asp-route-teamId="@Model.Team.TeamId">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="createRoleModalLabel">Create Custom Role</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal" id="createRoleModal">
+        <div class="modal-background"></div>
+        <div class="modal-card" style="width: 80%;">
+            <form method="post" asp-page-handler="CreateRole" asp-route-teamId="@Model.Team.TeamId">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Create Custom Role</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label" for="roleName">Role Name</label>
+                        <div class="control">
+                            <input type="text" class="input" id="roleName" name="CustomRole.Name" required maxlength="30">
+                        </div>
+                        <p class="help">Choose a descriptive name for this role (e.g., "Project Manager", "Content Editor")</p>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="roleName" class="form-label">Role Name</label>
-                            <input type="text" class="form-control" id="roleName" name="CustomRole.Name" required maxlength="30">
-                            <div class="form-text">Choose a descriptive name for this role (e.g., "Project Manager", "Content Editor")</div>
+                    <div class="field mb-5">
+                        <label class="label" for="roleDescription">Description</label>
+                        <div class="control">
+                            <input type="text" class="input" id="roleDescription" name="CustomRole.Description" required maxlength="100">
                         </div>
-                        <div class="mb-3">
-                            <label for="roleDescription" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="roleDescription" name="CustomRole.Description" required maxlength="100">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Permissions</label>
-                            <div class="row g-3">
-                                @foreach (var permission in Model.AvailablePermissions)
-                                {
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="perm_@permission.action" name="CustomRole.Permissions" value="@permission.action">
-                                            <label class="form-check-label" for="perm_@permission.action">
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">Permissions</label>
+                        <div class="columns is-multiline">
+                            @foreach (var permission in Model.AvailablePermissions)
+                            {
+                                <div class="column is-6">
+                                    <div class="field">
+                                        <div class="control">
+                                            <label class="checkbox">
+                                                <input type="checkbox" name="CustomRole.Permissions" value="@permission.action">
                                                 <strong>@permission.action</strong>
-                                                <div class="text-muted small">@permission.description</div>
+                                                <p class="help">@permission.description</p>
                                             </label>
                                         </div>
                                     </div>
-                                }
-                            </div>
+                                </div>
+                            }
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Role</button>
-                    </div>
-                </form>
-            </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-info">Create Role</button>
+                    <button type="button" class="button is-light">Cancel</button>
+                </footer>
+            </form>
         </div>
     </div>
 
     <!-- Edit Role Modal -->
-    <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form method="post" asp-page-handler="UpdateRole" asp-route-teamId="@Model.Team.TeamId">
-                    <input type="hidden" id="editRoleId" name="roleId" value="">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editRoleModalLabel">Edit Role</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal" id="editRoleModal">
+        <div class="modal-background"></div>
+        <div class="modal-card" style="width: 80%;">
+            <form method="post" asp-page-handler="UpdateRole" asp-route-teamId="@Model.Team.TeamId">
+                <input type="hidden" id="editRoleId" name="roleId" value="">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Edit Role</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label" for="editRoleName">Role Name</label>
+                        <div class="control">
+                            <input type="text" class="input" id="editRoleName" name="CustomRole.Name" required maxlength="30">
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="editRoleName" class="form-label">Role Name</label>
-                            <input type="text" class="form-control" id="editRoleName" name="CustomRole.Name" required maxlength="30">
+                    <div class="field mb-5">
+                        <label class="label" for="editRoleDescription">Description</label>
+                        <div class="control">
+                            <input type="text" class="input" id="editRoleDescription" name="CustomRole.Description" required maxlength="100">
                         </div>
-                        <div class="mb-3">
-                            <label for="editRoleDescription" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="editRoleDescription" name="CustomRole.Description" required maxlength="100">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Permissions</label>
-                            <div class="row g-3">
-                                @foreach (var permission in Model.AvailablePermissions)
-                                {
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input edit-permission" type="checkbox" id="edit_perm_@permission.action" name="CustomRole.Permissions" value="@permission.action">
-                                            <label class="form-check-label" for="edit_perm_@permission.action">
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">Permissions</label>
+                        <div class="columns is-multiline">
+                            @foreach (var permission in Model.AvailablePermissions)
+                            {
+                                <div class="column is-6">
+                                    <div class="field">
+                                        <div class="control">
+                                            <label class="checkbox">
+                                                <input class="edit-permission" type="checkbox" id="edit_perm_@permission.action" name="CustomRole.Permissions" value="@permission.action">
                                                 <strong>@permission.action</strong>
-                                                <div class="text-muted small">@permission.description</div>
+                                                <p class="help">@permission.description</p>
                                             </label>
                                         </div>
                                     </div>
-                                }
-                            </div>
+                                </div>
+                            }
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </div>
-                </form>
-            </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-info">Save Changes</button>
+                    <button type="button" class="button is-light">Cancel</button>
+                </footer>
+            </form>
         </div>
     </div>
 
     <!-- Delete Role Modal -->
-    <div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" asp-page-handler="DeleteRole" asp-route-teamId="@Model.Team.TeamId">
-                    <input type="hidden" id="deleteRoleId" name="roleId" value="">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteRoleModalLabel">Delete Role</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Are you sure you want to delete the role <strong id="deleteRoleName"></strong>?</p>
-                        <p class="text-danger">This action cannot be undone. This role will be permanently deleted.</p>
-                        <p>Note: You cannot delete a role that is currently assigned to team members.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger">Delete Role</button>
-                    </div>
-                </form>
-            </div>
+    <div class="modal" id="deleteRoleModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <form method="post" asp-page-handler="DeleteRole" asp-route-teamId="@Model.Team.TeamId">
+                <input type="hidden" id="deleteRoleId" name="roleId" value="">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Delete Role</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>Are you sure you want to delete the role <strong id="deleteRoleName"></strong>?</p>
+                    <p class="has-text-danger">This action cannot be undone. This role will be permanently deleted.</p>
+                    <p class="is-italic">Note: You cannot delete a role that is currently assigned to team members.</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-danger">Delete Role</button>
+                    <button type="button" class="button is-light">Cancel</button>
+                </footer>
+            </form>
         </div>
     </div>
+}
 
-    @section Scripts {
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Edit role modal
-                const editRoleModal = document.getElementById('editRoleModal');
-                if (editRoleModal) {
-                    editRoleModal.addEventListener('show.bs.modal', function(event) {
-                        const button = event.relatedTarget;
-                        const roleId = button.getAttribute('data-role-id');
-                        const roleName = button.getAttribute('data-role-name');
-                        const roleDescription = button.getAttribute('data-role-description');
-                        const rolePermissions = button.getAttribute('data-role-permissions').split(',');
+@section Styles {
+    <style>
+        .role-panel {
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .role-panel:last-child {
+            border-bottom: none;
+        }
+        .role-header {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .role-header:hover {
+            background-color: #f9f9f9;
+        }
+        .role-toggle {
+            transition: transform 0.2s ease;
+        }
+        .role-toggle.is-active {
+            transform: rotate(180deg);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Notification delete functionality
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.parentNode;
+                $delete.addEventListener('click', () => {
+                    $notification.parentNode.removeChild($notification);
+                });
+            });
+            
+            // Role panel toggle functionality
+            (document.querySelectorAll('.role-header') || []).forEach(($header) => {
+                $header.addEventListener('click', () => {
+                    const targetId = $header.getAttribute('data-role-target');
+                    const $target = document.getElementById(targetId);
+                    const $icon = $header.querySelector('.role-toggle');
+                    
+                    if ($target.style.display === 'none') {
+                        $target.style.display = 'block';
+                        $icon.classList.add('is-active');
+                    } else {
+                        $target.style.display = 'none';
+                        $icon.classList.remove('is-active');
+                    }
+                });
+            });
+            
+            // Modal functionality
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+
+            // Open modal triggers
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                    // For edit role modal
+                    if (modal === 'editRoleModal') {
+                        const roleId = $trigger.dataset.roleId;
+                        const roleName = $trigger.dataset.roleName;
+                        const roleDescription = $trigger.dataset.roleDescription;
+                        const rolePermissions = $trigger.dataset.rolePermissions.split(',');
                         
                         document.getElementById('editRoleId').value = roleId;
                         document.getElementById('editRoleName').value = roleName;
@@ -330,22 +420,36 @@
                                 checkbox.checked = true;
                             }
                         });
-                    });
-                }
-                
-                // Delete role modal
-                const deleteRoleModal = document.getElementById('deleteRoleModal');
-                if (deleteRoleModal) {
-                    deleteRoleModal.addEventListener('show.bs.modal', function(event) {
-                        const button = event.relatedTarget;
-                        const roleId = button.getAttribute('data-role-id');
-                        const roleName = button.getAttribute('data-role-name');
+                    }
+                    
+                    // For delete role modal
+                    if (modal === 'deleteRoleModal') {
+                        const roleId = $trigger.dataset.roleId;
+                        const roleName = $trigger.dataset.roleName;
                         
                         document.getElementById('deleteRoleId').value = roleId;
                         document.getElementById('deleteRoleName').textContent = roleName;
-                    });
+                    }
+                    
+                    openModal($target);
+                });
+            });
+
+            // Close modal elements
+            (document.querySelectorAll('.modal-background, .modal-card-head .delete, .modal-card-foot .button.is-light') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Keyboard event to close modals
+            document.addEventListener('keydown', (event) => {
+                if (event.keyCode === 27) { // Escape key
+                    closeAllModals();
                 }
             });
-        </script>
-    }
+        });
+    </script>
 }
