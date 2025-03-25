@@ -96,5 +96,30 @@ namespace TeamSyncWorkspace.Services
         {
             return await _userManager.AddLoginAsync(user, info);
         }
+
+        public async Task<bool> HasPasswordAsync(ApplicationUser user)
+        {
+            return await _userManager.HasPasswordAsync(user);
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, string currentPassword, string newPassword)
+        {
+            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        }
+
+        public async Task<IdentityResult> AddPasswordAsync(ApplicationUser user, string password)
+        {
+            return await _userManager.AddPasswordAsync(user, password);
+        }
+
+        public async Task<IList<UserLoginInfo>> GetLoginsAsync(ApplicationUser user)
+        {
+            return await _userManager.GetLoginsAsync(user);
+        }
+
+        public async Task RefreshSignInAsync(ApplicationUser user)
+        {
+            await _signInManager.RefreshSignInAsync(user);
+        }
     }
 }

@@ -1,0 +1,546 @@
+@page
+@model TeamSyncWorkspace.Pages.Teams.Members.IndexModel
+@using TeamSyncWorkspace.Models
+@{
+    ViewData["Title"] = "Team Members";
+}
+
+<div class="container is-fluid">
+    <div class="section pt-4 pb-2">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <div>
+                        <nav class="breadcrumb" aria-label="breadcrumbs">
+                            <ul>
+                                <li><a asp-page="/Teams/Index">My Teams</a></li>
+                                <li><a asp-page="/Dashboard/Index" asp-route-teamId="@Model.Team.TeamId">@Model.Team.TeamName</a></li>
+                                <li class="is-active"><a href="#" aria-current="page">Team Members</a></li>
+                            </ul>
+                        </nav>
+                        <h1 class="title is-3">@Model.Team.TeamName</h1>
+                        <p class="subtitle is-6 has-text-grey">Team Members</p>
+                    </div>
+                </div>
+            </div>
+            <div class="level-right">
+                @if (Model.CanInviteMembers)
+                {
+                    <div class="level-item">
+                        <button class="button is-info is-light js-modal-trigger" data-target="inviteModal">
+                            <span class="icon">
+                                <i class="bi bi-person-plus"></i>
+                            </span>
+                            <span>Invite Member</span>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="notification @(Model.StatusMessage.Contains("success") ? "is-success is-light" : "is-danger is-light")">
+                <button class="delete"></button>
+                @Model.StatusMessage
+            </div>
+        }
+    </div>
+
+    <div class="box has-shadow p-0">
+        <div class="p-4 has-background-white-bis mb-2">
+            <div class="is-flex is-justify-content-space-between is-align-items-center">
+                <p class="title is-5 mb-0">Team Members (@Model.TeamMembers.Count)</p>
+                <div class="field has-addons">
+                    <div class="control has-icons-left">
+                        <input id="member-search" class="input is-small" type="text" placeholder="Search members">
+                        <span class="icon is-small is-left">
+                            <i class="bi bi-search"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table is-fullwidth is-hoverable">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="members-table-body">
+                    @foreach (var member in Model.TeamMembers)
+                    {
+                        <tr class="member-row" data-name="@(member.User.FirstName.ToLower()) @(member.User.LastName.ToLower())" data-email="@member.User.Email.ToLower()">
+                            <td>
+                                <div class="is-flex is-align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}"))&size=32&background=E5E5E5&color=707070" 
+                                         class="image is-32x32 is-rounded mr-3" alt="Avatar" />
+                                    <div>
+                                        <p class="has-text-weight-medium mb-0">@member.User.FirstName @member.User.LastName</p>
+                                        <p class="has-text-grey is-size-7 mb-0">@member.User.Email</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="tag @(member.Role == "Owner" ? "is-danger" : 
+                                               member.Role == "Admin" ? "is-warning" :
+                                               member.Role == "Member" ? "is-info" : 
+                                               member.Role == "Viewer" ? "is-light" : "is-info") is-light">
+                                    @member.Role
+                                </span>
+                            </td>
+                            <td>
+                                <span class="has-text-grey is-size-7">@member.JoinedDate.ToString("MMM d, yyyy")</span>
+                            </td>
+                            <td>
+                                <div class="buttons are-small">
+                                    @if (Model.CanManageRoles && (member.Role != "Owner" || member.UserId == Model.CurrentUserId))
+                                    {
+                                        <button class="button is-info is-light js-modal-trigger" 
+                                                data-target="changeRoleModal" 
+                                                data-user-id="@member.UserId" 
+                                                data-user-name="@member.User.FirstName @member.User.LastName"
+                                                data-current-role="@member.Role">
+                                            <span class="icon is-small">
+                                                <i class="bi bi-shield"></i>
+                                            </span>
+                                            <span>Role</span>
+                                        </button>
+                                    }
+
+                                    @if (Model.CanRemoveMembers && member.UserId != Model.CurrentUserId && member.Role != "Owner")
+                                    {
+                                        <button class="button is-danger is-light js-modal-trigger" 
+                                                data-target="removeMemberModal" 
+                                                data-user-id="@member.UserId" 
+                                                data-user-name="@member.User.FirstName @member.User.LastName">
+                                            <span class="icon is-small">
+                                                <i class="bi bi-person-x"></i>
+                                            </span>
+                                            <span>Remove</span>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (Model.CanInviteMembers)
+{
+    <!-- Invite Member Modal -->
+    <div class="modal" id="inviteModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <form method="post" asp-page-handler="Invite" asp-route-teamId="@Model.Team.TeamId">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Invite Member</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Email Address</label>
+                        <div class="control has-icons-left">
+                            <input type="email" name="email" class="input" placeholder="Enter email address" required>
+                            <span class="icon is-small is-left">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                        </div>
+                        <p class="help">An invitation will be sent to this email address</p>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">Role</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select name="role">
+                                    @foreach (var role in Model.Roles.Where(r => r.Name != "Owner"))
+                                    {
+                                        <option value="@role.Name">@role.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <p class="help">Select the role for this new member</p>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="label">Personalized Message (Optional)</label>
+                        <div class="control">
+                            <textarea name="message" class="textarea" placeholder="Add a personalized invitation message"></textarea>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-info">Send Invitation</button>
+                    <button type="button" class="button is-light">Cancel</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+}
+
+@if (Model.CanManageRoles)
+{
+    <!-- Change Role Modal -->
+    <div class="modal" id="changeRoleModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <form method="post" asp-page-handler="ChangeRole" asp-route-teamId="@Model.Team.TeamId">
+                <input type="hidden" id="changeRoleUserId" name="userId" value="">
+                <input type="hidden" id="changeRoleTeamId" name="teamId" value="@Model.Team.TeamId">
+                
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Change User Role</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                
+                <section class="modal-card-body">
+                    <p>You are changing the role for <strong id="changeRoleUserName"></strong>.</p>
+                    <p>Current role: <span class="tag" id="changeRoleCurrentRole"></span></p>
+                    
+                    <!-- Ownership Transfer Alert -->
+                    <div id="ownershipTransferAlert" class="notification is-warning is-light mt-3" style="display: none;">
+                        <div class="mb-2">
+                            <span class="icon is-medium">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                            <span class="has-text-weight-bold">Ownership Transfer</span>
+                        </div>
+                        <p>You are about to transfer ownership of this team. Please note:</p>
+                        <ul class="ml-5 mt-2">
+                            <li>Your role will be changed to <strong>Admin</strong></li>
+                            <li>The new owner will have full control over the team</li>
+                            <li>The new owner can remove your admin privileges</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="field mt-5">
+                        <label class="label">Select New Role</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select name="newRole" id="changeRoleSelect">
+                                    @foreach (var role in Model.Roles)
+                                    {
+                                        <option value="@role.Name">@role.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="notification is-info is-light mt-4">
+                        <p class="mb-2"><strong>About this role:</strong></p>
+                        <div id="roleDescriptionContainer"></div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p class="has-text-weight-medium mb-2">Permissions in this role:</p>
+                        <div class="tags" id="rolePermissionTags"></div>
+                    </div>
+                </section>
+                
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-info" id="changeRoleSubmitButton">Change Role</button>
+                    <button type="button" class="button is-light">Cancel</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+}
+
+@if (Model.CanRemoveMembers)
+{
+    <!-- Remove Member Modal -->
+    <div class="modal" id="removeMemberModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <form method="post" asp-page-handler="RemoveMember" asp-route-teamId="@Model.Team.TeamId">
+                <input type="hidden" id="removeMemberUserId" name="userId" value="">
+                
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Remove Team Member</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                
+                <section class="modal-card-body">
+                    <div class="notification is-danger is-light">
+                        <div class="mb-2">
+                            <span class="icon is-medium">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                            <span class="has-text-weight-bold">Warning</span>
+                        </div>
+                        <p>You are about to remove <strong id="removeMemberUserName"></strong> from this team.</p>
+                    </div>
+                    
+                    <p class="mb-4">This action will:</p>
+                    <ul class="ml-5 mb-4">
+                        <li>Remove the user from the team immediately</li>
+                        <li>Revoke their access to all team resources</li>
+                        <li>Send a notification to inform them of this change</li>
+                    </ul>
+                    
+                    <div class="field">
+                        <label class="label">Reason (Optional)</label>
+                        <div class="control">
+                            <textarea name="reason" class="textarea" placeholder="Provide a reason for removing this member (will be included in the notification)"></textarea>
+                        </div>
+                    </div>
+                </section>
+                
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-danger">Remove Member</button>
+                    <button type="button" class="button is-light">Cancel</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Notification delete functionality
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.parentNode;
+                $delete.addEventListener('click', () => {
+                    $notification.classList.add('is-hidden-fade-out');
+                    setTimeout(() => {
+                        if ($notification.parentNode) {
+                            $notification.parentNode.removeChild($notification);
+                        }
+                    }, 500);
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.getElementById('member-search');
+            const rows = document.querySelectorAll('.member-row');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                rows.forEach(row => {
+                    const name = row.dataset.name;
+                    const email = row.dataset.email;
+                    
+                    if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Modal functionality
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+
+            // Open modal triggers
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                    // For change role modal
+                    if (modal === 'changeRoleModal') {
+                        const userId = $trigger.dataset.userId;
+                        const userName = $trigger.dataset.userName;
+                        const currentRole = $trigger.dataset.currentRole;
+                        const currentUserId = '@Model.CurrentUserId';
+                        
+                        document.getElementById('changeRoleUserId').value = userId;
+                        document.getElementById('changeRoleUserName').textContent = userName;
+                        
+                        // Set current role tag color
+                        const currentRoleTag = document.getElementById('changeRoleCurrentRole');
+                        currentRoleTag.textContent = currentRole;
+                        currentRoleTag.className = "tag " + getRoleColorClass(currentRole);
+                        
+                        // Select dropdown - exclude current role
+                        const roleSelect = document.getElementById('changeRoleSelect');
+                        roleSelect.innerHTML = '';
+                        
+                        @foreach (var role in Model.Roles)
+                        {
+                            <text>
+                            if ('@role.Name' !== currentRole) {
+                                const option = document.createElement('option');
+                                option.value = '@role.Name';
+                                option.textContent = '@role.Name';
+                                roleSelect.appendChild(option);
+                            }
+                            </text>
+                        }
+                        
+                        // Update role description and permissions based on initial selection
+                        updateRoleDetails(roleSelect.value);
+                        
+                        // Check for ownership transfer
+                        const ownershipTransferAlert = document.getElementById('ownershipTransferAlert');
+                        const submitButton = document.getElementById('changeRoleSubmitButton');
+                        
+                        // Function to check and show/hide ownership transfer alert
+                        function checkOwnershipTransfer() {
+                            // Show warning if owner is making someone else an owner
+                            if (currentRole === 'Owner' && 
+                                userId !== currentUserId && 
+                                roleSelect.value === 'Owner') {
+                                
+                                ownershipTransferAlert.style.display = 'block';
+                                submitButton.textContent = 'Transfer Ownership';
+                                submitButton.className = 'button is-warning';
+                            } else {
+                                ownershipTransferAlert.style.display = 'none';
+                                submitButton.textContent = 'Change Role';
+                                submitButton.className = 'button is-info';
+                            }
+                        }
+                        
+                        // Initial check
+                        checkOwnershipTransfer();
+                        
+                        // Add change event listener to check ownership transfer when role changes
+                        roleSelect.addEventListener('change', function() {
+                            updateRoleDetails(this.value);
+                            checkOwnershipTransfer();
+                        });
+                    }
+                    
+                    // For remove member modal
+                    if (modal === 'removeMemberModal') {
+                        const userId = $trigger.dataset.userId;
+                        const userName = $trigger.dataset.userName;
+                        
+                        document.getElementById('removeMemberUserId').value = userId;
+                        document.getElementById('removeMemberUserName').textContent = userName;
+                    }
+                    
+                    openModal($target);
+                });
+            });
+
+            // Close modal elements
+            (document.querySelectorAll('.modal-background, .modal-card-head .delete, .modal-card-foot .button.is-light') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Close all modals with ESC
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+
+            // Helper function to get role color class
+            function getRoleColorClass(roleName) {
+                switch(roleName) {
+                    case 'Owner': return 'is-danger is-light';
+                    case 'Admin': return 'is-warning is-light';
+                    case 'Member': return 'is-info is-light';
+                    case 'Viewer': return 'is-light';
+                    default: return 'is-info is-light';
+                }
+            }
+
+            // Function to update role details in the modal
+            function updateRoleDetails(roleName) {
+                const descriptionContainer = document.getElementById('roleDescriptionContainer');
+                const permissionTags = document.getElementById('rolePermissionTags');
+                
+                // Clear previous content
+                descriptionContainer.innerHTML = '';
+                permissionTags.innerHTML = '';
+                
+                // Role details lookup object
+                const roleDetails = {
+                    @foreach (var role in Model.Roles)
+                    {
+                        <text>
+                        '@role.Name': {
+                            description: '@role.Description',
+                            permissions: [@foreach (var perm in role.Permissions) { <text>'@perm.Action',</text> }]
+                        },
+                        </text>
+                    }
+                };
+                
+                // Update description
+                const description = roleDetails[roleName]?.description || '';
+                descriptionContainer.textContent = description;
+                
+                // Update permission tags
+                const permissions = roleDetails[roleName]?.permissions || [];
+                permissions.forEach(permission => {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag is-light';
+                    tag.textContent = permission;
+                    permissionTags.appendChild(tag);
+                });
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .has-shadow {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .has-shadow:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .is-hidden-fade-out {
+            animation: fadeOut 0.5s;
+            animation-fill-mode: forwards;
+        }
+        
+        @@keyframes fadeOut {
+            from {
+                opacity: 1;
+                max-height: 200px;
+                margin-bottom: 1.5rem;
+                padding: 1.25rem 2.5rem 1.25rem 1.5rem;
+            }
+            to {
+                opacity: 0;
+                max-height: 0;
+                margin-bottom: 0;
+                padding: 0;
+                border: 0;
+            }
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+    </style>
+}

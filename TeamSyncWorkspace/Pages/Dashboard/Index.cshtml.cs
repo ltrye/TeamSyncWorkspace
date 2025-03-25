@@ -13,12 +13,17 @@ namespace TeamSyncWorkspace.Pages.Dashboard
         private readonly DashboardService _dashboardService;
         private readonly InvitationService _invitationService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly TeamService _teamService;
 
-        public IndexModel(DashboardService dashboardService, InvitationService invitationService, UserManager<ApplicationUser> userManager)
+        public IndexModel(
+            DashboardService dashboardService,
+            InvitationService invitationService,
+            TeamService teamService,
+            UserManager<ApplicationUser> userManager)
         {
-
-            _invitationService = invitationService;
             _dashboardService = dashboardService;
+            _invitationService = invitationService;
+            _teamService = teamService;
             _userManager = userManager;
         }
 
@@ -129,6 +134,15 @@ namespace TeamSyncWorkspace.Pages.Dashboard
             StatusMessage = message;
 
             return RedirectToPage(new { teamId });
+        }
+
+        // Add this helper method to your IndexModel class in Dashboard/Index.cshtml.cs
+        public async Task<bool> CanUserPerformAction(string action)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return false;
+
+            return await _teamService.CanUserPerformActionAsync(Team.TeamId, user.Id, action);
         }
     }
 }
