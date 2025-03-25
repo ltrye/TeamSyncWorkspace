@@ -1,7 +1,7 @@
 @page
 @model TeamSyncWorkspace.Pages.Account.RegisterModel
 @{
-    ViewData["Title"] = "Register";
+ViewData["Title"] = "Register";
 }
 
 <div class="container is-fluid">
@@ -10,16 +10,17 @@
             <div class="box has-shadow">
                 <div class="p-5 has-text-centered">
                     <h1 class="title is-3 mb-5">@ViewData["Title"]</h1>
-                    
+
                     <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                         <div asp-validation-summary="ModelOnly" class="has-text-danger mb-3"></div>
-                        
+
                         <div class="columns is-mobile">
                             <div class="column">
                                 <div class="field">
                                     <label asp-for="Input.FirstName" class="label">First Name</label>
                                     <div class="control">
-                                        <input asp-for="Input.FirstName" class="input" autocomplete="fname" aria-required="true" placeholder="First Name" />
+                                        <input asp-for="Input.FirstName" class="input" autocomplete="fname"
+                                            aria-required="true" placeholder="First Name" />
                                     </div>
                                     <span asp-validation-for="Input.FirstName" class="help is-danger"></span>
                                 </div>
@@ -28,66 +29,71 @@
                                 <div class="field">
                                     <label asp-for="Input.LastName" class="label">Last Name</label>
                                     <div class="control">
-                                        <input asp-for="Input.LastName" class="input" autocomplete="lname" aria-required="true" placeholder="Last Name" />
+                                        <input asp-for="Input.LastName" class="input" autocomplete="lname"
+                                            aria-required="true" placeholder="Last Name" />
                                     </div>
                                     <span asp-validation-for="Input.LastName" class="help is-danger"></span>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.Email" class="label">Email</label>
                             <div class="control has-icons-left">
-                                <input asp-for="Input.Email" class="input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                                <input asp-for="Input.Email" class="input" autocomplete="username" aria-required="true"
+                                    placeholder="name@example.com" />
                                 <span class="icon is-small is-left">
                                     <i class="bi bi-envelope"></i>
                                 </span>
                             </div>
                             <span asp-validation-for="Input.Email" class="help is-danger"></span>
                         </div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.Password" class="label">Password</label>
                             <div class="control has-icons-left">
-                                <input asp-for="Input.Password" class="input" autocomplete="new-password" aria-required="true" placeholder="Password" />
+                                <input asp-for="Input.Password" class="input" autocomplete="new-password"
+                                    aria-required="true" placeholder="Password" />
                                 <span class="icon is-small is-left">
                                     <i class="bi bi-lock"></i>
                                 </span>
                             </div>
                             <span asp-validation-for="Input.Password" class="help is-danger"></span>
                         </div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.ConfirmPassword" class="label">Confirm Password</label>
                             <div class="control has-icons-left">
-                                <input asp-for="Input.ConfirmPassword" class="input" autocomplete="new-password" aria-required="true" placeholder="Confirm Password" />
+                                <input asp-for="Input.ConfirmPassword" class="input" autocomplete="new-password"
+                                    aria-required="true" placeholder="Confirm Password" />
                                 <span class="icon is-small is-left">
                                     <i class="bi bi-lock-fill"></i>
                                 </span>
                             </div>
                             <span asp-validation-for="Input.ConfirmPassword" class="help is-danger"></span>
                         </div>
-                        
+
                         <div class="field mt-5">
                             <div class="control">
-                                <button id="registerSubmit" type="submit" class="button is-info is-fullwidth">Register</button>
+                                <button id="registerSubmit" type="submit"
+                                    class="button is-info is-fullwidth">Register</button>
                             </div>
                         </div>
                     </form>
-                    
+
                     <div class="is-divider" data-content="OR"></div>
-                    
+
+                    <!-- Modify the Google register button in Register.cshtml -->
                     <div class="field">
-                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                            <button type="submit" class="button is-danger is-fullwidth" name="provider" value="Google">
-                                <span class="icon">
-                                    <i class="bi bi-google"></i>
-                                </span>
-                                <span>Register with Google</span>
-                            </button>
-                        </form>
+                        <a href="/api/GoogleAuth/login?returnUrl=@Uri.EscapeDataString(Model.ReturnUrl)"
+                            class="button is-danger is-fullwidth">
+                            <span class="icon">
+                                <i class="bi bi-google"></i>
+                            </span>
+                            <span>Register with Google</span>
+                        </a>
                     </div>
-                    
+
                     <div class="mt-5 has-text-centered">
                         <p>
                             <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="has-text-info">
@@ -102,30 +108,30 @@
 </div>
 
 @section Styles {
-    <style>
-        .is-divider {
-            display: block;
-            position: relative;
-            border-top: 1px solid #dbdbdb;
-            height: 1px;
-            margin: 2rem 0;
-            text-align: center;
-        }
-        
-        .is-divider[data-content]::after {
-            background: #fff;
-            color: #b5b5b5;
-            content: attr(data-content);
-            display: inline-block;
-            font-size: 0.8rem;
-            padding: 0 0.8rem;
-            position: relative;
-            text-transform: uppercase;
-            top: -0.7rem;
-        }
-    </style>
+<style>
+    .is-divider {
+        display: block;
+        position: relative;
+        border-top: 1px solid #dbdbdb;
+        height: 1px;
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .is-divider[data-content]::after {
+        background: #fff;
+        color: #b5b5b5;
+        content: attr(data-content);
+        display: inline-block;
+        font-size: 0.8rem;
+        padding: 0 0.8rem;
+        position: relative;
+        text-transform: uppercase;
+        top: -0.7rem;
+    }
+</style>
 }
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+<partial name="_ValidationScriptsPartial" />
 }

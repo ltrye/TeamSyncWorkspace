@@ -48,12 +48,11 @@ namespace TeamSyncWorkspace.Pages.Account
                 ModelState.AddModelError(string.Empty, ErrorMessage);
             }
 
-            returnUrl ??= Url.Content("~/");
+            returnUrl = "/Account/Login";
 
             // Clear the existing external cookie to ensure a clean login process
-            await _accountService.SignOutAsync(HttpContext, IdentityConstants.ExternalScheme);
+            // await _accountService.SignOutAsync(HttpContext, IdentityConstants.ExternalScheme);
 
-            ReturnUrl = returnUrl;
         }
 
         public async Task<IActionResult> OnPostAsync()

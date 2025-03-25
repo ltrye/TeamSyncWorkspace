@@ -77,9 +77,9 @@ namespace TeamSyncWorkspace.Services
             return await _userManager.FindByEmailAsync(email);
         }
 
-        public AuthenticationProperties ConfigureExternalAuthenticationProperties(string provider, string redirectUrl)
+        public AuthenticationProperties ConfigureExternalAuthenticationProperties(string provider, string redirectUrl, string userId = null)
         {
-            return _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, userId);
         }
 
         public async Task<ExternalLoginInfo> GetExternalLoginInfoAsync()

@@ -14,15 +14,24 @@ namespace TeamSyncWorkspace.Pages.Account
         private readonly AccountService _accountService;
         private readonly IUserStore<ApplicationUser> _userStore;
         private readonly ILogger<ExternalLoginModel> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
         public ExternalLoginModel(
             AccountService accountService,
             IUserStore<ApplicationUser> userStore,
-            ILogger<ExternalLoginModel> logger)
+            ILogger<ExternalLoginModel> logger,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager
+            )
+
+
         {
             _accountService = accountService;
             _userStore = userStore;
             _logger = logger;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [BindProperty]
@@ -48,26 +57,30 @@ namespace TeamSyncWorkspace.Pages.Account
             [Required]
             [Display(Name = "Last Name")]
             public string? LastName { get; set; }
+
+            [Required]
+            [DataType(DataType.Password)]
+            public string? Password { get; set; }
         }
 
         public IActionResult OnGet() => RedirectToPage("./Login");
 
 
         // Redirect to the external login provider.
-        public IActionResult OnPost(string provider, string? returnUrl = null)
+        public IActionResult OnGetLogin(string provider, string? returnUrl = null)
         {
             // Request a redirect to the external login provider.
             returnUrl ??= Url.Content("~/");
 
-            var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl, flowName = "GeneralOAuthFlow" })!;
+            var redirectUrl = Url.Page("/Account/ExternalLogin", pageHandler: "Callback", values: new { returnUrl })!;
             // Console.WriteLine("ExternalLoginModel.OnPost: redirectUrl = " + redirectUrl);
             var properties = _accountService.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            return new ChallengeResult(provider);
+            return new ChallengeResult(provider, properties);
         }
 
 
-        // Handle callback from the external login provider
-        public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
+        // Handle account after login with external provider
+        public async Task<IActionResult> OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
@@ -94,27 +107,41 @@ namespace TeamSyncWorkspace.Pages.Account
             {
                 return RedirectToPage("./Lockout");
             }
-            else
+
+
+
+            //  No provider key found, check by email
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user != null)
             {
-                // If the user does not have an account, then ask the user to create an account.
-                ReturnUrl = returnUrl;
-                ProviderDisplayName = info.ProviderDisplayName!;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-                {
-                    Input = new InputModel
-                    {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)!,
-                        FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName)!,
-                        LastName = info.Principal.FindFirstValue(ClaimTypes.Surname)!
-                    };
-                }
-                return Page();
+                //  User exists but has no external login → Link Google to existing account
+                await _userManager.AddLoginAsync(user, info);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return Redirect("/");
             }
+
+
+            // No user exists, redirect to page to create new one
+            ReturnUrl = returnUrl;
+            ProviderDisplayName = info.ProviderDisplayName!;
+            if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+            {
+                Input = new InputModel
+                {
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email)!,
+                    FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName)!,
+                    LastName = info.Principal.FindFirstValue(ClaimTypes.Surname)!
+                };
+            }
+            return Page();
+
         }
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Page("/Teams/Index")!;
             // Get the information about the user from the external login provider
             var info = await _accountService.GetExternalLoginInfoAsync();
             if (info == null)
@@ -127,7 +154,7 @@ namespace TeamSyncWorkspace.Pages.Account
             {
                 var (result, user) = await _accountService.RegisterUserAsync(
                     Input.Email,
-                    Guid.NewGuid().ToString(), // Generate a random password for external users
+                    Input.Password, // Generate a random password for external users
                     Input.FirstName,
                     Input.LastName);
 
@@ -148,7 +175,6 @@ namespace TeamSyncWorkspace.Pages.Account
             }
 
             ProviderDisplayName = info.ProviderDisplayName;
-            ReturnUrl = returnUrl;
             return Page();
         }
     }
