@@ -1,5 +1,6 @@
 @page
 @using System.Security.Claims
+@using TeamSyncWorkspace.Services
 @model TeamSyncWorkspace.Pages.Teams.Roles.IndexModel
 @{
     ViewData["Title"] = "Team Roles Management";
@@ -53,57 +54,41 @@
                         <tbody>
                             @foreach (var member in Model.TeamMembers)
                             {
-                                <tr>
-                                    <td>
-                                        <div class="is-flex is-align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}"))&size=32&background=E5E5E5&color=707070" 
-                                                 class="image is-32x32 is-rounded mr-3" alt="Avatar" />
-                                            <div>
-                                                <p class="has-text-weight-medium mb-0">@member.User.FirstName @member.User.LastName</p>
-                                                <p class="has-text-grey is-size-7 mb-0">@member.User.Email</p>
-                                            </div>
+                               <tr>
+                                <td>
+                                    <div class="is-flex is-align-items-center">
+                                        <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}"))&size=32&background=E5E5E5&color=707070" 
+                                            class="image is-32x32 is-rounded mr-3" alt="Avatar" />
+                                        <div>
+                                            <p class="has-text-weight-medium mb-0">@member.User.FirstName @member.User.LastName</p>
+                                            <p class="has-text-grey is-size-7 mb-0">@member.User.Email</p>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <span class="tag @(member.Role == "Owner" ? "is-danger" : 
-                                                member.Role == "Admin" ? "is-warning" :
-                                                member.Role == "Member" ? "is-info" : 
-                                                member.Role == "Viewer" ? "is-light" : "is-info") is-light">
-                                            @member.Role
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if (Model.CanManageRoles && (member.Role != "Owner" || member.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)))
-                                        {
-                                            <div class="dropdown is-hoverable">
-                                                <div class="dropdown-trigger">
-                                                    <button class="button is-small is-light" aria-haspopup="true" aria-controls="dropdown-menu-@member.UserId">
-                                                        <span>Change Role</span>
-                                                        <span class="icon is-small">
-                                                            <i class="bi bi-chevron-down"></i>
-                                                        </span>
-                                                    </button>
-                                                </div>
-                                                <div class="dropdown-menu" id="dropdown-menu-@member.UserId" role="menu">
-                                                    <div class="dropdown-content">
-                                                        @foreach (var role in Model.Roles)
-                                                        {
-                                                            @if (role.Name != member.Role)
-                                                            {
-                                                                <form method="post" asp-page-handler="ChangeRole">
-                                                                    <input type="hidden" name="teamId" value="@Model.Team.TeamId" />
-                                                                    <input type="hidden" name="userId" value="@member.UserId" />
-                                                                    <input type="hidden" name="newRole" value="@role.Name" />
-                                                                    <button type="submit" class="dropdown-item">@role.Name</button>
-                                                                </form>
-                                                            }
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    </td>
-                                </tr>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="tag @(member.Role == "Owner" ? "is-danger" : 
+                                                    member.Role == "Admin" ? "is-warning" :
+                                                    member.Role == "Member" ? "is-info" : 
+                                                    member.Role == "Viewer" ? "is-light" : "is-info") is-light">
+                                        @member.Role
+                                    </span>
+                                </td>
+    <td>
+        @if (Model.CanManageRoles && (member.Role != "Owner" || member.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)))
+        {
+            <button class="button is-small is-info is-light js-modal-trigger" 
+                    data-target="changeRoleModal" 
+                    data-user-id="@member.UserId" 
+                    data-user-name="@member.User.FirstName @member.User.LastName"
+                    data-current-role="@member.Role">
+                <span class="icon is-small">
+                    <i class="bi bi-pencil"></i>
+                </span>
+                <span>Change Role</span>
+            </button>
+        }
+    </td>
+</tr>
                             }
                         </tbody>
                     </table>
@@ -322,6 +307,72 @@
             </form>
         </div>
     </div>
+
+    <!-- Change Role Modal -->
+    <div class="modal" id="changeRoleModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <form method="post" asp-page-handler="ChangeRole" asp-route-teamId="@Model.Team.TeamId">
+                <input type="hidden" id="changeRoleUserId" name="userId" value="">
+                <input type="hidden" id="changeRoleTeamId" name="teamId" value="@Model.Team.TeamId">
+                
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Change User Role</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                
+                <section class="modal-card-body">
+                    <p>You are changing the role for <strong id="changeRoleUserName"></strong>.</p>
+                    <p>Current role: <span class="tag" id="changeRoleCurrentRole"></span></p>
+                    
+                    <!-- Ownership Transfer Alert - Add this block -->
+                    <div id="ownershipTransferAlert" class="notification is-warning is-light mt-3" style="display: none;">
+                        <div class="mb-2">
+                            <span class="icon is-medium">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                            <span class="has-text-weight-bold">Ownership Transfer</span>
+                        </div>
+                        <p>You are about to transfer ownership of this team. Please note:</p>
+                        <ul class="ml-5 mt-2">
+                            <li>Your role will be changed to <strong>Admin</strong></li>
+                            <li>The new owner will have full control over the team</li>
+                            <li>The new owner can remove your admin privileges</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="field mt-5">
+                        <label class="label">Select New Role</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select name="newRole" id="changeRoleSelect">
+                                    @foreach (var role in Model.Roles)
+                                    {
+                                        <option value="@role.Name">@role.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="notification is-info is-light mt-4">
+                        <p class="mb-2"><strong>About this role:</strong></p>
+                        <div id="roleDescriptionContainer"></div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p class="has-text-weight-medium mb-2">Permissions in this role:</p>
+                        <div class="tags" id="rolePermissionTags"></div>
+                    </div>
+                </section>
+                
+                <footer class="modal-card-foot">
+    <button type="submit" class="button is-info" id="changeRoleSubmitButton">Change Role</button>
+    <button type="button" class="button is-light">Cancel</button>
+</footer>
+            </form>
+        </div>
+    </div>
 }
 
 @section Styles {
@@ -397,59 +448,136 @@
                 const $target = document.getElementById(modal);
 
                 $trigger.addEventListener('click', () => {
-                    // For edit role modal
-                    if (modal === 'editRoleModal') {
-                        const roleId = $trigger.dataset.roleId;
-                        const roleName = $trigger.dataset.roleName;
-                        const roleDescription = $trigger.dataset.roleDescription;
-                        const rolePermissions = $trigger.dataset.rolePermissions.split(',');
+                    // For change role modal
+                    if (modal === 'changeRoleModal') {
+                        const userId = $trigger.dataset.userId;
+                        const userName = $trigger.dataset.userName;
+                        const currentRole = $trigger.dataset.currentRole;
+                        const currentUserId = '@User.FindFirst(ClaimTypes.NameIdentifier)?.Value';
                         
-                        document.getElementById('editRoleId').value = roleId;
-                        document.getElementById('editRoleName').value = roleName;
-                        document.getElementById('editRoleDescription').value = roleDescription;
+                        document.getElementById('changeRoleUserId').value = userId;
+                        document.getElementById('changeRoleUserName').textContent = userName;
                         
-                        // Reset all checkboxes
-                        document.querySelectorAll('.edit-permission').forEach(checkbox => {
-                            checkbox.checked = false;
-                        });
+                        // Set current role tag color
+                        const currentRoleTag = document.getElementById('changeRoleCurrentRole');
+                        currentRoleTag.textContent = currentRole;
+                        currentRoleTag.className = "tag " + getRoleColorClass(currentRole);
                         
-                        // Check boxes based on role permissions
-                        rolePermissions.forEach(permission => {
-                            const checkbox = document.getElementById(`edit_perm_${permission}`);
-                            if (checkbox) {
-                                checkbox.checked = true;
+                        // Select dropdown - exclude current role
+                        const roleSelect = document.getElementById('changeRoleSelect');
+                        roleSelect.innerHTML = '';
+                        
+                        @foreach (var role in Model.Roles)
+                        {
+                            <text>
+                            if ('@role.Name' !== currentRole) {
+                                const option = document.createElement('option');
+                                option.value = '@role.Name';
+                                option.textContent = '@role.Name';
+                                roleSelect.appendChild(option);
                             }
+                            </text>
+                        }
+                        
+                        // Update role description and permissions based on initial selection
+                        updateRoleDetails(roleSelect.value);
+                        
+                        // Check for ownership transfer
+                        const ownershipTransferAlert = document.getElementById('ownershipTransferAlert');
+                        const submitButton = document.querySelector('#changeRoleModal .modal-card-foot .button.is-info');
+                        
+                        // Function to check and show/hide ownership transfer alert
+                        function checkOwnershipTransfer() {
+                            // Show ownership transfer warning if:
+                            // 1. Current user is the owner (based on currentRole)
+                            // 2. Current user is changing someone else's role (userId != currentUserId)
+                            // 3. New role is Owner
+                            const isCurrentUserOwner = currentRole === '@TeamRoleManagementService.Roles.Owner' && 
+                                                       userId === currentUserId;
+                            
+                            const isTransferringOwnership = isCurrentUserOwner && 
+                                                          roleSelect.value === '@TeamRoleManagementService.Roles.Owner';
+                                                          
+                            const isOtherUserBecomingOwner = currentUserId !== userId && 
+                                                            roleSelect.value === '@TeamRoleManagementService.Roles.Owner';
+                            
+                            // Show warning if owner is making someone else an owner
+                            if (currentRole === '@TeamRoleManagementService.Roles.Owner' && 
+                                userId !== currentUserId && 
+                                roleSelect.value === '@TeamRoleManagementService.Roles.Owner') {
+                                
+                                ownershipTransferAlert.style.display = 'block';
+                                submitButton.textContent = 'Transfer Ownership';
+                                submitButton.className = 'button is-warning';
+                            } else {
+                                ownershipTransferAlert.style.display = 'none';
+                                submitButton.textContent = 'Change Role';
+                                submitButton.className = 'button is-info';
+                            }
+                        }
+                        
+                        // Initial check
+                        checkOwnershipTransfer();
+                        
+                        // Add change event listener to check ownership transfer when role changes
+                        roleSelect.addEventListener('change', function() {
+                            updateRoleDetails(this.value);
+                            checkOwnershipTransfer();
                         });
                     }
                     
-                    // For delete role modal
-                    if (modal === 'deleteRoleModal') {
-                        const roleId = $trigger.dataset.roleId;
-                        const roleName = $trigger.dataset.roleName;
-                        
-                        document.getElementById('deleteRoleId').value = roleId;
-                        document.getElementById('deleteRoleName').textContent = roleName;
-                    }
+                    /* Your existing code for other modals */
                     
                     openModal($target);
                 });
             });
 
-            // Close modal elements
-            (document.querySelectorAll('.modal-background, .modal-card-head .delete, .modal-card-foot .button.is-light') || []).forEach(($close) => {
-                const $target = $close.closest('.modal');
-
-                $close.addEventListener('click', () => {
-                    closeModal($target);
-                });
-            });
-
-            // Keyboard event to close modals
-            document.addEventListener('keydown', (event) => {
-                if (event.keyCode === 27) { // Escape key
-                    closeAllModals();
+            // Helper function to get role color class
+            function getRoleColorClass(roleName) {
+                switch(roleName) {
+                    case 'Owner': return 'is-danger is-light';
+                    case 'Admin': return 'is-warning is-light';
+                    case 'Member': return 'is-info is-light';
+                    case 'Viewer': return 'is-light';
+                    default: return 'is-info is-light';
                 }
-            });
+            }
+
+            // Function to update role details in the modal
+            function updateRoleDetails(roleName) {
+                const descriptionContainer = document.getElementById('roleDescriptionContainer');
+                const permissionTags = document.getElementById('rolePermissionTags');
+                
+                // Clear previous content
+                descriptionContainer.innerHTML = '';
+                permissionTags.innerHTML = '';
+                
+                // Role details lookup object
+                const roleDetails = {
+                    @foreach (var role in Model.Roles)
+                    {
+                        <text>
+                        '@role.Name': {
+                            description: '@role.Description',
+                            permissions: [@foreach (var perm in role.Permissions) { <text>'@perm.Action',</text> }]
+                        },
+                        </text>
+                    }
+                };
+                
+                // Update description
+                const description = roleDetails[roleName]?.description || '';
+                descriptionContainer.textContent = description;
+                
+                // Update permission tags
+                const permissions = roleDetails[roleName]?.permissions || [];
+                permissions.forEach(permission => {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag is-light';
+                    tag.textContent = permission;
+                    permissionTags.appendChild(tag);
+                });
+            }
         });
     </script>
 }

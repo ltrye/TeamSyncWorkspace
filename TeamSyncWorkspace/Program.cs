@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Data;
+using TeamSyncWorkspace.Hubs;
 using TeamSyncWorkspace.Models;
 using TeamSyncWorkspace.Services;
 
@@ -11,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+// Add Controllers support
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -39,6 +42,9 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<TeamRoleManagementService>();
 
+
+// Add SignalR services
+builder.Services.AddSignalR();
 // Application configuration
 var app = builder.Build();
 
@@ -64,9 +70,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 // Add route mapping with authentication-based redirection
 app.MapRazorPages();
 
+// Configure endpoint
+app.MapHub<NotificationHub>("/notificationHub");
 // Default route handling
 app.Use(async (context, next) =>
 {

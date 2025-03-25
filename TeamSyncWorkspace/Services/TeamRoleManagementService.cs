@@ -11,6 +11,22 @@ namespace TeamSyncWorkspace.Services
 {
     public class TeamRoleManagementService
     {
+        #region Constants
+
+        // Role constants
+        public static class Roles
+        {
+            public const string Owner = "Owner";
+            public const string Admin = "Admin";
+            public const string Member = "Member";
+            public const string Viewer = "Viewer";
+
+            // List of built-in roles that cannot be modified or deleted
+            public static readonly string[] BuiltInRoles = { Owner, Admin, Member, Viewer };
+        }
+
+        #endregion
+
         #region Constructor and Dependencies
 
         private readonly AppDbContext _context;
@@ -65,33 +81,46 @@ namespace TeamSyncWorkspace.Services
             }
 
             // Don't allow changing the Owner's role by anyone except the Owner themselves
-            if (teamMember.Role == "Owner" && actingUserId != targetUserId)
+            if (teamMember.Role == Roles.Owner && actingUserId != targetUserId)
             {
                 return (false, "Only the team owner can change their own role.");
             }
 
             // Don't allow regular admins to change other admins' roles
             var actingUserRole = await _teamService.GetUserRoleInTeamAsync(teamId, actingUserId);
-            if (actingUserRole == "Admin" && teamMember.Role == "Admin" && actingUserId != targetUserId)
+            if (actingUserRole == Roles.Admin && teamMember.Role == Roles.Admin && actingUserId != targetUserId)
             {
                 return (false, "Admins cannot change the role of other admins.");
             }
 
             // Don't allow non-owners to assign the Owner role
-            if (newRoleName == "Owner" && actingUserRole != "Owner")
+            if (newRoleName == Roles.Owner && actingUserRole != Roles.Owner)
             {
                 return (false, "Only the current owner can transfer ownership.");
             }
 
+            // Check if acting user is the only owner and trying to change their role
+            if (teamMember.Role == Roles.Owner && actingUserId == targetUserId && newRoleName != Roles.Owner)
+            {
+                // Count number of owners in the team
+                int ownerCount = await _context.TeamMembers
+                    .CountAsync(tm => tm.TeamId == teamId && tm.Role == Roles.Owner);
+
+                if (ownerCount <= 1)
+                {
+                    return (false, "Cannot change role: team must have at least one owner.");
+                }
+            }
+
             // If transferring ownership, change the old owner to Admin
-            if (newRoleName == "Owner" && actingUserRole == "Owner" && actingUserId != targetUserId)
+            if (newRoleName == Roles.Owner && actingUserRole == Roles.Owner && actingUserId != targetUserId)
             {
                 var currentOwner = await _context.TeamMembers
                     .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == actingUserId);
 
                 if (currentOwner != null)
                 {
-                    currentOwner.Role = "Admin";
+                    currentOwner.Role = Roles.Admin;
                 }
             }
 
@@ -128,8 +157,13 @@ namespace TeamSyncWorkspace.Services
                 return (false, "You don't have permission to create custom roles.", null);
             }
 
+            // Check if role name conflicts with a built-in role
+            if (Roles.BuiltInRoles.Contains(roleName, StringComparer.OrdinalIgnoreCase))
+            {
+                return (false, $"Cannot create a role with the same name as a built-in role.", null);
+            }
+
             // Check if role name already exists
-            // Replace StringComparison.OrdinalIgnoreCase with a SQL-compatible alternative
             var roleExists = await _context.TeamRoles
                 .AnyAsync(r => r.Name.ToLower() == roleName.ToLower());
 
@@ -212,9 +246,15 @@ namespace TeamSyncWorkspace.Services
             }
 
             // Don't allow updating built-in roles
-            if (role.Name is "Owner" or "Admin" or "Member" or "Viewer")
+            if (Roles.BuiltInRoles.Contains(role.Name))
             {
                 return (false, "Built-in roles cannot be modified.");
+            }
+
+            // Check if new role name conflicts with a built-in role
+            if (role.Name != roleName && Roles.BuiltInRoles.Contains(roleName, StringComparer.OrdinalIgnoreCase))
+            {
+                return (false, $"Cannot use a built-in role name for custom roles.");
             }
 
             // Check if new role name conflicts with existing one (if name is being changed)
@@ -293,7 +333,7 @@ namespace TeamSyncWorkspace.Services
             }
 
             // Don't allow deleting built-in roles
-            if (role.Name is "Owner" or "Admin" or "Member" or "Viewer")
+            if (Roles.BuiltInRoles.Contains(role.Name))
             {
                 return (false, "Built-in roles cannot be deleted.");
             }

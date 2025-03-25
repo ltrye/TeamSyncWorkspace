@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Data;
+using TeamSyncWorkspace.Hubs;
 using TeamSyncWorkspace.Models;
 
 namespace TeamSyncWorkspace.Services
@@ -12,11 +14,16 @@ namespace TeamSyncWorkspace.Services
     {
         private readonly AppDbContext _context;
         private readonly ILogger<NotificationService> _logger;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public NotificationService(AppDbContext context, ILogger<NotificationService> logger)
+        public NotificationService(
+            AppDbContext context,
+            ILogger<NotificationService> logger,
+            IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         public async Task<Notification> CreateNotificationAsync(
@@ -44,7 +51,27 @@ namespace TeamSyncWorkspace.Services
 
             _logger.LogInformation("Created notification for user {UserId}: {Title}", userId, title);
 
+            // Send real-time notification
+            await SendRealTimeNotification(notification);
+
             return notification;
+        }
+
+        private async Task SendRealTimeNotification(Notification notification)
+        {
+            var notificationData = new
+            {
+                id = notification.NotificationId,
+                title = notification.Title,
+                message = notification.Message,
+                link = notification.Link,
+                createdDate = notification.CreatedDate,
+                type = notification.Type,
+                isRead = notification.IsRead
+            };
+
+            await _hubContext.Clients.Group($"user_{notification.UserId}")
+                .SendAsync("ReceiveNotification", notificationData);
         }
 
         public async Task<List<Notification>> GetUserNotificationsAsync(int userId, int count = 10)

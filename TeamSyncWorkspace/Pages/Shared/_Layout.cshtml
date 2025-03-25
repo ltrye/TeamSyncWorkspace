@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="~/TeamSyncWorkspace.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
+
 <body>
     @Html.AntiForgeryToken()
     <header>
@@ -19,7 +21,8 @@
                     <a class="navbar-item" asp-area="" asp-page="/Index">
                         <strong>TeamSyncWorkspace</strong>
                     </a>
-                    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNavbar">
+                    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                        data-target="mainNavbar">
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
@@ -31,13 +34,48 @@
                         <a class="navbar-item" asp-area="" asp-page="/Privacy">Privacy</a>
                     </div>
                     <div class="navbar-end">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                        <!-- Notification Dropdown -->
+                        <div class="navbar-item has-dropdown is-hoverable">
+                            <a class="navbar-link is-arrowless position-relative" id="notificationsNavLink">
+                                <span class="icon">
+                                    <i class="bi bi-bell-fill"></i>
+                                </span>
+                                <span id="notificationBadge" class="badge is-danger is-right"
+                                    style="display: none;"></span>
+                            </a>
+                            <div class="navbar-dropdown is-right notification-dropdown"
+                                style="width: 320px; max-height: 400px; overflow-y: auto;">
+                                <div
+                                    class="dropdown-header p-3 is-flex is-justify-content-space-between is-align-items-center">
+                                    <strong>Notifications</strong>
+                                    <a href="#" id="markAllAsReadBtn" class="has-text-info is-size-7">Mark all as
+                                        read</a>
+                                </div>
+                                <div id="notificationItems" class="notification-items">
+                                    <!-- Notifications will be loaded here -->
+                                    <div class="dropdown-item has-text-centered py-3 has-text-grey">
+                                        <span class="icon is-large">
+                                            <i class="bi bi-hourglass"></i>
+                                        </span>
+                                        <p>Loading notifications...</p>
+                                    </div>
+                                </div>
+                                <hr class="navbar-divider">
+                                <a class="navbar-item has-text-centered" href="/Notifications">
+                                    <span>View all notifications</span>
+                                </a>
+                            </div>
+                        </div>
+                        }
                         <partial name="_LoginPartial" />
                     </div>
                 </div>
             </div>
         </nav>
     </header>
-    
+
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
@@ -54,30 +92,30 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    
+
     <script>
         // Navbar burger menu toggle
         document.addEventListener('DOMContentLoaded', () => {
             // Get all "navbar-burger" elements
             const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
-            
+
             // Add a click event on each of them
-            $navbarBurgers.forEach( el => {
+            $navbarBurgers.forEach(el => {
                 el.addEventListener('click', () => {
                     // Get the target from the "data-target" attribute
                     const target = el.dataset.target;
                     const $target = document.getElementById(target);
-                    
+
                     // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
                     el.classList.toggle('is-active');
                     $target.classList.toggle('is-active');
                 });
             });
-            
+
             // Common modal functionality
             setupModals();
         });
-        
+
         function setupModals() {
             // Functions to open and close a modal
             function openModal($el) {
@@ -119,7 +157,7 @@
                     closeAllModals();
                 }
             });
-            
+
             // Delete notification functionality
             (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
                 const $notification = $delete.parentNode;
@@ -130,6 +168,282 @@
         }
     </script>
 
+    <script src="~/microsoft-signalr/signalr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('notificationsNavLink')) {
+                loadNotifications();
+                setupNotificationSignalR();
+            }
+        });
+
+        function setupNotificationSignalR() {
+            @if (User.Identity.IsAuthenticated)
+            {
+                <text>
+                const userId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/notificationHub")
+                    .withAutomaticReconnect()
+                    .build();
+
+                connection.on("ReceiveNotification", function(notification) {
+                    // Update notification badge count
+                    const badge = document.getElementById("notificationBadge");
+                    if (badge) {
+                        const currentCount = parseInt(badge.textContent || "0");
+                        badge.textContent = (currentCount + 1).toString();
+                        badge.style.display = "flex";
+                    }
+                    
+                    // Add new notification to dropdown if it's open
+                    const notificationItems = document.getElementById("notificationItems");
+                    if (notificationItems) {
+                        // Remove loading or empty message if present
+                        const emptyMsg = notificationItems.querySelector('.has-text-centered');
+                        if (emptyMsg) {
+                            emptyMsg.remove();
+                        }
+                        
+                        // Create new notification item
+                        const newItem = createNotificationItem(notification);
+                        
+                        // Insert at the top
+                        if (notificationItems.firstChild) {
+                            notificationItems.insertBefore(newItem, notificationItems.firstChild);
+                        } else {
+                            notificationItems.appendChild(newItem);
+                        }
+                    }
+                    
+                    // Show browser notification if permission granted
+                    if (Notification.permission === "granted") {
+                        const browserNotification = new Notification("TeamSyncWorkspace", {
+                            body: notification.title,
+                            icon: "/favicon.ico"
+                        });
+                        
+                        browserNotification.onclick = function() {
+                            window.focus();
+                            if (notification.link) {
+                                window.location.href = notification.link;
+                            } else {
+                                window.location.href = "/Notifications/View/" + notification.id;
+                            }
+                        };
+                    }
+                });
+
+                connection.start().then(function() {
+                    connection.invoke("JoinUserGroup", userId).catch(function(err) {
+                        console.error(err.toString());
+                    });
+                }).catch(function(err) {
+                    console.error(err.toString());
+                });
+                
+                // Request notification permission
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+                </text>
+            }
+        }
+
+        function loadNotifications() {
+            const notificationsNavLink = document.getElementById("notificationsNavLink");
+            const notificationItems = document.getElementById("notificationItems");
+            const markAllAsReadBtn = document.getElementById("markAllAsReadBtn");
+            const badge = document.getElementById("notificationBadge");
+            
+            if (!notificationItems) return;
+
+            // Fetch notifications when dropdown is clicked
+            notificationsNavLink.addEventListener('click', function() {
+                fetch('/api/notifications/recent')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear current notifications
+                        notificationItems.innerHTML = '';
+                        
+                        if (data.notifications.length === 0) {
+                            notificationItems.innerHTML = `
+                                <div class="dropdown-item has-text-centered py-3 has-text-grey">
+                                    <span class="icon is-large">
+                                        <i class="bi bi-bell-slash"></i>
+                                    </span>
+                                    <p>No notifications</p>
+                                </div>
+                            `;
+                            if (markAllAsReadBtn) markAllAsReadBtn.style.display = 'none';
+                        } else {
+                            // Add notifications to dropdown
+                            data.notifications.forEach(notification => {
+                                const notificationItem = createNotificationItem(notification);
+                                notificationItems.appendChild(notificationItem);
+                            });
+                            
+                            if (data.unreadCount > 0) {
+                                if (markAllAsReadBtn) markAllAsReadBtn.style.display = 'block';
+                                if (badge) {
+                                    badge.textContent = data.unreadCount.toString();
+                                    badge.style.display = 'flex';
+                                }
+                            } else {
+                                if (markAllAsReadBtn) markAllAsReadBtn.style.display = 'none';
+                                if (badge) badge.style.display = 'none';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching notifications:', error);
+                        notificationItems.innerHTML = `
+                            <div class="dropdown-item has-text-centered py-3 has-text-danger">
+                                <p>Error loading notifications</p>
+                            </div>
+                        `;
+                    });
+            });
+            
+            // Mark all as read button
+            if (markAllAsReadBtn) {
+                markAllAsReadBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Make API call to mark all as read
+                    fetch('/api/notifications/mark-all-read', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Update UI
+                            const unreadItems = notificationItems.querySelectorAll('.unread');
+                            unreadItems.forEach(item => {
+                                item.classList.remove('unread');
+                            });
+                            
+                            // Hide mark all as read button
+                            markAllAsReadBtn.style.display = 'none';
+                            
+                            // Update badge
+                            if (badge) badge.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Error marking notifications as read:', error));
+                });
+            }
+        }
+
+        function createNotificationItem(notification) {
+            // Format the date
+            const now = new Date();
+            const notifDate = new Date(notification.createdDate);
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            let timeStr;
+            if (notifDate >= today) {
+                timeStr = `Today ${notifDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            } else if (notifDate >= yesterday) {
+                timeStr = `Yesterday ${notifDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            } else {
+                timeStr = notifDate.toLocaleDateString([], {month: 'short', day: 'numeric'});
+            }
+            
+            // Determine icon class
+            let iconClass, iconColor;
+            switch (notification.type) {
+                case 'TeamInvitation':
+                    iconClass = 'bi-people-fill';
+                    iconColor = 'has-text-info';
+                    break;
+                case 'InvitationAccepted':
+                    iconClass = 'bi-check-circle-fill';
+                    iconColor = 'has-text-success';
+                    break;
+                case 'InvitationDeclined':
+                    iconClass = 'bi-x-circle-fill';
+                    iconColor = 'has-text-danger';
+                    break;
+                default:
+                    iconClass = 'bi-bell-fill';
+                    iconColor = 'has-text-grey';
+            }
+            
+            // Create element
+            const div = document.createElement('div');
+            div.className = `dropdown-item notification-item ${!notification.isRead ? 'unread' : ''}`;
+            div.dataset.notificationId = notification.id;
+            
+            div.innerHTML = `
+                <div class="is-flex is-align-items-center">
+                    <span class="icon mr-2 ${iconColor}">
+                        <i class="bi ${iconClass}"></i>
+                    </span>
+                    <div class="notification-content">
+                        <div class="is-flex is-justify-content-space-between is-align-items-center">
+                            <strong class="is-size-7">${notification.title}</strong>
+                            <small class="notification-time">${timeStr}</small>
+                        </div>
+                        <p class="notification-message is-size-7">${notification.message}</p>
+                    </div>
+                </div>
+            `;
+            
+            // Add click handler
+            div.addEventListener('click', function() {
+                // Mark as read
+                if (!notification.isRead) {
+                    fetch(`/api/notifications/mark-read/${notification.id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    })
+                    .then(() => {
+                        div.classList.remove('unread');
+                        notification.isRead = true;
+                        
+                        // Update unread count
+                        const badge = document.getElementById("notificationBadge");
+                        if (badge) {
+                            const currentCount = parseInt(badge.textContent || "0");
+                            if (currentCount > 1) {
+                                badge.textContent = (currentCount - 1).toString();
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+                        
+                        // Check if there are any unread notifications left
+                        const unreadItems = document.querySelectorAll('.notification-item.unread');
+                        if (unreadItems.length === 0) {
+                            const markAllAsReadBtn = document.getElementById("markAllAsReadBtn");
+                            if (markAllAsReadBtn) markAllAsReadBtn.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Error marking notification as read:', error));
+                }
+                
+                // Navigate to link or notification detail page
+                if (notification.link) {
+                    window.location.href = notification.link;
+                } else {
+                    window.location.href = `/Notifications/View/${notification.id}`;
+                }
+            });
+            
+            return div;
+        }
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

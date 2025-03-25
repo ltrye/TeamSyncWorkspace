@@ -4,86 +4,245 @@
     ViewData["Title"] = "Team Invitation";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Team Invitation</h3>
-                </div>
-                <div class="card-body">
-                    @if (!string.IsNullOrEmpty(Model.StatusMessage))
-                    {
-                        <div class="alert @(Model.StatusMessage.Contains("success") ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
-                            @Model.StatusMessage
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
+<div class="container is-fluid">
+    <div class="section">
+        <div class="columns is-centered">
+            <div class="column is-7">
+                <div class="box has-shadow p-0">
+                    <div class="p-5 has-background-primary">
+                        <h3 class="title is-4 has-text-white mb-0">Team Invitation</h3>
+                    </div>
+                    <div class="p-5">
+                        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+                        {
+                            <div class="notification @(Model.StatusMessage.Contains("success") ? "is-success is-light" : "is-danger is-light")">
+                                <button class="delete"></button>
+                                @Model.StatusMessage
+                            </div>
+                        }
 
-                    @if (Model.Invitation != null && !Model.IsExpired && !Model.IsProcessed)
-                    {
-                        <div class="text-center mb-4">
-                            <div class="display-1 text-primary mb-3">
-                                <i class="bi bi-envelope-paper-heart"></i>
+                        @if (Model.Invitation != null && !Model.IsExpired && !Model.IsProcessed)
+                        {
+                            <div class="has-text-centered mb-6">
+                                <div class="icon-large has-text-primary mx-auto mb-4">
+                                    <i class="bi bi-envelope-paper-heart"></i>
+                                </div>
+                                <h4 class="subtitle is-5 mb-2">You've been invited to join</h4>
+                                <h2 class="title is-2 has-text-primary mb-4">@Model.Invitation.Team.TeamName</h2>
+                                <div class="is-flex is-justify-content-center is-align-items-center mb-5">
+                                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{Model.Invitation.InvitedBy.FirstName} {Model.Invitation.InvitedBy.LastName}"))&size=32&background=E5E5E5&color=707070" 
+                                         class="image is-32x32 is-rounded mr-2" alt="Avatar" />
+                                    <p class="has-text-grey">
+                                        Invitation from <strong>@Model.Invitation.InvitedBy.FirstName @Model.Invitation.InvitedBy.LastName</strong>
+                                    </p>
+                                </div>
                             </div>
-                            <h4>You've been invited to join</h4>
-                            <h2 class="fw-bold text-primary">@Model.Invitation.Team.TeamName</h2>
-                            <p class="text-muted mb-4">
-                                Invitation from <strong>@Model.Invitation.InvitedBy.FirstName @Model.Invitation.InvitedBy.LastName</strong>
-                            </p>
-                        </div>
-                        
-                        <div class="d-flex justify-content-center gap-3">
-                            <form method="post" asp-page-handler="Accept" asp-route-token="@Model.Invitation.Token">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-check-circle me-2"></i> Accept
-                                </button>
-                            </form>
-                            <form method="post" asp-page-handler="Decline" asp-route-token="@Model.Invitation.Token">
-                                <button type="submit" class="btn btn-outline-danger btn-lg">
-                                    <i class="bi bi-x-circle me-2"></i> Decline
-                                </button>
-                            </form>
-                        </div>
-                    }
-                    else if (Model.Invitation != null && Model.IsExpired)
-                    {
-                        <div class="text-center">
-                            <div class="display-1 text-danger mb-3">
-                                <i class="bi bi-calendar-x"></i>
+                            
+                            <div class="buttons is-centered">
+                                <form method="post" asp-page-handler="Accept" asp-route-token="@Model.Invitation.Token">
+                                    <button type="submit" class="button is-primary is-large">
+                                        <span class="icon">
+                                            <i class="bi bi-check-circle"></i>
+                                        </span>
+                                        <span>Accept</span>
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="Decline" asp-route-token="@Model.Invitation.Token">
+                                    <button type="submit" class="button is-danger is-outlined is-large">
+                                        <span class="icon">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                        <span>Decline</span>
+                                    </button>
+                                </form>
                             </div>
-                            <h4 class="text-danger">This invitation has expired</h4>
-                            <p class="mb-4">Please ask the team admin to send you a new invitation.</p>
-                            <a href="/Teams/Index" class="btn btn-primary">
-                                <i class="bi bi-arrow-left me-2"></i> Back to Teams
-                            </a>
-                        </div>
-                    }
-                    else if (Model.Invitation != null && Model.IsProcessed)
-                    {
-                        <div class="text-center">
-                            <div class="display-1 text-success mb-3">
-                                <i class="bi bi-check-circle"></i>
+                        }
+                        else if (Model.Invitation != null && Model.IsExpired)
+                        {
+                            <div class="has-text-centered">
+                                <div class="icon-large has-text-danger mx-auto mb-4">
+                                    <i class="bi bi-calendar-x"></i>
+                                </div>
+                                <h4 class="title is-4 has-text-danger mb-2">This invitation has expired</h4>
+                                <p class="mb-5">Please ask the team admin to send you a new invitation.</p>
+                                <a href="/Teams/Index" class="button is-primary">
+                                    <span class="icon">
+                                        <i class="bi bi-arrow-left"></i>
+                                    </span>
+                                    <span>Back to Teams</span>
+                                </a>
                             </div>
-                            <h4>This invitation has already been @(Model.Invitation.IsAccepted ? "accepted" : "declined")</h4>
-                            <div class="mt-4">
-                                @if (Model.Invitation.IsAccepted)
-                                {
-                                    <a href="/Dashboard/Index?teamId=@Model.Invitation.TeamId" class="btn btn-primary">
-                                        Go to Team Dashboard
-                                    </a>
-                                }
-                                else
-                                {
-                                    <a href="/Teams/Index" class="btn btn-primary">
-                                        <i class="bi bi-arrow-left me-2"></i> Back to Teams
-                                    </a>
-                                }
+                        }
+                        else if (Model.Invitation != null && Model.IsProcessed)
+                        {
+                            <div class="has-text-centered">
+                                <div class="icon-large has-text-@(Model.Invitation.IsAccepted ? "success" : "danger") mx-auto mb-4">
+                                    <i class="bi bi-@(Model.Invitation.IsAccepted ? "check-circle" : "x-circle")"></i>
+                                </div>
+                                <h4 class="title is-4 mb-2">This invitation has already been @(Model.Invitation.IsAccepted ? "accepted" : "declined")</h4>
+                                <div class="mt-5">
+                                    @if (Model.Invitation.IsAccepted)
+                                    {
+                                        <a href="/Dashboard/Index?teamId=@Model.Invitation.TeamId" class="button is-primary">
+                                            <span class="icon">
+                                                <i class="bi bi-columns-gap"></i>
+                                            </span>
+                                            <span>Go to Team Dashboard</span>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/Teams/Index" class="button is-primary">
+                                            <span class="icon">
+                                                <i class="bi bi-arrow-left"></i>
+                                            </span>
+                                            <span>Back to Teams</span>
+                                        </a>
+                                    }
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delete notification functionality
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.closest('.notification');
+                $delete.addEventListener('click', () => {
+                    $notification.classList.add('is-hidden-fade-out');
+                    setTimeout(() => {
+                        if ($notification.parentNode) {
+                            $notification.parentNode.removeChild($notification);
+                        }
+                    }, 500);
+                });
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* Professional Design Styles - Matching Dashboard */
+        body {
+            background-color: #f9fafb;
+            color: #333;
+        }
+        
+        .has-shadow {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .has-shadow:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .icon-large {
+            font-size: 2.5rem;
+            display: inline-block;
+            height: 64px;
+            width: 64px;
+            line-height: 64px;
+            text-align: center;
+            background-color: rgba(72, 95, 199, 0.1);
+            border-radius: 50%;
+        }
+        
+        .icon-large.has-text-primary {
+            background-color: rgba(74, 104, 189, 0.1);
+        }
+        
+        .icon-large.has-text-success {
+            background-color: rgba(58, 158, 109, 0.1);
+        }
+        
+        .icon-large.has-text-danger {
+            background-color: rgba(204, 15, 53, 0.1);
+        }
+        
+        .is-hidden-fade-out {
+            animation: fadeOut 0.5s;
+            animation-fill-mode: forwards;
+        }
+        
+        @@keyframes fadeOut {
+            from {
+                opacity: 1;
+                max-height: 200px;
+                margin-bottom: 1.5rem;
+                padding: 1.25rem 2.5rem 1.25rem 1.5rem;
+            }
+            to {
+                opacity: 0;
+                max-height: 0;
+                margin-bottom: 0;
+                padding: 0;
+                border: 0;
+            }
+        }
+        
+        .buttons.is-centered form {
+            margin: 0 0.5rem;
+        }
+        
+        /* Subtle color adjustments - matching Dashboard */
+        .button.is-primary {
+            background-color: #4a68bd;
+        }
+        
+        .button.is-primary:hover {
+            background-color: #3d569e;
+        }
+        
+        .has-text-primary {
+            color: #4a68bd !important;
+        }
+        
+        .has-background-primary {
+            background-color: #4a68bd !important;
+        }
+        
+        .button.is-info.is-light {
+            background-color: #f0f4ff;
+            color: #4a68bd;
+        }
+        
+        .button.is-success.is-light {
+            background-color: #f0faf4;
+            color: #3a9e6d;
+        }
+        
+        .button.is-danger.is-light {
+            background-color: #fff0f3;
+            color: #cc0f35;
+        }
+        
+        .notification.is-success.is-light {
+            background-color: #f0faf4;
+            color: #257953;
+        }
+        
+        .notification.is-danger.is-light {
+            background-color: #fff0f3;
+            color: #cc0f35;
+        }
+        
+        .button.is-danger.is-outlined {
+            border-color: #cc0f35;
+            color: #cc0f35;
+        }
+        
+        .button.is-danger.is-outlined:hover {
+            background-color: #cc0f35;
+            color: white;
+        }
+    </style>
+}
