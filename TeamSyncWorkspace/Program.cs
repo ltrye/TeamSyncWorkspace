@@ -41,6 +41,7 @@ builder.Services.AddScoped<TeamRoleService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<TeamRoleManagementService>();
+builder.Services.AddScoped<TaskService>();
 
 
 // Add SignalR services
@@ -73,6 +74,25 @@ app.UseAuthorization();
 app.MapControllers();
 // Add route mapping with authentication-based redirection
 app.MapRazorPages();
+
+//app.MapGet("/api/tasks", async (AppDbContext db, string workspaceId, DateTime startDate, DateTime endDate, ILogger<Program> logger) =>
+//{
+//    logger.LogInformation("Fetching tasks for workspaceId: {WorkspaceId}, StartDate: {StartDate}, EndDate: {EndDate}",
+//                          workspaceId, startDate, endDate);
+
+//    if (string.IsNullOrEmpty(workspaceId))
+//    {
+//        return Results.BadRequest("Missing workspaceId");
+//    }
+
+//    var tasks = await db.TimelineTasks
+//        .Where(t => t.WorkspaceId == workspaceId && t.DueDate >= startDate && t.DueDate <= endDate)
+//        .OrderBy(t => t.DueDate)
+//        .ToListAsync();
+
+//    return Results.Ok(tasks);
+//}).WithName("GetTasks");
+
 
 // Configure endpoint
 app.MapHub<NotificationHub>("/notificationHub");
