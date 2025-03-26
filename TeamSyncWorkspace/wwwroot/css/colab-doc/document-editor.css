@@ -1,0 +1,253 @@
+.document-editor {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh);
+    overflow: hidden;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e1e4e8;
+    background-color: #ffffff;
+}
+
+.editor-header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.document-title-input {
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    padding: 0.25rem 0.5rem;
+    width: 100%;
+    background-color: transparent;
+}
+
+.document-title-input:focus {
+    outline: none;
+    background-color: #f7f9fc;
+    border-radius: 4px;
+}
+
+.editor-status {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.status-saving,
+.status-saved {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.editor-main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.editor-content {
+    flex: 1;
+    overflow-y: auto;
+    /* padding: 2rem; */
+    background-color: #f9f9f9;
+    overflow: hidden;
+}
+
+.collaborators {
+    display: flex;
+    align-items: center;
+    margin-right: 1.5rem;
+    column-gap: 0.5rem;
+}
+
+.editor-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Dropdown styling */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* CKEditor basic styling */
+.ck-editor__editable {
+    min-height: calc(100vh - 120px);
+    max-width: 850px;
+    margin: 0 auto;
+    border: 1px solid #e1e4e8 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    padding: 2rem !important;
+    background-color: white !important;
+}
+
+/* Read-only styling */
+.ck.ck-editor__editable.ck-read-only {
+    background-color: #f8f9fa !important;
+    border-color: #e9ecef !important;
+}
+
+
+/* Back button styling */
+.back-button-container {
+    display: flex;
+    align-items: center;
+}
+
+.back-button-container .button {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    border: none;
+}
+
+.back-button-container .button:hover {
+    background-color: #f5f5f5;
+}
+
+.back-button-container .button .icon {
+    font-size: 1.1rem;
+}
+
+/* Tooltip styling */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    background-color: rgba(74, 74, 74, 0.9);
+    color: white;
+    text-align: center;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+[data-tooltip]::after {
+    content: '';
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    border-style: solid;
+    z-index: 100;
+    pointer-events: none;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Right tooltip positioning */
+.has-tooltip-right::before {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: calc(100% + 10px);
+    transform: translateY(-50%);
+}
+
+.has-tooltip-right::after {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: calc(100% + 2px);
+    transform: translateY(-50%);
+    border-width: 6px 6px 6px 0;
+    border-color: transparent rgba(74, 74, 74, 0.9) transparent transparent;
+}
+
+/* Update editor header layout to accommodate the back button */
+.editor-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.document-title-input {
+    margin-left: 5px;
+}
+
+
+/* Loading screen styles */
+.editor-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.editor-loading-content {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.spinner-border {
+    display: inline-block;
+    width: 3rem;
+    height: 3rem;
+    border: 0.25rem solid #3273dc;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #363636;
+}
+
+.loading-subtext {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Add .is-hidden utility class if needed */
+.is-hidden {
+    display: none !important;
+}

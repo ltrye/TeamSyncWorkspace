@@ -5,11 +5,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Hubs;
+using TeamSyncWorkspace.Hubs.Handlers;
 using TeamSyncWorkspace.Models;
 using TeamSyncWorkspace.Services;
+using TeamSyncWorkspace.Services.ColabDocServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMemoryCache();
 // Add services to the container.
 builder.Services.AddRazorPages();
 // Add Controllers support
@@ -17,6 +20,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    // options => options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!)
     );
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
@@ -50,6 +54,19 @@ builder.Services.AddScoped<TeamRoleService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<TeamRoleManagementService>();
+// Add this line with the other service registrations
+builder.Services.AddScoped<WorkspaceService>();
+builder.Services.AddScoped<DocumentService>();
+
+builder.Services.AddScoped<TempDocumentManager>();
+builder.Services.AddScoped<DocumentCollaborationService>();
+// Register handlers
+builder.Services.AddScoped<DocumentJoinHandler>();
+builder.Services.AddScoped<DocumentUpdateHandler>();
+builder.Services.AddScoped<DocumentLeaveHandler>();
+builder.Services.AddScoped<CursorPositionHandler>();
+builder.Services.AddScoped<CommentHandler>();
+builder.Services.AddScoped<ChatHandler>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<FolderService>();
 
@@ -106,6 +123,7 @@ app.MapRazorPages();
 
 // Configure endpoint
 app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<DocumentHub>("/hubs/document");
 // Default route handling
 app.Use(async (context, next) =>
 {

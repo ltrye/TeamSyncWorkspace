@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Models;
+using TeamSyncWorkspace.Models.Documents;
 
 namespace TeamSyncWorkspace.Data;
 public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
@@ -22,4 +23,69 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<TeamRolePermission> TeamRolePermissions { get; set; }
     public DbSet<TeamInvitation> TeamInvitations { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<DocumentComment> DocumentComments { get; set; }
+    public DbSet<DocumentVersion> DocumentVersions { get; set; }
+    public DbSet<DocumentOperation> DocumentOperations { get; set; }
+    public DbSet<DocumentAccessLog> DocumentAccessLogs { get; set; }
+    public DbSet<DocumentShareLink> DocumentShareLinks { get; set; }
+    public DbSet<DocumentPermission> DocumentPermissions { get; set; }
+    // Add to AppDbContext.cs
+    public DbSet<ChatMessage> ChatMessages { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+
+        modelBuilder.Entity<ChatMessage>()
+                    .HasOne(cm => cm.Document)
+                    .WithMany() // Assuming CollabDoc has a collection of ChatMessages
+                    .HasForeignKey(cm => cm.DocumentId)
+                    .OnDelete(DeleteBehavior.SetNull); // Keep cascade delete for DocumentId
+
+        modelBuilder.Entity<ChatMessage>()
+            .HasOne(cm => cm.User)
+            .WithMany() // No inverse navigation property in ApplicationUser
+            .HasForeignKey(cm => cm.UserId)
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for UserId
+
+        // Configure DocumentComment relationships
+        modelBuilder.Entity<DocumentComment>()
+            .HasOne(dc => dc.Document)
+            .WithMany() // Assuming CollabDoc has a collection of DocumentComments
+            .HasForeignKey(dc => dc.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade); // Keep cascade delete for DocumentId
+
+        modelBuilder.Entity<DocumentComment>()
+            .HasOne(dc => dc.User)
+            .WithMany() // No inverse navigation property in ApplicationUser
+            .HasForeignKey(dc => dc.UserId)
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for UserId
+
+        modelBuilder.Entity<DocumentComment>()
+            .HasOne(dc => dc.ResolvedBy)
+            .WithMany() // No inverse navigation property in ApplicationUser
+            .HasForeignKey(dc => dc.ResolvedById)
+            .IsRequired(false) // ResolvedById is optional
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for ResolvedById
+
+        modelBuilder.Entity<DocumentOperation>()
+            .HasOne(dc => dc.User)
+            .WithMany() // Assuming DocumentComment has a collection of child comments
+            .HasForeignKey(dc => dc.UserId)
+            .IsRequired(false) // ParentCommentId is optional
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for ParentCommentId
+
+
+        modelBuilder.Entity<DocumentShareLink>()
+            .HasOne(dsl => dsl.Document)
+            .WithMany() // Assuming CollabDoc has a collection of DocumentShareLinks
+            .HasForeignKey(dsl => dsl.DocumentId)
+            .OnDelete(DeleteBehavior.NoAction); // Keep cascade delete for DocumentId
+        modelBuilder.Entity<DocumentVersion>()
+            .HasOne(dv => dv.Document)
+            .WithMany() // Assuming CollabDoc has a collection of DocumentVersions
+            .HasForeignKey(dv => dv.DocumentId)
+            .OnDelete(DeleteBehavior.NoAction); // Keep cascade delete for DocumentId
+    }
 }

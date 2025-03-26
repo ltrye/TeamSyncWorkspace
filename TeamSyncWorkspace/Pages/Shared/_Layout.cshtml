@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TeamSyncWorkspace.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
+    @await RenderSectionAsync("Head", required: false)
 </head>
 
 <body>
@@ -170,7 +171,7 @@
 
     <script src="~/microsoft-signalr/signalr.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             if (document.getElementById('notificationsNavLink')) {
                 loadNotifications();
                 setupNotificationSignalR();
@@ -178,73 +179,72 @@
         });
 
         function setupNotificationSignalR() {
-            @if (User.Identity.IsAuthenticated)
-            {
+            @if (User.Identity.IsAuthenticated) {
                 <text>
-                const userId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
-                const connection = new signalR.HubConnectionBuilder()
+                    const userId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
+                    const connection = new signalR.HubConnectionBuilder()
                     .withUrl("/notificationHub")
                     .withAutomaticReconnect()
                     .build();
 
-                connection.on("ReceiveNotification", function(notification) {
+                    connection.on("ReceiveNotification", function(notification) {
                     // Update notification badge count
                     const badge = document.getElementById("notificationBadge");
                     if (badge) {
                         const currentCount = parseInt(badge.textContent || "0");
-                        badge.textContent = (currentCount + 1).toString();
-                        badge.style.display = "flex";
+                    badge.textContent = (currentCount + 1).toString();
+                    badge.style.display = "flex";
                     }
-                    
+
                     // Add new notification to dropdown if it's open
                     const notificationItems = document.getElementById("notificationItems");
                     if (notificationItems) {
                         // Remove loading or empty message if present
                         const emptyMsg = notificationItems.querySelector('.has-text-centered');
-                        if (emptyMsg) {
-                            emptyMsg.remove();
+                    if (emptyMsg) {
+                        emptyMsg.remove();
                         }
-                        
-                        // Create new notification item
-                        const newItem = createNotificationItem(notification);
-                        
-                        // Insert at the top
-                        if (notificationItems.firstChild) {
-                            notificationItems.insertBefore(newItem, notificationItems.firstChild);
+
+                    // Create new notification item
+                    const newItem = createNotificationItem(notification);
+
+                    // Insert at the top
+                    if (notificationItems.firstChild) {
+                        notificationItems.insertBefore(newItem, notificationItems.firstChild);
                         } else {
-                            notificationItems.appendChild(newItem);
+                        notificationItems.appendChild(newItem);
                         }
                     }
-                    
+
                     // Show browser notification if permission granted
                     if (Notification.permission === "granted") {
                         const browserNotification = new Notification("TeamSyncWorkspace", {
-                            body: notification.title,
-                            icon: "/favicon.ico"
+                        body: notification.title,
+                    icon: "/favicon.ico"
                         });
-                        
-                        browserNotification.onclick = function() {
-                            window.focus();
-                            if (notification.link) {
-                                window.location.href = notification.link;
+
+                    browserNotification.onclick = function() {
+                        window.focus();
+                    if (notification.link) {
+                        window.location.href = notification.link;
                             } else {
-                                window.location.href = "/Notifications/View/" + notification.id;
+                        window.location.href = "/Notifications/View/" + notification.id;
                             }
                         };
                     }
                 });
 
-                connection.start().then(function() {
-                    connection.invoke("JoinUserGroup", userId).catch(function(err) {
-                        console.error(err.toString());
-                    });
+                    connection.start().then(function() {
+                        connection.invoke("JoinUserGroup", userId).catch(function (err) {
+                            console.error(err.toString());
+                        });
                 }).catch(function(err) {
-                    console.error(err.toString());
+                        console.error(err.toString());
                 });
-                
-                // Request notification permission
-                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-                    Notification.requestPermission();
+
+                    // Request notification permission
+                    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                        Notification.requestPermission();
                 }
                 </text>
             }
@@ -255,17 +255,17 @@
             const notificationItems = document.getElementById("notificationItems");
             const markAllAsReadBtn = document.getElementById("markAllAsReadBtn");
             const badge = document.getElementById("notificationBadge");
-            
+
             if (!notificationItems) return;
 
             // Fetch notifications when dropdown is clicked
-            notificationsNavLink.addEventListener('click', function() {
+            notificationsNavLink.addEventListener('click', function () {
                 fetch('/api/notifications/recent')
                     .then(response => response.json())
                     .then(data => {
                         // Clear current notifications
                         notificationItems.innerHTML = '';
-                        
+
                         if (data.notifications.length === 0) {
                             notificationItems.innerHTML = `
                                 <div class="dropdown-item has-text-centered py-3 has-text-grey">
@@ -282,7 +282,7 @@
                                 const notificationItem = createNotificationItem(notification);
                                 notificationItems.appendChild(notificationItem);
                             });
-                            
+
                             if (data.unreadCount > 0) {
                                 if (markAllAsReadBtn) markAllAsReadBtn.style.display = 'block';
                                 if (badge) {
@@ -304,12 +304,12 @@
                         `;
                     });
             });
-            
+
             // Mark all as read button
             if (markAllAsReadBtn) {
-                markAllAsReadBtn.addEventListener('click', function(e) {
+                markAllAsReadBtn.addEventListener('click', function (e) {
                     e.preventDefault();
-                    
+
                     // Make API call to mark all as read
                     fetch('/api/notifications/mark-all-read', {
                         method: 'POST',
@@ -318,22 +318,22 @@
                             'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                         }
                     })
-                    .then(response => {
-                        if (response.ok) {
-                            // Update UI
-                            const unreadItems = notificationItems.querySelectorAll('.unread');
-                            unreadItems.forEach(item => {
-                                item.classList.remove('unread');
-                            });
-                            
-                            // Hide mark all as read button
-                            markAllAsReadBtn.style.display = 'none';
-                            
-                            // Update badge
-                            if (badge) badge.style.display = 'none';
-                        }
-                    })
-                    .catch(error => console.error('Error marking notifications as read:', error));
+                        .then(response => {
+                            if (response.ok) {
+                                // Update UI
+                                const unreadItems = notificationItems.querySelectorAll('.unread');
+                                unreadItems.forEach(item => {
+                                    item.classList.remove('unread');
+                                });
+
+                                // Hide mark all as read button
+                                markAllAsReadBtn.style.display = 'none';
+
+                                // Update badge
+                                if (badge) badge.style.display = 'none';
+                            }
+                        })
+                        .catch(error => console.error('Error marking notifications as read:', error));
                 });
             }
         }
@@ -345,16 +345,16 @@
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
-            
+
             let timeStr;
             if (notifDate >= today) {
-                timeStr = `Today ${notifDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                timeStr = `Today ${notifDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
             } else if (notifDate >= yesterday) {
-                timeStr = `Yesterday ${notifDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                timeStr = `Yesterday ${notifDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
             } else {
-                timeStr = notifDate.toLocaleDateString([], {month: 'short', day: 'numeric'});
+                timeStr = notifDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
             }
-            
+
             // Determine icon class
             let iconClass, iconColor;
             switch (notification.type) {
@@ -374,12 +374,12 @@
                     iconClass = 'bi-bell-fill';
                     iconColor = 'has-text-grey';
             }
-            
+
             // Create element
             const div = document.createElement('div');
             div.className = `dropdown-item notification-item ${!notification.isRead ? 'unread' : ''}`;
             div.dataset.notificationId = notification.id;
-            
+
             div.innerHTML = `
                 <div class="is-flex is-align-items-center">
                     <span class="icon mr-2 ${iconColor}">
@@ -394,9 +394,9 @@
                     </div>
                 </div>
             `;
-            
+
             // Add click handler
-            div.addEventListener('click', function() {
+            div.addEventListener('click', function () {
                 // Mark as read
                 if (!notification.isRead) {
                     fetch(`/api/notifications/mark-read/${notification.id}`, {
@@ -406,31 +406,31 @@
                             'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                         }
                     })
-                    .then(() => {
-                        div.classList.remove('unread');
-                        notification.isRead = true;
-                        
-                        // Update unread count
-                        const badge = document.getElementById("notificationBadge");
-                        if (badge) {
-                            const currentCount = parseInt(badge.textContent || "0");
-                            if (currentCount > 1) {
-                                badge.textContent = (currentCount - 1).toString();
-                            } else {
-                                badge.style.display = 'none';
+                        .then(() => {
+                            div.classList.remove('unread');
+                            notification.isRead = true;
+
+                            // Update unread count
+                            const badge = document.getElementById("notificationBadge");
+                            if (badge) {
+                                const currentCount = parseInt(badge.textContent || "0");
+                                if (currentCount > 1) {
+                                    badge.textContent = (currentCount - 1).toString();
+                                } else {
+                                    badge.style.display = 'none';
+                                }
                             }
-                        }
-                        
-                        // Check if there are any unread notifications left
-                        const unreadItems = document.querySelectorAll('.notification-item.unread');
-                        if (unreadItems.length === 0) {
-                            const markAllAsReadBtn = document.getElementById("markAllAsReadBtn");
-                            if (markAllAsReadBtn) markAllAsReadBtn.style.display = 'none';
-                        }
-                    })
-                    .catch(error => console.error('Error marking notification as read:', error));
+
+                            // Check if there are any unread notifications left
+                            const unreadItems = document.querySelectorAll('.notification-item.unread');
+                            if (unreadItems.length === 0) {
+                                const markAllAsReadBtn = document.getElementById("markAllAsReadBtn");
+                                if (markAllAsReadBtn) markAllAsReadBtn.style.display = 'none';
+                            }
+                        })
+                        .catch(error => console.error('Error marking notification as read:', error));
                 }
-                
+
                 // Navigate to link or notification detail page
                 if (notification.link) {
                     window.location.href = notification.link;
@@ -438,7 +438,7 @@
                     window.location.href = `/Notifications/View/${notification.id}`;
                 }
             });
-            
+
             return div;
         }
     </script>
