@@ -1,0 +1,78 @@
+﻿@page
+@model TeamSyncWorkspace.Pages.Files.IndexModel
+@{
+    ViewData["Title"] = "File Explorer";
+}
+
+<div class="box">
+    <h2 class="title is-4">📁 File Explorer</h2>
+
+    <!-- Back Button -->
+    @if (Model.CurrentFolder.ParentFolderId.HasValue)
+    {
+        <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@Model.CurrentFolder.ParentFolderId"
+           class="button is-light mb-4">
+            ◀️ Back
+        </a>
+    }
+
+    <h3 class="subtitle is-5">Current Folder: <strong>@Model.CurrentFolder.FolderName</strong></h3>
+
+    <!-- Open Modal Button -->
+    <button class="button is-success" onclick="openModal()">➕ New Folder</button>
+
+    <!-- Folder List -->
+    <div class="columns is-multiline mt-4">
+        @foreach (var folder in Model.SubFolders)
+        {
+            <div class="column is-one-quarter">
+                <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@folder.FolderId"
+                   class="box has-text-centered">
+                    <span class="icon is-large">
+                        <i class="bi bi-folder2-open"></i>
+                    </span>
+                    <p>@folder.FolderName</p>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal for Creating New Folder -->
+<div id="newFolderModal" class="modal">
+    <div class="modal-background" onclick="closeModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Create New Folder</p>
+            <button class="delete" aria-label="close" onclick="closeModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form method="post" asp-page-handler="CreateFolder">
+                <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+                <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                <div class="field">
+                    <label class="label">Folder Name</label>
+                    <div class="control">
+                        <input type="text" class="input" name="NewFolderName" placeholder="Enter folder name" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <button type="submit" class="button is-success is-fullwidth">Create Folder</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<!-- JavaScript to Control Modal -->
+<script>
+    function openModal() {
+        document.getElementById("newFolderModal").classList.add("is-active");
+    }
+
+    function closeModal() {
+        document.getElementById("newFolderModal").classList.remove("is-active");
+    }
+</script>

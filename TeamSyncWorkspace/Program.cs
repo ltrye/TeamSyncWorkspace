@@ -51,6 +51,7 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<TeamRoleManagementService>();
 builder.Services.AddScoped<TaskService>();
+builder.Services.AddScoped<FolderService>();
 
 
 // Add SignalR services
