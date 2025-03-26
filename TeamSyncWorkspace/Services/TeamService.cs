@@ -293,5 +293,11 @@ namespace TeamSyncWorkspace.Services
 
             return (true, $"User removed from team successfully.");
         }
+
+        public async Task<bool> IsUserTeamAdminAsync(int teamId, int id)
+        {
+            return await _context.TeamMembers
+                 .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == id && tm.Role == "Admin");
+        }
     }
 }

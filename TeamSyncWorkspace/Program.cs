@@ -10,13 +10,15 @@ using TeamSyncWorkspace.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMemoryCache();
 // Add services to the container.
 builder.Services.AddRazorPages();
 // Add Controllers support
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    // options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options => options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!)
     );
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
@@ -50,7 +52,9 @@ builder.Services.AddScoped<TeamRoleService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<TeamRoleManagementService>();
-
+// Add this line with the other service registrations
+builder.Services.AddScoped<WorkspaceService>();
+builder.Services.AddScoped<DocumentService>();
 
 // Add SignalR services
 builder.Services.AddSignalR();
@@ -85,6 +89,7 @@ app.MapRazorPages();
 
 // Configure endpoint
 app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<DocumentHub>("/hubs/document");
 // Default route handling
 app.Use(async (context, next) =>
 {

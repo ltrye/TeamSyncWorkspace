@@ -1,0 +1,53 @@
+.remote-cursor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 999;
+    transition: all 0.08s ease;
+}
+
+.remote-cursor-container {
+    position: relative;
+}
+
+.remote-cursor-caret {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background-color: var(--cursor-color, #00a8ff);
+    border-radius: 1px;
+}
+
+.remote-cursor-name {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-size: 12px;
+    background-color: var(--cursor-color, #00a8ff);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.remote-cursor-selection {
+    position: absolute;
+    background-color: rgba(var(--cursor-rgb, 0, 168, 255), 0.2);
+    pointer-events: none;
+}
+
+/* Add animation for blinking cursor */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.remote-cursor-caret {
+    animation: blink 1s ease infinite;
+}
+
+/* Make it look better in the editor */
+.ck-content {
+    position: relative;
+    min-height: 300px;
+}

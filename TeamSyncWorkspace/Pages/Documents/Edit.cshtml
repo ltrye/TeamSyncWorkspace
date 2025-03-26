@@ -1,0 +1,277 @@
+@page "{id:int}"
+@model TeamSyncWorkspace.Pages.Documents.EditModel
+@{
+ViewData["Title"] = Model.Document.Title;
+Layout = "_EditorLayout";
+}
+
+@section Head {
+<!-- CKEditor 5 -->
+<!-- <script src="~/lib/ckeditor5/ckeditor5.umd.js"></script> -->
+<!-- SignalR -->
+<script src="~/microsoft-signalr/signalr.min.js"></script>
+<!-- Vue.js 3 -->
+<script src="~/vue/vue.global.min.js"></script>
+<!-- Lodash (for debounce) -->
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+<!-- CSRF Token for API calls -->
+<form id="antiforgery" method="post">
+    @Html.AntiForgeryToken()
+</form>
+
+ <!-- Add meta to tell browsers to never cache this page -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+}
+
+
+<!-- Add this to your #app div -->
+<div id="remote-cursors-container" class="remote-cursor-container">
+    <template v-for="(cursor, userId) in cursorPositions" :key="userId">
+        <div 
+            class="remote-cursor" 
+            :style="{
+                '--cursor-color': cursor.userInfo.color || getUserColor(userId),
+                '--cursor-rgb': hexToRgb(cursor.userInfo.color || getUserColor(userId))
+            }"
+        >
+            <div 
+                v-for="(range, i) in cursor.ranges" 
+                :key="`selection-${userId}-${i}`"
+                class="remote-cursor-selection"
+                :style="{
+                    left: `${range.left}px`,
+                    top: `${range.top}px`,
+                    width: `${range.width}px`,
+                    height: `${range.height}px`
+                }"
+            ></div>
+            <div 
+                class="remote-cursor-caret"
+                :style="{
+                    left: `${cursor.ranges[cursor.ranges.length - 1]?.left + cursor.ranges[cursor.ranges.length - 1]?.width || 0}px`,
+                    top: `${cursor.ranges[cursor.ranges.length - 1]?.top || 0}px`,
+                }"
+            >
+                <div class="remote-cursor-name">
+                    {{ cursor.userInfo.name }}
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+
+
+<div id="app" class="document-editor">
+    <div class="editor-header" >
+        <div class="editor-header-left p-3 is-align-items-flex-start">
+
+         <!-- Back button with tooltip -->
+        <div class="columns is-justify-content-center">
+        <div class="back-button-container  mr-1">
+            <a href="/Documents/Index?workspaceId=@Model.Document.WorkspaceId" class="p-2 button is-normal  is-light has-tooltip-right" data-tooltip="Back to Documents">
+                <span class="icon">
+                    <i  class="bi bi-arrow-left"></i>
+                </span>
+            </a>
+        </div>
+            <input type="text" class="document-title-input" v-model="documentTitle" @@input="titleChanged = true"
+                @@blur="updateDocumentTitle" @@keydown.enter="$event.target.blur()" placeholder="Document Title">
+        </div>
+
+            <div class="editor-status" style="height:18px">
+                <span v-if="isSaving" class="status-saving">
+                    <span class="icon is-small">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </span>
+                    <span>Saving...</span>
+                </span>
+                <span v-else-if="lastSaved" class="status-saved">
+                    <span class="icon is-small">
+                        <i class="bi bi-check2"></i>
+                    </span>
+                    <span>Saved at {{ formatTime(lastSaved) }}</span>
+                </span>
+            </div>
+        </div>
+        <div class="editor-header-right">
+                <div class="collaborators is-flex is-align-items-center gap-2">
+                    <div v-for="user in activeCollaborators" :key="user.id" class="collaborator-tooltip-container">
+                        <div class="collaborator-avatar" :class="{ 'is-online': user.isOnline }">
+                            <img :src="user.avatar" alt="User Avatar" class="image is-32x32 is-rounded">
+                        </div>
+                        <div class="collaborator-tooltip">
+                            <div class="collaborator-tooltip-content">
+                                <div class="collaborator-name">{{ user.name }} {{user.isMe ? '(You)' : ""}}</div>
+                                <div class="collaborator-status">{{ user.isOnline ? 'Online' : 'Away' }}</div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="editor-actions">
+                <button class="button is-small is-light" @@click="shareDocument">
+                    <span class="icon">
+                        <i class="bi bi-share"></i>
+                    </span>
+                    <span>Share</span>
+                </button>
+
+                <div class="dropdown is-right" :class="{'is-active': showExportOptions}">
+                    <div class="dropdown-trigger">
+                        <button class="button is-small is-light" @@click="showExportOptions = !showExportOptions">
+                            <span class="icon">
+                                <i class="bi bi-download"></i>
+                            </span>
+                            <span>Export</span>
+                            <span class="icon is-small">
+                                <i class="bi bi-chevron-down"></i>
+                            </span>
+                        </button>
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-content">
+                            <a class="dropdown-item" @@click="exportAsPdf">
+                                <span class="icon is-small">
+                                    <i class="bi bi-file-pdf"></i>
+                                </span>
+                                <span>Export as PDF</span>
+                            </a>
+                            <a class="dropdown-item" @@click="exportAsDocx">
+                                <span class="icon is-small">
+                                    <i class="bi bi-file-word"></i>
+                                </span>
+                                <span>Export as Word</span>
+                            </a>
+                            <a class="dropdown-item" @@click="printDocument">
+                                <span class="icon is-small">
+                                    <i class="bi bi-printer"></i>
+                                </span>
+                                <span>Print Document</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="editor-main">
+        <div class="editor-content">
+
+
+   <!-- Loading screen - will be hidden once the editor is loaded -->
+        <div v-if="!editorLoaded" class="editor-loading-overlay">
+            <div class="editor-loading-content">
+                <div class="loading-spinner">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+                <p class="loading-text mt-3">Loading document editor...</p>
+                <p class="loading-subtext mt-2">This may take a few seconds</p>
+            </div>
+        </div>
+
+            <div class="main-container" :class="{ 'is-hidden': !editorLoaded }">
+			<div class="presence" style="margin:0px" id="editor-presence"></div>
+			<div
+				class="editor-container editor-container_document-editor editor-container_include-outline editor-container_include-annotations editor-container_include-pagination"
+				id="editor-container"
+			>
+				<div class="editor-container__menu-bar" id="editor-menu-bar"></div>
+				<div class="editor-container__toolbar" id="editor-toolbar"></div>
+				<div class="editor-container__editor-wrapper">
+					<div class="editor-container__sidebar"><div id="editor-outline"></div></div>
+					<div class="editor-container__editor"><div id="editor"></div></div>
+					<div class="editor-container__sidebar"><div id="editor-annotations"></div></div>
+				</div>
+			</div>
+			<div class="revision-history" id="editor-revision-history">
+				<div class="revision-history__wrapper">
+					<div class="revision-history__editor" id="editor-revision-history-editor"></div>
+					<div class="revision-history__sidebar" id="editor-revision-history-sidebar"></div>
+				</div>
+			</div>
+		</div>
+        </div>
+    </div>
+
+    <!-- Share Document Modal -->
+    <div class="modal" :class="{ 'is-active': showShareModal }">
+        <div class="modal-background" @@click="showShareModal = false"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Share Document</p>
+                <button class="delete" aria-label="close" @@click="showShareModal = false"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="field">
+                    <label class="label">Team Members</label>
+                    <div class="box p-3" style="max-height: 200px; overflow-y: auto;">
+                        <div v-for="member in teamMembers" :key="member.id"
+                            class="is-flex is-justify-content-space-between is-align-items-center mb-2">
+                            <div class="is-flex is-align-items-center">
+                                <img :src="getAvatarUrl(member)" class="image is-32x32 is-rounded mr-2">
+                                <div>
+                                    <p class="has-text-weight-medium mb-0">{{ member.firstName }} {{ member.lastName }}
+                                    </p>
+                                    <p class="is-size-7 has-text-grey mb-0">{{ member.email }}</p>
+                                </div>
+                            </div>
+                            <div class="select is-small" v-if="member.id !== currentUser.id">
+                                <select v-model="member.permission" @@change="updatePermission(member)">
+                                    <option value="view">Can View</option>
+                                    <option value="edit">Can Edit</option>
+                                </select>
+                            </div>
+                            <div v-else>
+                                <span class="tag is-info is-light">Owner</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button" @@click="showShareModal = false">Close</button>
+            </footer>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script type="module">
+    import { createDocumentEditor } from '/js/colabdoc/document-editor.js';
+    
+    // Set up global configuration for the document editor
+    window.docEditorConfig = {
+        documentId: @Model.Document.DocId,
+        documentTitle: @Html.Raw(Json.Serialize(Model.Document.Title)),
+        documentContent: @Html.Raw(Json.Serialize(Model.Document.Content)),
+        canEdit: @(Model.CanEdit ? "true" : "false"),
+        teamId: @Model.TeamId,
+        currentUser: {
+            id: @Model.CurrentUser.Id,
+            name: @Html.Raw(Json.Serialize(User.Identity?.Name ?? "User")),
+            avatar: 'https://ui-avatars.com/api/?name=@Uri.EscapeDataString(User.Identity?.Name ?? "User")&size=32&background=3273DC&color=FFFFFF'
+        }
+    };
+
+    // Create and mount the document editor
+    const app = createDocumentEditor();
+    app.mount('#app');
+
+    // Log for debugging
+    console.log('Document editor initialized with config:', docEditorConfig);
+</script>
+}
+
+@section Styles {
+<link rel="stylesheet" href="~/lib/ckeditor5/ckeditor5.css">
+
+    <link rel="stylesheet" href="~/lib/ckeditor5/ckeditor5.css">
+    <link rel="stylesheet" href="~/css/colab-doc/document-editor.css">
+    <link rel="stylesheet" href="~/css/colab-doc/collaborator-tooltip.css">
+    <link rel="stylesheet" href="~/css/colab-doc/ckeditor-custom.css">
+        <link rel="stylesheet" href="~/css/colab-doc/cursor-styles.css">
+
+}

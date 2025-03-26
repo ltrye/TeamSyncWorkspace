@@ -5,6 +5,16 @@
     {
       "library": "microsoft-signalr@8.0.7",
       "destination": "wwwroot/microsoft-signalr/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "vue@3.5.13",
+      "destination": "wwwroot/vue/",
+      "files": [
+        "vue.cjs.js",
+        "vue.global.min.js",
+        "vue.global.prod.js"
+      ]
     }
   ]
 }
