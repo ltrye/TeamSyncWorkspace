@@ -1,0 +1,160 @@
+﻿@page
+@model TeamSyncWorkspace.Pages.Teams.Timeline.IndexModel
+@{
+    ViewData["Title"] = "Timeline";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/Timeline/Calendar.css" asp-append-version="true">
+</head>
+
+<!-- Title using Bulma -->
+<h1 class="title is-1">Timeline</h1>
+<h4 class="subtitle is-4">@DateTime.Today.ToString("MMMM yyyy")</h4>
+
+<!-- Add Task Button -->
+<button class="button is-primary js-modal-trigger" data-target="addTaskModal">
+    Add Task
+</button>
+
+<div class="columns">
+    <!-- Left: Calendar Layout -->
+    <div class="column is-three-quarters">
+        <div class="box">
+            <div class="calendar-container">
+                <button id="prev-week" class="button is-light calendar-nav">&lt; Prev</button>
+                <div class="calendar-main">
+                    <div id="weekdays"></div> <!-- Weekday Names -->
+                    <div id="calendar"></div> <!-- Calendar Grid -->
+                </div>
+                <button id="next-week" class="button is-light calendar-nav">Next &gt;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Task List -->
+    <div class="column is-4">
+        <div class="box">
+            <h2 id="taskListTitle" class="title is-4">Tasks This Week</h2> <!--  Dynamic Title -->
+
+            <ul id="taskList" class="task-list">
+                @foreach (var task in Model.Tasks.OrderBy(t => t.DueDate))
+                {
+                    <li class="task-item"
+                        data-task-id="@task.TaskId"
+                        data-task-description="@task.TaskDescription"
+                        data-due-date="@task.DueDate.ToString("yyyy-MM-dd")"
+                        data-is-completed="@task.IsCompleted.ToString().ToLower()">
+                        <strong>@task.DueDate.ToString("ddd, MMM dd"):</strong>
+                        @task.TaskDescription
+                        (@(task.IsCompleted ? "Completed" : "Pending"))
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal" id="addTaskModal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <form method="post" asp-page-handler="AddTask">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Add Task</p>
+                <button type="button" class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+                
+                <div class="field">
+                    <label class="label">Task Description</label>
+                    <div class="control">
+                        <input type="text" asp-for="TaskDescription" class="input" required />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Due Date</label>
+                    <div class="control">
+                        <input type="date" asp-for="DueDate"
+                               value="@DateTime.Today.ToString("yyyy-MM-dd")" class="input" required />
+                    </div>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button type="submit" class="button is-primary">Add Task</button>
+                <button type="button" class="button is-light close-modal">Cancel</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+@* Task Details Modal *@
+<!-- Task Details Modal -->
+<div id="taskDetailsModal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <form id="taskForm" method="post">
+            <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+            <input type="hidden" id="taskId" name="TaskId" />  <!--  Task ID added -->
+
+            <header class="modal-card-head">
+                <p id="modalTitle" class="modal-card-title">Task Details</p>
+                <button type="button" class="delete close-modal" aria-label="close"></button>
+            </header>
+
+            <section class="modal-card-body">
+                <div class="field">
+                    <label class="label">Task Description</label>
+                    <div class="control">
+                        <input type="text" id="taskDescription" name="TaskDescription" class="input" required />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Due Date</label>
+                    <div class="control">
+                        <input type="date" id="taskDueDate" name="DueDate" class="input" required />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Status</label>
+                    <div class="control">
+                        <div class="select">
+                            <select id="taskStatus" name="IsCompleted">
+                                <option value="false">Not Completed</option>
+                                <option value="true">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="modal-card-foot">
+                <!-- Save Button -->
+                <button id="saveTask" type="submit" formaction="?handler=UpdateTask"
+                        formmethod="post" class="button is-success">
+                    Save
+                </button>
+
+                <!-- Delete Button -->
+                <button id="deleteTask" type="submit" formaction="?handler=DeleteTask"
+                        formmethod="post" class="button is-danger">
+                    Delete
+                </button>
+
+                <button type="button" class="button close-modal">Cancel</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.10/dayjs.min.js"></script>
+    <script src="~/js/Timeline/Calendar.js"></script>
+}

@@ -204,9 +204,13 @@
                                 </div>
                                 <h5 class="title is-5 has-text-centered mb-2">Timeline</h5>
                                 <p class="has-text-centered has-text-grey mb-4">View and manage your team's schedule</p>
-                                <a href="/Timeline/Index?workspaceId=@Model.Workspace.WorkspaceId" class="button is-link is-light is-fullwidth">
+                                <a href="/Dashboard/Timeline/Index?workspaceId=@Model.Workspace.WorkspaceId" class="button is-link is-light is-fullwidth">
                                     View Timeline
                                 </a>
+                                @* <a asp-page="/Timeline/Index" asp-route-workspaceId="@Model.Workspace.WorkspaceId" class="button is-link is-light is-fullwidth">
+                                    View Timeline
+                                </a> *@
+
                             </div>
                         </div>
                     </div>

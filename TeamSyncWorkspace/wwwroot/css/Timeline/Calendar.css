@@ -1,0 +1,51 @@
+﻿/*  Calendar Container */
+.calendar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Calendar Main Section */
+.calendar-main {
+    flex-grow: 1;
+}
+
+/*  Navigation Buttons */
+.calendar-nav {
+    min-width: 80px;
+    text-align: center;
+}
+
+/*  Calendar Table */
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/*  Table Headers */
+.day-header {
+    background: #eee;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px;
+    text-align: center;
+}
+
+/*  Task Cells */
+.task-cell {
+    min-height: 40px;
+    border: 1px solid #ddd;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/*  Task Item */
+.task-item {
+    cursor: pointer;
+    padding: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
