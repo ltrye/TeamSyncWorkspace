@@ -1,0 +1,273 @@
+@page
+@model TeamSyncWorkspace.Pages.Documents.IndexModel
+@{
+    ViewData["Title"] = "Team Documents";
+}
+
+<div class="container is-fluid">
+    <div class="section pt-4 pb-2">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <div>
+                        <nav class="breadcrumb" aria-label="breadcrumbs">
+                            <ul>
+                                <li><a asp-page="/Teams/Index">My Teams</a></li>
+                                <li><a asp-page="/Dashboard/Index" asp-route-teamId="@Model.TeamId">@Model.TeamName</a></li>
+                                <li class="is-active"><a href="#" aria-current="page">Documents</a></li>
+                            </ul>
+                        </nav>
+                        <h1 class="title is-3">Team Documents</h1>
+                        <p class="subtitle is-6 has-text-grey">Create and collaborate on documents with your team</p>
+                    </div>
+                </div>
+            </div>
+            <div class="level-right">
+                @if (Model.CanCreateDocuments)
+                {
+                    <div class="level-item">
+                        <button class="button is-info js-modal-trigger" data-target="createDocModal">
+                            <span class="icon">
+                                <i class="bi bi-plus-lg"></i>
+                            </span>
+                            <span>New Document</span>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="notification @(Model.StatusMessage.StartsWith("Error") ? "is-danger is-light" : "is-success is-light")">
+                <button class="delete"></button>
+                @Model.StatusMessage
+            </div>
+        }
+    </div>
+
+    <!-- Documents List -->
+    <div class="box has-shadow">
+        @if (!Model.Documents.Any())
+        {
+            <div class="has-text-centered py-5">
+                <span class="icon-large has-text-grey">
+                    <i class="bi bi-file-earmark-text"></i>
+                </span>
+                <p class="mt-3 has-text-grey">No documents found. Create your first document to get started.</p>
+                @if (Model.CanCreateDocuments)
+                {
+                    <button class="button is-info is-light mt-3 js-modal-trigger" data-target="createDocModal">
+                        <span class="icon">
+                            <i class="bi bi-plus-lg"></i>
+                        </span>
+                        <span>Create Document</span>
+                    </button>
+                }
+            </div>
+        }
+        else
+        {
+            <table class="table is-fullwidth is-hoverable">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Last Modified</th>
+                        <th>Created By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var doc in Model.Documents)
+                    {
+                        <tr>
+                            <td>
+                                <div class="is-flex is-align-items-center">
+                                    <span class="icon has-text-info mr-2">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </span>
+                                    <div>
+                                        <p class="has-text-weight-medium mb-0">@doc.Title</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="has-text-grey is-size-7">
+                                    @doc.LastModifiedDate.ToString("MMM d, yyyy h:mm tt")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="is-flex is-align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{doc.CreatedByUser.FirstName} {doc.CreatedByUser.LastName}"))&size=24&background=E5E5E5&color=707070" 
+                                         class="image is-24x24 is-rounded mr-2" alt="Avatar" />
+                                    <span class="is-size-7">@doc.CreatedByUser.FirstName @doc.CreatedByUser.LastName</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="buttons are-small">
+                                    <a href="/Documents/Edit/@doc.DocId" class="button is-info is-light">
+                                        <span class="icon is-small">
+                                            <i class="bi bi-pencil"></i>
+                                        </span>
+                                        <span>Edit</span>
+                                    </a>
+                                    
+                                    @if (Model.CanDeleteDocuments && (doc.CreatedByUserId == Model.CurrentUserId || Model.IsTeamAdmin))
+                                    {
+                                        <button class="button is-danger is-light js-delete-doc" 
+                                                data-doc-id="@doc.DocId" 
+                                                data-doc-title="@doc.Title">
+                                            <span class="icon is-small">
+                                                <i class="bi bi-trash"></i>
+                                            </span>
+                                            <span>Delete</span>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<!-- Create Document Modal -->
+<div class="modal" id="createDocModal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <form method="post" asp-page-handler="CreateDocument">
+            <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+            <header class="modal-card-head">
+                <p class="modal-card-title">Create New Document</p>
+                <button type="button" class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="field">
+                    <label class="label">Document Title</label>
+                    <div class="control">
+                        <input type="text" name="Title" class="input" placeholder="Enter document title" required>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label">Description (Optional)</label>
+                    <div class="control">
+                        <textarea name="Description" class="textarea" placeholder="Add a brief description"></textarea>
+                    </div>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button type="submit" class="button is-info">Create Document</button>
+                <button type="button" class="button is-light">Cancel</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteDocModal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <form method="post" asp-page-handler="DeleteDocument">
+            <input type="hidden" id="deleteDocId" name="DocumentId" value="" />
+            <header class="modal-card-head">
+                <p class="modal-card-title">Confirm Delete</p>
+                <button type="button" class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="notification is-danger is-light">
+                    <p>Are you sure you want to delete the document "<span id="deleteDocTitle"></span>"?</p>
+                    <p>This action cannot be undone.</p>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button type="submit" class="button is-danger">Delete Document</button>
+                <button type="button" class="button is-light">Cancel</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delete notification functionality
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.parentNode;
+                $delete.addEventListener('click', () => {
+                    $notification.parentNode.removeChild($notification);
+                });
+            });
+            
+            // Modal functionality
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+
+            // Open modal triggers
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                    openModal($target);
+                });
+            });
+
+            // Delete document buttons
+            (document.querySelectorAll('.js-delete-doc') || []).forEach(($button) => {
+                $button.addEventListener('click', () => {
+                    const docId = $button.dataset.docId;
+                    const docTitle = $button.dataset.docTitle;
+                    
+                    document.getElementById('deleteDocId').value = docId;
+                    document.getElementById('deleteDocTitle').textContent = docTitle;
+                    
+                    openModal(document.getElementById('deleteDocModal'));
+                });
+            });
+
+            // Close modal elements
+            (document.querySelectorAll('.modal-background, .modal-card-head .delete, .modal-card-foot .button.is-light') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Keyboard event to close modals
+            document.addEventListener('keydown', (event) => {
+                if (event.key === "Escape") {
+                    closeAllModals();
+                }
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .has-shadow {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .icon-large {
+            font-size: 3rem;
+            display: inline-block;
+            opacity: 0.3;
+        }
+    </style>
+}

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TeamSyncWorkspace.Migrations
 {
     /// <inheritdoc />
-    public partial class UpodateTeam : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,6 +35,7 @@ namespace TeamSyncWorkspace.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false),
+                    ProfileImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -53,20 +54,6 @@ namespace TeamSyncWorkspace.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TeamRoles",
-                columns: table => new
-                {
-                    RoleId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TeamRoles", x => x.RoleId);
                 });
 
             migrationBuilder.CreateTable(
@@ -190,6 +177,27 @@ namespace TeamSyncWorkspace.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DocumentPermissions",
+                columns: table => new
+                {
+                    PermissionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    CanEdit = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentPermissions", x => x.PermissionId);
+                    table.ForeignKey(
+                        name: "FK_DocumentPermissions_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
@@ -216,26 +224,6 @@ namespace TeamSyncWorkspace.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TeamRolePermissions",
-                columns: table => new
-                {
-                    PermissionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<int>(type: "int", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TeamRolePermissions", x => x.PermissionId);
-                    table.ForeignKey(
-                        name: "FK_TeamRolePermissions_TeamRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "TeamRoles",
-                        principalColumn: "RoleId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TeamInvitations",
                 columns: table => new
                 {
@@ -250,6 +238,7 @@ namespace TeamSyncWorkspace.Migrations
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsAccepted = table.Column<bool>(type: "bit", nullable: false),
                     IsDeclined = table.Column<bool>(type: "bit", nullable: false),
+                    CustomMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Token = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -304,6 +293,26 @@ namespace TeamSyncWorkspace.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TeamRoles",
+                columns: table => new
+                {
+                    RoleId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TeamId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TeamRoles", x => x.RoleId);
+                    table.ForeignKey(
+                        name: "FK_TeamRoles_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Workspaces",
                 columns: table => new
                 {
@@ -321,6 +330,26 @@ namespace TeamSyncWorkspace.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TeamRolePermissions",
+                columns: table => new
+                {
+                    PermissionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TeamRolePermissions", x => x.PermissionId);
+                    table.ForeignKey(
+                        name: "FK_TeamRolePermissions_TeamRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "TeamRoles",
+                        principalColumn: "RoleId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -437,6 +466,33 @@ namespace TeamSyncWorkspace.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ChatMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_CollabDocs_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "CollabDocs",
+                        principalColumn: "DocId",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DocActions",
                 columns: table => new
                 {
@@ -468,6 +524,156 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "CollabDocs",
                         principalColumn: "DocId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentAccessLogs",
+                columns: table => new
+                {
+                    LogId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AccessTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentAccessLogs", x => x.LogId);
+                    table.ForeignKey(
+                        name: "FK_DocumentAccessLogs_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DocumentAccessLogs_CollabDocs_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "CollabDocs",
+                        principalColumn: "DocId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentComments",
+                columns: table => new
+                {
+                    CommentId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RangeStart = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RangeEnd = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsResolved = table.Column<bool>(type: "bit", nullable: false),
+                    ResolvedById = table.Column<int>(type: "int", nullable: true),
+                    ResolvedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentComments", x => x.CommentId);
+                    table.ForeignKey(
+                        name: "FK_DocumentComments_AspNetUsers_ResolvedById",
+                        column: x => x.ResolvedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DocumentComments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DocumentComments_CollabDocs_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "CollabDocs",
+                        principalColumn: "DocId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentOperations",
+                columns: table => new
+                {
+                    OperationId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    OperationType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OperationData = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentOperations", x => x.OperationId);
+                    table.ForeignKey(
+                        name: "FK_DocumentOperations_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DocumentOperations_CollabDocs_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "CollabDocs",
+                        principalColumn: "DocId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentShareLinks",
+                columns: table => new
+                {
+                    ShareId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedById = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentShareLinks", x => x.ShareId);
+                    table.ForeignKey(
+                        name: "FK_DocumentShareLinks_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DocumentShareLinks_CollabDocs_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "CollabDocs",
+                        principalColumn: "DocId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentVersions",
+                columns: table => new
+                {
+                    VersionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: false),
+                    VersionNumber = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedById = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentVersions", x => x.VersionId);
+                    table.ForeignKey(
+                        name: "FK_DocumentVersions_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DocumentVersions_CollabDocs_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "CollabDocs",
+                        principalColumn: "DocId");
                 });
 
             migrationBuilder.CreateTable(
@@ -537,6 +743,16 @@ namespace TeamSyncWorkspace.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_DocumentId",
+                table: "ChatMessages",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_UserId",
+                table: "ChatMessages",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CollabDocs_CreatedByUserId",
                 table: "CollabDocs",
                 column: "CreatedByUserId");
@@ -560,6 +776,66 @@ namespace TeamSyncWorkspace.Migrations
                 name: "IX_DocActions_UserId",
                 table: "DocActions",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentAccessLogs_DocumentId",
+                table: "DocumentAccessLogs",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentAccessLogs_UserId",
+                table: "DocumentAccessLogs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentComments_DocumentId",
+                table: "DocumentComments",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentComments_ResolvedById",
+                table: "DocumentComments",
+                column: "ResolvedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentComments_UserId",
+                table: "DocumentComments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentOperations_DocumentId",
+                table: "DocumentOperations",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentOperations_UserId",
+                table: "DocumentOperations",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentPermissions_UserId",
+                table: "DocumentPermissions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentShareLinks_CreatedById",
+                table: "DocumentShareLinks",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentShareLinks_DocumentId",
+                table: "DocumentShareLinks",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentVersions_CreatedById",
+                table: "DocumentVersions",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentVersions_DocumentId",
+                table: "DocumentVersions",
+                column: "DocumentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Files_FolderId",
@@ -617,6 +893,11 @@ namespace TeamSyncWorkspace.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TeamRoles_TeamId",
+                table: "TeamRoles",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimelineTasks_WorkspaceId",
                 table: "TimelineTasks",
                 column: "WorkspaceId");
@@ -647,7 +928,28 @@ namespace TeamSyncWorkspace.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ChatMessages");
+
+            migrationBuilder.DropTable(
                 name: "DocActions");
+
+            migrationBuilder.DropTable(
+                name: "DocumentAccessLogs");
+
+            migrationBuilder.DropTable(
+                name: "DocumentComments");
+
+            migrationBuilder.DropTable(
+                name: "DocumentOperations");
+
+            migrationBuilder.DropTable(
+                name: "DocumentPermissions");
+
+            migrationBuilder.DropTable(
+                name: "DocumentShareLinks");
+
+            migrationBuilder.DropTable(
+                name: "DocumentVersions");
 
             migrationBuilder.DropTable(
                 name: "Files");
