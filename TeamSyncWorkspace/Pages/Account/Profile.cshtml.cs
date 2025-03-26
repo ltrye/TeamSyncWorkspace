@@ -122,12 +122,12 @@ namespace TeamSyncWorkspace.Pages.Account
         // Add these public methods to check user properties
         public async Task<bool> HasPasswordAsync(ApplicationUser user)
         {
-            return await _userManager.HasPasswordAsync(user);
+            return await _accountService.HasPasswordAsync(user);
         }
 
         public async Task<IList<UserLoginInfo>> GetLoginsAsync(ApplicationUser user)
         {
-            return await _userManager.GetLoginsAsync(user);
+            return await _accountService.GetLoginsAsync(user);
         }
     }
 }

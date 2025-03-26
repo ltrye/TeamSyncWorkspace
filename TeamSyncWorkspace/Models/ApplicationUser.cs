@@ -11,4 +11,6 @@ public class ApplicationUser : IdentityUser<int> // Use int as PK type to match 
     public int RoleId { get; set; } // Add your custom field
     public ICollection<TeamMember> TeamMemberships { get; set; }
     public ICollection<DocAction> DocActions { get; set; }
+
+    public string? ProfileImageUrl { get; set; }
 }

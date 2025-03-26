@@ -35,7 +35,8 @@ namespace TeamSyncWorkspace.Services
             int teamId,
             int invitedByUserId,
             string invitedEmail,
-            string role = "Member")
+            string role = "Member",
+            string customMessage = null)
         {
             // Validate the inviter has permission to invite
             var team = await _context.Teams.FindAsync(teamId);
@@ -94,7 +95,8 @@ namespace TeamSyncWorkspace.Services
                 IsAccepted = false,
                 IsDeclined = false,
                 Token = Guid.NewGuid().ToString(),
-                Role = role
+                Role = role,
+                CustomMessage = customMessage // Add the custom message
             };
 
             _context.TeamInvitations.Add(invitation);
@@ -103,10 +105,17 @@ namespace TeamSyncWorkspace.Services
             // Create notification for the invited user if they're registered
             if (invitedUser != null)
             {
+                var inviter = await _userManager.FindByIdAsync(invitedByUserId.ToString());
+                var inviterName = inviter != null ? $"{inviter.FirstName} {inviter.LastName}" : "A team admin";
+
+                var notificationMessage = string.IsNullOrEmpty(customMessage)
+                    ? $"You've been invited to join the team '{team.TeamName}'"
+                    : $"You've been invited to join the team '{team.TeamName}'. Message: {customMessage}";
+
                 await _notificationService.CreateNotificationAsync(
                     invitedUser.Id,
                     "Team Invitation",
-                    $"You've been invited to join the team '{team.TeamName}'",
+                    notificationMessage,
                     $"/Teams/Invitation?token={invitation.Token}",
                     "TeamInvitation",
                     invitation.InvitationId);

@@ -1,7 +1,7 @@
 @page
 @model TeamSyncWorkspace.Pages.Account.LoginModel
 @{
-    ViewData["Title"] = "Log in";
+ViewData["Title"] = "Log in";
 }
 
 <div class="container is-fluid">
@@ -10,32 +10,34 @@
             <div class="box has-shadow">
                 <div class="p-5 has-text-centered">
                     <h1 class="title is-3 mb-5">@ViewData["Title"]</h1>
-                    
+
                     <form id="account" method="post">
                         <div asp-validation-summary="ModelOnly" class="has-text-danger mb-3"></div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.Email" class="label">Email</label>
                             <div class="control has-icons-left">
-                                <input asp-for="Input.Email" class="input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                                <input asp-for="Input.Email" class="input" autocomplete="username" aria-required="true"
+                                    placeholder="name@example.com" />
                                 <span class="icon is-small is-left">
                                     <i class="bi bi-envelope"></i>
                                 </span>
                             </div>
                             <span asp-validation-for="Input.Email" class="help is-danger"></span>
                         </div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.Password" class="label">Password</label>
                             <div class="control has-icons-left">
-                                <input asp-for="Input.Password" class="input" autocomplete="current-password" aria-required="true" placeholder="Password" />
+                                <input asp-for="Input.Password" class="input" autocomplete="current-password"
+                                    aria-required="true" placeholder="Password" />
                                 <span class="icon is-small is-left">
                                     <i class="bi bi-lock"></i>
                                 </span>
                             </div>
                             <span asp-validation-for="Input.Password" class="help is-danger"></span>
                         </div>
-                        
+
                         <div class="field">
                             <div class="control">
                                 <label class="checkbox">
@@ -44,27 +46,35 @@
                                 </label>
                             </div>
                         </div>
-                        
+
                         <div class="field mt-5">
                             <div class="control">
-                                <button id="login-submit" type="submit" class="button is-info is-fullwidth">Log in</button>
+                                <button id="login-submit" type="submit" class="button is-info is-fullwidth">Log
+                                    in</button>
                             </div>
                         </div>
-                        
+
                         <div class="is-divider" data-content="OR"></div>
-                        
+
                         <div class="field mt-5">
-                            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                                <button type="submit" class="button is-danger is-fullwidth" name="provider" value="Google">
-                                    <span class="icon">
-                                        <i class="bi bi-google"></i>
-                                    </span>
-                                    <span>Login with Google</span>
-                                </button>
-                            </form>
+                            <a asp-page="/Account/ExternalLogin" asp-route-provider="Google" asp-page-handler="Login"
+                                class="button is-danger is-fullwidth">
+                                <span class="icon">
+                                    <i class="bi bi-google"></i>
+                                </span>
+                                <span>Login with Google</span>
+                            </a>
+                            <div>
+                                @if (TempData["ErrorMessage"] != null)
+                                {
+                                <div class="notification is-danger mt-3 mb-3">
+                                    @TempData["ErrorMessage"]
+                                </div>
+                                }
+                            </div>
                         </div>
                     </form>
-                    
+
                     <div class="mt-5 has-text-centered">
                         <p class="mb-2">
                             <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="has-text-info">
@@ -84,30 +94,30 @@
 </div>
 
 @section Styles {
-    <style>
-        .is-divider {
-            display: block;
-            position: relative;
-            border-top: 1px solid #dbdbdb;
-            height: 1px;
-            margin: 2rem 0;
-            text-align: center;
-        }
-        
-        .is-divider[data-content]::after {
-            background: #fff;
-            color: #b5b5b5;
-            content: attr(data-content);
-            display: inline-block;
-            font-size: 0.8rem;
-            padding: 0 0.8rem;
-            position: relative;
-            text-transform: uppercase;
-            top: -0.7rem;
-        }
-    </style>
+<style>
+    .is-divider {
+        display: block;
+        position: relative;
+        border-top: 1px solid #dbdbdb;
+        height: 1px;
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .is-divider[data-content]::after {
+        background: #fff;
+        color: #b5b5b5;
+        content: attr(data-content);
+        display: inline-block;
+        font-size: 0.8rem;
+        padding: 0 0.8rem;
+        position: relative;
+        text-transform: uppercase;
+        top: -0.7rem;
+    }
+</style>
 }
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+<partial name="_ValidationScriptsPartial" />
 }

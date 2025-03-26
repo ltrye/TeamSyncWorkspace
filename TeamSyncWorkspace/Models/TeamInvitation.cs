@@ -29,6 +29,8 @@ namespace TeamSyncWorkspace.Models
 
         public bool IsDeclined { get; set; }
 
+        public string? CustomMessage { get; set; }
+
         [MaxLength(36)]
         public string Token { get; set; }
 

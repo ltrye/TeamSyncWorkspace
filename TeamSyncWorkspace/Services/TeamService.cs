@@ -243,5 +243,55 @@ namespace TeamSyncWorkspace.Services
             return await _context.TeamMembers
                 .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
         }
+
+        public async Task<(bool success, string message)> RemoveMemberFromTeamAsync(int teamId, int userId, int actingUserId)
+        {
+            // Check if team exists
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null)
+            {
+                return (false, "Team not found.");
+            }
+
+            // Check if user exists
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return (false, "User not found.");
+            }
+
+            // Check if user has permission to remove members
+            bool canRemoveMembers = await _teamRoleService.UserCanPerformActionAsync(
+                teamId, actingUserId, ActivityType.RemoveMembers);
+
+            if (!canRemoveMembers)
+            {
+                return (false, "You don't have permission to remove team members.");
+            }
+
+            // Check if user is a member of the team
+            var teamMember = await _context.TeamMembers
+                .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
+
+            if (teamMember == null)
+            {
+                return (false, "User is not a member of this team.");
+            }
+
+            // Don't allow removing the owner
+            if (teamMember.Role == "Owner")
+            {
+                return (false, "Cannot remove the team owner.");
+            }
+
+            // Remove the user from the team
+            _context.TeamMembers.Remove(teamMember);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("User {ActingUserId} removed user {UserId} from team {TeamId}",
+                actingUserId, userId, teamId);
+
+            return (true, $"User removed from team successfully.");
+        }
     }
 }

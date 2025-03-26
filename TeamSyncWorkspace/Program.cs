@@ -30,8 +30,17 @@ builder.Services.AddAuthentication()
     {
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
         options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
-        options.CallbackPath = "/ExternalLogin?handler=Callback";
+        options.CallbackPath = "/signin-google";
+        options.Events.OnRemoteFailure = context =>
+            {
+                context.HandleResponse();
+                context.Response.Redirect("/Account/Login?errorMessage=" + context.Failure.Message);
+                return Task.CompletedTask;
+            };
+
     });
+
+builder.Services.AddAuthorization();
 
 // Register application services
 builder.Services.AddScoped<DashboardService>();

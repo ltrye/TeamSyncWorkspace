@@ -1,7 +1,7 @@
 @page
 @model TeamSyncWorkspace.Pages.Account.ExternalLoginModel
 @{
-    ViewData["Title"] = "Register";
+ViewData["Title"] = "Register";
 }
 
 <div class="container is-fluid">
@@ -11,42 +11,52 @@
                 <div class="p-5 has-text-centered">
                     <h1 class="title is-3">@ViewData["Title"]</h1>
                     <h4 class="subtitle is-5 has-text-info">Associate your @Model.ProviderDisplayName account</h4>
-                    
+
                     <p class="is-size-6 has-text-grey my-4">
                         You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
                         Please enter your information below to complete the registration.
                     </p>
-                    
+
                     <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                         <div asp-validation-summary="ModelOnly" class="has-text-danger mb-3"></div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.Email" class="label">Email</label>
                             <div class="control has-icons-left">
-                                <input asp-for="Input.Email" class="input" autocomplete="email" placeholder="name@example.com" />
+                                <input asp-for="Input.Email" class="input" autocomplete="email"
+                                    placeholder="name@example.com" />
                                 <span class="icon is-small is-left">
                                     <i class="bi bi-envelope"></i>
                                 </span>
                             </div>
                             <span asp-validation-for="Input.Email" class="help is-danger"></span>
                         </div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.FirstName" class="label">First Name</label>
                             <div class="control">
-                                <input asp-for="Input.FirstName" class="input" autocomplete="given-name" placeholder="First Name" />
+                                <input asp-for="Input.FirstName" class="input" autocomplete="given-name"
+                                    placeholder="First Name" />
                             </div>
                             <span asp-validation-for="Input.FirstName" class="help is-danger"></span>
                         </div>
-                        
+
                         <div class="field">
                             <label asp-for="Input.LastName" class="label">Last Name</label>
                             <div class="control">
-                                <input asp-for="Input.LastName" class="input" autocomplete="family-name" placeholder="Last Name" />
+                                <input asp-for="Input.LastName" class="input" autocomplete="family-name"
+                                    placeholder="Last Name" />
                             </div>
                             <span asp-validation-for="Input.LastName" class="help is-danger"></span>
                         </div>
-                        
+                        <div class="field">
+                            <label asp-for="Input.Password" class="label">Password</label>
+                            <div class="control">
+                                <input asp-for="Input.Password" class="input" placeholder="Password" />
+                            </div>
+                            <span asp-validation-for="Input.Password" class="help is-danger"></span>
+                        </div>
+
                         <div class="field mt-5">
                             <div class="control">
                                 <button type="submit" class="button is-info is-fullwidth">Register</button>
@@ -60,5 +70,5 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+<partial name="_ValidationScriptsPartial" />
 }
