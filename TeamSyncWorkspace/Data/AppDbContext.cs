@@ -29,7 +29,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<DocumentAccessLog> DocumentAccessLogs { get; set; }
     public DbSet<DocumentShareLink> DocumentShareLinks { get; set; }
     public DbSet<DocumentPermission> DocumentPermissions { get; set; }
-
+    // Add to AppDbContext.cs
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

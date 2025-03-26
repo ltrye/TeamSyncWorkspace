@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Hubs;
+using TeamSyncWorkspace.Hubs.Handlers;
 using TeamSyncWorkspace.Models;
 using TeamSyncWorkspace.Services;
+using TeamSyncWorkspace.Services.ColabDocServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +57,17 @@ builder.Services.AddScoped<TeamRoleManagementService>();
 // Add this line with the other service registrations
 builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<DocumentService>();
+
+builder.Services.AddScoped<TempDocumentManager>();
+builder.Services.AddScoped<DocumentCollaborationService>();
+// Register handlers
+builder.Services.AddScoped<DocumentJoinHandler>();
+builder.Services.AddScoped<DocumentUpdateHandler>();
+builder.Services.AddScoped<DocumentLeaveHandler>();
+builder.Services.AddScoped<CursorPositionHandler>();
+builder.Services.AddScoped<CommentHandler>();
+builder.Services.AddScoped<ChatHandler>();
+
 
 // Add SignalR services
 builder.Services.AddSignalR();

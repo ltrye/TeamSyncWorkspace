@@ -1,11 +1,19 @@
+// Usage: useCollaboration.js is a Vue 3 composition function 
+// that encapsulates the SignalR connection and collaboration logic for the document editor.
+//  It provides functions to broadcast changes, cursor positions, and chat messages,
+//  as well as to set up and clean up the SignalR connection. 
+// The function also tracks active collaborators and their cursor positions. (Not yet)
+
 export function useCollaboration(documentId, currentUser) {
     const { ref, toRaw, markRaw } = Vue;
 
+
+    // SignalR connection
     const connection = ref(null);
     const activeCollaborators = ref([]);
     const cursorPositions = ref({});
 
-    const setupSignalR = async (onExternalChanges, onCursorUpdate = null) => {
+    const setupSignalR = async (onExternalChanges, onCursorUpdate = null, onChatMessage, onChatHistory) => {
         try {
             // Create connection
             const signalrConnection = new signalR.HubConnectionBuilder()
@@ -86,6 +94,16 @@ export function useCollaboration(documentId, currentUser) {
                 }
             });
 
+            // Add to useCollaboration.js in the setupSignalR function
+
+            // Handle chat messages
+            connection.value.on("ReceiveChatMessage", (userId, userInfo, message, timestamp) => {
+                onChatMessage(userId, userInfo, message, timestamp);
+            });
+
+            connection.value.on("ChatHistory", (messages) => {
+                onChatHistory(messages);
+            });
             // Start connection
             await connection.value.start();
 

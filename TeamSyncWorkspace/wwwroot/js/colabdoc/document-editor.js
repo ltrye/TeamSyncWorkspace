@@ -10,6 +10,7 @@ import { useCollaboration } from './hooks/useCollaboration.js';
 import { useDocumentSave } from './hooks/useDocumentSave.js';
 import { useDocumentExport } from './hooks/useDocumentExport.js';
 import { useTeamMembers } from './hooks/useTeamMembers.js';
+import { useChat } from './hooks/useChat.js';
 import { formatTime } from './utils.js';
 
 // Export the function to create the document editor
@@ -34,6 +35,9 @@ export function createDocumentEditor() {
             const linkCopied = ref(false);
 
             // Use composables
+
+            // Add in the setup function
+
             const {
                 editor,
                 isTyping,
@@ -84,6 +88,18 @@ export function createDocumentEditor() {
                 getAvatarUrl
             } = useTeamMembers(documentId, docEditorConfig.teamId, canEdit);
 
+            const {
+                chatMessages,
+                newMessage,
+                isChatOpen,
+                unreadMessages,
+                initChat,
+                sendMessage,
+                toggleChat,
+                handleReceiveMessage,
+                handleChatHistory,
+                formatChatTime
+            } = useChat(documentId, currentUser, connection);
             // Combined function to sync changes
             const syncChanges = async () => {
                 if (!canEdit || !editor.value || syncOperationInProgress.value) return;
@@ -154,9 +170,15 @@ export function createDocumentEditor() {
                     (userId, position) => {
                         // Handle cursor position update from others
                         console.log(`Cursor update from ${userId}`, position);
-                    }
+                    },
+                    (userId, userInfo, message, timestamp) => handleReceiveMessage(userId, userInfo, message, timestamp),
+                    (messages) => handleChatHistory(messages)
 
                 );
+
+
+                // Add to the onMounted function after setupSignalR
+                await initChat();
 
                 // Set up autosave
                 setupAutosave(() => saveDocument(getContent));
@@ -220,7 +242,17 @@ export function createDocumentEditor() {
 
                 //Color util
                 getUserColor,
-                hexToRgb
+                hexToRgb,
+
+                //Chat
+                // ...existing properties
+                chatMessages,
+                newMessage,
+                isChatOpen,
+                unreadMessages,
+                sendMessage,
+                toggleChat,
+                formatChatTime
             };
         }
     });

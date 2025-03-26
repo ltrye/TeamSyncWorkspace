@@ -106,17 +106,17 @@ namespace TeamSyncWorkspace.Services
                 document.Content = content;
                 document.LastModifiedDate = DateTime.UtcNow;
 
-                // Create a new document action for tracking changes
-                var action = new DocAction
-                {
-                    DocId = id,
-                    UserId = userId,
-                    ActionType = "Update",
-                    ActionData = "{ \"type\": \"content\" }",
-                    Timestamp = DateTime.UtcNow
-                };
+                // // Create a new document action for tracking changes
+                // var action = new DocAction
+                // {
+                //     DocId = id,
+                //     UserId = userId,
+                //     ActionType = "Update",
+                //     ActionData = "{ \"type\": \"content\" }",
+                //     Timestamp = DateTime.UtcNow
+                // };
 
-                _context.DocActions.Add(action);
+                // _context.DocActions.Add(action);
                 _context.CollabDocs.Update(document);
                 await _context.SaveChangesAsync();
             }
