@@ -36,6 +36,19 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     {
         base.OnModelCreating(modelBuilder);
 
+
+        modelBuilder.Entity<ChatMessage>()
+                    .HasOne(cm => cm.Document)
+                    .WithMany() // Assuming CollabDoc has a collection of ChatMessages
+                    .HasForeignKey(cm => cm.DocumentId)
+                    .OnDelete(DeleteBehavior.SetNull); // Keep cascade delete for DocumentId
+
+        modelBuilder.Entity<ChatMessage>()
+            .HasOne(cm => cm.User)
+            .WithMany() // No inverse navigation property in ApplicationUser
+            .HasForeignKey(cm => cm.UserId)
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for UserId
+
         // Configure DocumentComment relationships
         modelBuilder.Entity<DocumentComment>()
             .HasOne(dc => dc.Document)
@@ -47,13 +60,32 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             .HasOne(dc => dc.User)
             .WithMany() // No inverse navigation property in ApplicationUser
             .HasForeignKey(dc => dc.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // Disable cascade delete for UserId
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for UserId
 
         modelBuilder.Entity<DocumentComment>()
             .HasOne(dc => dc.ResolvedBy)
             .WithMany() // No inverse navigation property in ApplicationUser
             .HasForeignKey(dc => dc.ResolvedById)
             .IsRequired(false) // ResolvedById is optional
-            .OnDelete(DeleteBehavior.SetNull); // Disable cascade delete for ResolvedById
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for ResolvedById
+
+        modelBuilder.Entity<DocumentOperation>()
+            .HasOne(dc => dc.User)
+            .WithMany() // Assuming DocumentComment has a collection of child comments
+            .HasForeignKey(dc => dc.UserId)
+            .IsRequired(false) // ParentCommentId is optional
+            .OnDelete(DeleteBehavior.NoAction); // Disable cascade delete for ParentCommentId
+
+
+        modelBuilder.Entity<DocumentShareLink>()
+            .HasOne(dsl => dsl.Document)
+            .WithMany() // Assuming CollabDoc has a collection of DocumentShareLinks
+            .HasForeignKey(dsl => dsl.DocumentId)
+            .OnDelete(DeleteBehavior.NoAction); // Keep cascade delete for DocumentId
+        modelBuilder.Entity<DocumentVersion>()
+            .HasOne(dv => dv.Document)
+            .WithMany() // Assuming CollabDoc has a collection of DocumentVersions
+            .HasForeignKey(dv => dv.DocumentId)
+            .OnDelete(DeleteBehavior.NoAction); // Keep cascade delete for DocumentId
     }
 }

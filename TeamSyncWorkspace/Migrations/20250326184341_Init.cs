@@ -1,91 +1,84 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using MySql.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
 namespace TeamSyncWorkspace.Migrations
 {
     /// <inheritdoc />
-    public partial class Update : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySQL:Charset", "utf8mb4");
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    FirstName = table.Column<string>(type: "longtext", nullable: false),
-                    LastName = table.Column<string>(type: "longtext", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false),
-                    ProfileImageUrl = table.Column<string>(type: "longtext", nullable: true),
-                    UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "longtext", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "longtext", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "longtext", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "longtext", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetime", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    ProfileImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
                     AccessFailedCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Teams",
                 columns: table => new
                 {
                     TeamId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    TeamName = table.Column<string>(type: "longtext", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeamName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Teams", x => x.TeamId);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<int>(type: "int", nullable: false),
-                    ClaimType = table.Column<string>(type: "longtext", nullable: true),
-                    ClaimValue = table.Column<string>(type: "longtext", nullable: true)
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -96,18 +89,17 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    ClaimType = table.Column<string>(type: "longtext", nullable: true),
-                    ClaimValue = table.Column<string>(type: "longtext", nullable: true)
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -118,16 +110,15 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "varchar(255)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "varchar(255)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "longtext", nullable: true),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -139,8 +130,7 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
@@ -164,17 +154,16 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    LoginProvider = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Name = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Value = table.Column<string>(type: "longtext", nullable: true)
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -185,18 +174,17 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "DocumentPermissions",
                 columns: table => new
                 {
                     PermissionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    CanEdit = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    CanEdit = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -207,22 +195,21 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
                     NotificationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "longtext", nullable: false),
-                    Message = table.Column<string>(type: "longtext", nullable: false),
-                    Link = table.Column<string>(type: "longtext", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsRead = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    Type = table.Column<string>(type: "longtext", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Link = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RelatedEntityId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -234,27 +221,26 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "TeamInvitations",
                 columns: table => new
                 {
                     InvitationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     TeamId = table.Column<int>(type: "int", nullable: false),
                     InvitedByUserId = table.Column<int>(type: "int", nullable: false),
                     InvitedUserId = table.Column<int>(type: "int", nullable: true),
-                    InvitedEmail = table.Column<string>(type: "longtext", nullable: false),
-                    InvitedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    AcceptedDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsAccepted = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    IsDeclined = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    CustomMessage = table.Column<string>(type: "longtext", nullable: true),
-                    Token = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false),
-                    Role = table.Column<string>(type: "longtext", nullable: false)
+                    InvitedEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    InvitedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AcceptedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsAccepted = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeclined = table.Column<bool>(type: "bit", nullable: false),
+                    CustomMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Token = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -276,19 +262,18 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Teams",
                         principalColumn: "TeamId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "TeamMembers",
                 columns: table => new
                 {
                     TeamMemberId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     TeamId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    JoinedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    Role = table.Column<string>(type: "longtext", nullable: false)
+                    JoinedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -305,17 +290,16 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Teams",
                         principalColumn: "TeamId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "TeamRoles",
                 columns: table => new
                 {
                     RoleId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
-                    Description = table.Column<string>(type: "longtext", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeamId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -326,18 +310,17 @@ namespace TeamSyncWorkspace.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "TeamId");
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Workspaces",
                 columns: table => new
                 {
-                    WorkspaceId = table.Column<string>(type: "varchar(255)", nullable: false),
+                    WorkspaceId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     TeamId = table.Column<int>(type: "int", nullable: false),
-                    WorkspaceName = table.Column<string>(type: "longtext", nullable: false),
-                    Description = table.Column<string>(type: "longtext", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    WorkspaceName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -348,17 +331,16 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Teams",
                         principalColumn: "TeamId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "TeamRolePermissions",
                 columns: table => new
                 {
                     PermissionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<int>(type: "int", nullable: false),
-                    Action = table.Column<string>(type: "longtext", nullable: false)
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -369,23 +351,22 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "TeamRoles",
                         principalColumn: "RoleId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "AIMembers",
                 columns: table => new
                 {
                     AIMemberId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "longtext", nullable: false),
-                    Role = table.Column<string>(type: "longtext", nullable: false),
-                    AvatarUrl = table.Column<string>(type: "longtext", nullable: false),
-                    ApiKey = table.Column<string>(type: "longtext", nullable: false),
-                    ModelName = table.Column<string>(type: "longtext", nullable: false),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    WorkspaceId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ApiKey = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ModelName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    WorkspaceId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -396,21 +377,20 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Workspaces",
                         principalColumn: "WorkspaceId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "CollabDocs",
                 columns: table => new
                 {
                     DocId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Title = table.Column<string>(type: "longtext", nullable: false),
-                    Content = table.Column<string>(type: "longtext", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    LastModifiedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    WorkspaceId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    WorkspaceId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -427,20 +407,19 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Workspaces",
                         principalColumn: "WorkspaceId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Folders",
                 columns: table => new
                 {
                     FolderId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    FolderName = table.Column<string>(type: "longtext", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FolderName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ParentFolderId = table.Column<int>(type: "int", nullable: true),
                     CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    WorkspaceId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    WorkspaceId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -462,19 +441,18 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Workspaces",
                         principalColumn: "WorkspaceId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "TimelineTasks",
                 columns: table => new
                 {
                     TaskId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    WorkspaceId = table.Column<string>(type: "varchar(255)", nullable: false),
-                    TaskDescription = table.Column<string>(type: "longtext", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WorkspaceId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TaskDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -485,21 +463,47 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Workspaces",
                         principalColumn: "WorkspaceId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChatMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_CollabDocs_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "CollabDocs",
+                        principalColumn: "DocId",
+                        onDelete: ReferentialAction.SetNull);
+                });
 
             migrationBuilder.CreateTable(
                 name: "DocActions",
                 columns: table => new
                 {
                     ActionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DocId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: true),
                     AIMemberId = table.Column<int>(type: "int", nullable: true),
-                    ActionType = table.Column<string>(type: "longtext", nullable: false),
-                    ActionData = table.Column<string>(type: "longtext", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    ActionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ActionData = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -520,20 +524,19 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "CollabDocs",
                         principalColumn: "DocId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "DocumentAccessLogs",
                 columns: table => new
                 {
                     LogId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: true),
-                    IpAddress = table.Column<string>(type: "longtext", nullable: false),
-                    UserAgent = table.Column<string>(type: "longtext", nullable: false),
-                    AccessTime = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AccessTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -549,24 +552,23 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "CollabDocs",
                         principalColumn: "DocId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "DocumentComments",
                 columns: table => new
                 {
                     CommentId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    Content = table.Column<string>(type: "longtext", nullable: false),
-                    RangeStart = table.Column<string>(type: "longtext", nullable: false),
-                    RangeEnd = table.Column<string>(type: "longtext", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsResolved = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RangeStart = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RangeEnd = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsResolved = table.Column<bool>(type: "bit", nullable: false),
                     ResolvedById = table.Column<int>(type: "int", nullable: true),
-                    ResolvedDate = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                    ResolvedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -575,34 +577,31 @@ namespace TeamSyncWorkspace.Migrations
                         name: "FK_DocumentComments_AspNetUsers_ResolvedById",
                         column: x => x.ResolvedById,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_DocumentComments_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_DocumentComments_CollabDocs_DocumentId",
                         column: x => x.DocumentId,
                         principalTable: "CollabDocs",
                         principalColumn: "DocId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "DocumentOperations",
                 columns: table => new
                 {
                     OperationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    OperationType = table.Column<string>(type: "longtext", nullable: false),
-                    OperationData = table.Column<string>(type: "longtext", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    OperationType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OperationData = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -611,29 +610,27 @@ namespace TeamSyncWorkspace.Migrations
                         name: "FK_DocumentOperations_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_DocumentOperations_CollabDocs_DocumentId",
                         column: x => x.DocumentId,
                         principalTable: "CollabDocs",
                         principalColumn: "DocId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "DocumentShareLinks",
                 columns: table => new
                 {
                     ShareId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
-                    Token = table.Column<string>(type: "longtext", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedById = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -648,22 +645,20 @@ namespace TeamSyncWorkspace.Migrations
                         name: "FK_DocumentShareLinks_CollabDocs_DocumentId",
                         column: x => x.DocumentId,
                         principalTable: "CollabDocs",
-                        principalColumn: "DocId",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                        principalColumn: "DocId");
+                });
 
             migrationBuilder.CreateTable(
                 name: "DocumentVersions",
                 columns: table => new
                 {
                     VersionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
                     VersionNumber = table.Column<int>(type: "int", nullable: false),
-                    Content = table.Column<string>(type: "longtext", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedById = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -678,21 +673,19 @@ namespace TeamSyncWorkspace.Migrations
                         name: "FK_DocumentVersions_CollabDocs_DocumentId",
                         column: x => x.DocumentId,
                         principalTable: "CollabDocs",
-                        principalColumn: "DocId",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                        principalColumn: "DocId");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Files",
                 columns: table => new
                 {
                     FileId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     FolderId = table.Column<int>(type: "int", nullable: false),
-                    FileName = table.Column<string>(type: "longtext", nullable: false),
-                    FilePath = table.Column<string>(type: "longtext", nullable: false),
-                    UploadedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UploadedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -703,8 +696,7 @@ namespace TeamSyncWorkspace.Migrations
                         principalTable: "Folders",
                         principalColumn: "FolderId",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AIMembers_WorkspaceId",
@@ -720,7 +712,8 @@ namespace TeamSyncWorkspace.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -746,7 +739,18 @@ namespace TeamSyncWorkspace.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_DocumentId",
+                table: "ChatMessages",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_UserId",
+                table: "ChatMessages",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CollabDocs_CreatedByUserId",
@@ -922,6 +926,9 @@ namespace TeamSyncWorkspace.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "ChatMessages");
 
             migrationBuilder.DropTable(
                 name: "DocActions");

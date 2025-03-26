@@ -9,7 +9,7 @@ namespace TeamSyncWorkspace.Models.Documents
         [Key]
         public int Id { get; set; }
 
-        public int DocumentId { get; set; }
+        public int? DocumentId { get; set; }
 
         public int UserId { get; set; }
 
@@ -21,6 +21,6 @@ namespace TeamSyncWorkspace.Models.Documents
         public CollabDoc Document { get; set; }
 
         [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; }
+        public ApplicationUser? User { get; set; }
     }
 }
