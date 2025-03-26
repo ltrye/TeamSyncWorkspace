@@ -22,21 +22,29 @@
     <button class="button is-success" onclick="openModal()">➕ New Folder</button>
 
     <!-- Folder List -->
-    <div class="columns is-multiline mt-4">
+    <div class="columns is-multiline">
         @foreach (var folder in Model.SubFolders)
         {
             <div class="column is-one-quarter">
-                <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@folder.FolderId"
-                   class="box has-text-centered">
-                    <span class="icon is-large">
-                        <i class="bi bi-folder2-open"></i>
-                    </span>
-                    <p>@folder.FolderName</p>
-                </a>
+                <div class="box has-text-centered">
+                    <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@folder.FolderId">
+                        <span class="icon is-large">
+                            <i class="bi bi-folder2-open"></i>
+                        </span>
+                        <p>@folder.FolderName</p>
+                    </a>
+
+                    <!-- Delete Folder Button -->
+                    <form method="post" asp-page-handler="DeleteFolderById" class="mt-2">
+                        <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+                        <input type="hidden" name="folderId" value="@folder.FolderId" />
+                        <button type="submit" class="button is-danger is-small">[X] Delete</button>
+                    </form>
+                </div>
             </div>
         }
     </div>
-</div>
+
 
 <!-- Modal for Creating New Folder -->
 <div id="newFolderModal" class="modal">

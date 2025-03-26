@@ -102,5 +102,32 @@ namespace TeamSyncWorkspace.Pages.Files
 
             return RedirectToPage(new { WorkspaceId, FolderId = CurrentFolder.FolderId }); // Refresh the page
         }
+
+
+        public async Task<IActionResult> OnPostDeleteFolderByIdAsync(int folderId, string workspaceId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            if (string.IsNullOrEmpty(workspaceId))
+            {
+                return BadRequest("Workspace ID is required.");
+            }
+
+            WorkspaceId = workspaceId; // Ensure it's set
+
+            var success = await _folderService.DeleteFolderAsync(folderId);
+            if (!success)
+            {
+                return NotFound("Folder not found.");
+            }
+
+            return RedirectToPage(new { WorkspaceId, FolderId });
+        }
+
+
     }
 }

@@ -96,5 +96,30 @@ namespace TeamSyncWorkspace.Services
                 .FirstOrDefaultAsync(f => f.FolderId == folderId);
         }
 
+        public async Task<bool> DeleteFolderAsync(int folderId)
+        {
+            var folder = await _context.Folders
+                .Include(f => f.ChildFolders) // Load subfolders
+                .FirstOrDefaultAsync(f => f.FolderId == folderId);
+
+            if (folder == null)
+            {
+                return false; // Folder not found
+            }
+
+            // Delete subfolder first (De quy, khong nho "De quy" tieng anh la gi)
+            foreach (var child in folder.ChildFolders.ToList())
+            {
+                await DeleteFolderAsync(child.FolderId);
+            }
+
+            // Delete target folder
+            _context.Folders.Remove(folder);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+
     }
 }
