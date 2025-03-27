@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Hubs;
 using TeamSyncWorkspace.Hubs.Handlers;
@@ -95,7 +96,15 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
+// Serve static files from /tmp/uploads
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Path.GetTempPath(), "uploads")),
+    RequestPath = "/files"
+});
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

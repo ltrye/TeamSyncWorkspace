@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Models;
 using File = TeamSyncWorkspace.Models.File;
@@ -26,10 +26,10 @@ public class FileService
 
         // Generate unique file name
         var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-        var uploadPath = Path.Combine(_environment.WebRootPath, "uploads", uniqueFileName);
+        var uploadPath = Path.Combine(Path.GetTempPath(), "uploads", uniqueFileName);
 
         // Ensure "uploads" directory exists
-        var directory = Path.Combine(_environment.WebRootPath, "uploads");
+        var directory = Path.Combine(Path.GetTempPath(), "uploads");
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
@@ -46,7 +46,7 @@ public class FileService
         {
             FolderId = folderId,
             FileName = file.FileName,
-            FilePath = $"/uploads/{uniqueFileName}", // Store relative path
+            FilePath = $"/files/{uniqueFileName}", // Store relative path
             UploadedDate = DateTime.UtcNow
         };
 
