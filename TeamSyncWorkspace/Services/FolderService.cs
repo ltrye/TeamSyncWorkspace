@@ -8,11 +8,13 @@ namespace TeamSyncWorkspace.Services
     {
         private readonly AppDbContext _context;
         private readonly ILogger<FolderService> _logger;
+        private readonly FileService _fileService;
 
-        public FolderService(AppDbContext context, ILogger<FolderService> logger)
+        public FolderService(AppDbContext context, ILogger<FolderService> logger, FileService fileService)
         {
             _context = context;
             _logger = logger;
+            _fileService = fileService;
         }
 
         //Check root folder, if not
@@ -107,19 +109,20 @@ namespace TeamSyncWorkspace.Services
                 return false; // Folder not found
             }
 
-            // Delete subfolder first (De quy, khong nho "De quy" tieng anh la gi)
+            // Delete all files in this folder
+            await _fileService.DeleteFilesByFolderIdAsync(folderId);
+
+            // Recursively delete subfolders
             foreach (var child in folder.ChildFolders.ToList())
             {
                 await DeleteFolderAsync(child.FolderId);
             }
 
-            // Delete target folder
+            // Delete the folder itself
             _context.Folders.Remove(folder);
-
             await _context.SaveChangesAsync();
+
             return true;
         }
-
-
     }
 }

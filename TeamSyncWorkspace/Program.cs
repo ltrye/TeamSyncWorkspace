@@ -69,6 +69,8 @@ builder.Services.AddScoped<CommentHandler>();
 builder.Services.AddScoped<ChatHandler>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<FolderService>();
+builder.Services.AddScoped<FileService>();
+
 
 
 // Add SignalR services
