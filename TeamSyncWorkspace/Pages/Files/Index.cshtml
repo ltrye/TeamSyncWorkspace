@@ -1,0 +1,193 @@
+﻿@page
+@model TeamSyncWorkspace.Pages.Files.IndexModel
+@{
+    ViewData["Title"] = "File Explorer";
+}
+
+<div class="box">
+    <h2 class="title is-4">📁 File Explorer</h2>
+
+    <!-- Back Button -->
+    @if (Model.CurrentFolder.ParentFolderId.HasValue)
+    {
+        <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@Model.CurrentFolder.ParentFolderId" class="button is-light mb-4">
+            [&larr;] Back
+        </a>
+    }
+
+    <h3 class="subtitle is-5">Current Folder: <strong>@Model.CurrentFolder.FolderName</strong></h3>
+
+    <!-- Action Buttons -->
+    <div class="buttons">
+        <button class="button is-success" onclick="openCreateFolderModal()">[+] New Folder</button>
+        <button class="button is-primary" onclick="openUploadFileModal()">[&uarr;] Upload File</button>
+    </div>
+
+    <!-- File/Folder List Table -->
+    <table class="table is-fullwidth">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Folders -->
+            @foreach (var folder in Model.SubFolders)
+            {
+                <tr>
+                    <td><i class="bi bi-folder"></i></td>
+                    <td>
+                        <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@folder.FolderId">@folder.FolderName</a>
+                    </td>
+                    <td>
+                        <button class="button is-danger is-small" onclick="openDeleteModal(@folder.FolderId, '@folder.FolderName')">[X] Delete</button>
+                    </td>
+                </tr>
+            }
+
+            <!-- Files -->
+            @foreach (var file in Model.Files)
+            {
+                <tr>
+                    <td><i class="bi bi-file-earmark"></i></td>
+                    <td>@file.FileName</td>
+                    <td>
+                        <a href="@file.FilePath" class="button is-link is-small" target="_blank"> [O] View</a>
+                        <button class="button is-danger is-small" onclick="openDeleteFileModal(@file.FolderId, '@file.FileName')" >[X] Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create Folder Modal -->
+<div id="newFolderModal" class="modal">
+    <div class="modal-background" onclick="closeCreateFolderModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Create New Folder</p>
+            <button class="delete" aria-label="close" onclick="closeCreateFolderModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form method="post" asp-page-handler="CreateFolder">
+                <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+                <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                <div class="field">
+                    <label class="label">Folder Name</label>
+                    <input type="text" class="input" name="NewFolderName" placeholder="Enter folder name" required>
+                </div>
+                <button type="submit" class="button is-success is-fullwidth">Create</button>
+            </form>
+        </section>
+    </div>
+</div>
+
+<!-- Upload File Modal -->
+<div id="uploadFileModal" class="modal">
+    <div class="modal-background" onclick="closeUploadFileModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Upload File</p>
+            <button class="delete" aria-label="close" onclick="closeUploadFileModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data">
+                <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+                <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                <div class="field">
+                    <label class="label">Select File</label>
+                    <input type="file" class="input" name="UploadedFile" required>
+                </div>
+                <button type="submit" class="button is-primary is-fullwidth">Upload</button>
+            </form>
+        </section>
+    </div>
+</div>
+
+<!-- Delete Folder Modal -->
+<div id="deleteFolderModal" class="modal">
+    <div class="modal-background" onclick="closeDeleteModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Confirm Delete</p>
+            <button class="delete" aria-label="close" onclick="closeDeleteModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <p>Are you sure you want to delete "<strong id="folderNamePlaceholder"></strong>"?</p>
+        </section>
+        <footer class="modal-card-foot">
+            <form method="post" asp-page-handler="DeleteFolderById">
+                <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+                <input type="hidden" id="deleteFolderId" name="folderId" />
+                <button type="submit" class="button is-danger">Yes, Delete</button>
+            </form>
+            <button class="button" onclick="closeDeleteModal()">Cancel</button>
+        </footer>
+    </div>
+</div>
+
+<!-- Delete File Modal -->
+<div id="deleteFileModal" class="modal">
+    <div class="modal-background" onclick="closeDeleteFileModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Confirm Delete</p>
+            <button class="delete" aria-label="close" onclick="closeDeleteFileModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <p>Are you sure you want to delete "<strong id="fileNamePlaceholder"></strong>"?</p>
+        </section>
+        <footer class="modal-card-foot">
+            <form method="post" asp-page-handler="DeleteFile">
+                <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
+                <input type="hidden" id="deleteFileId" name="fileId" />
+                <button type="submit" class="button is-danger">Yes, Delete</button>
+            </form>
+            <button class="button" onclick="closeDeleteFileModal()">Cancel</button>
+        </footer>
+    </div>
+</div>
+
+
+<!-- JavaScript for Modal Handling -->
+<script>
+    function openCreateFolderModal() {
+        document.getElementById("newFolderModal").classList.add("is-active");
+    }
+
+    function closeCreateFolderModal() {
+        document.getElementById("newFolderModal").classList.remove("is-active");
+    }
+
+    function openUploadFileModal() {
+        document.getElementById("uploadFileModal").classList.add("is-active");
+    }
+
+    function closeUploadFileModal() {
+        document.getElementById("uploadFileModal").classList.remove("is-active");
+    }
+
+    function openDeleteModal(folderId, folderName) {
+        document.getElementById("deleteFolderId").value = folderId;
+        document.getElementById("folderNamePlaceholder").innerText = folderName;
+        document.getElementById("deleteFolderModal").classList.add("is-active");
+    }
+
+    function closeDeleteModal() {
+        document.getElementById("deleteFolderModal").classList.remove("is-active");
+    }
+
+    function openDeleteFileModal(fileId, fileName) {
+        document.getElementById("deleteFileId").value = fileId;
+        document.getElementById("fileNamePlaceholder").innerText = fileName;
+        document.getElementById("deleteFileModal").classList.add("is-active");
+    }
+
+    function closeDeleteFileModal() {
+        document.getElementById("deleteFileModal").classList.remove("is-active");
+    }
+</script>
+
