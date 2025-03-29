@@ -42,6 +42,7 @@
                 {
                     <li class="task-item"
                         data-task-id="@task.TaskId"
+                        
                         data-task-description="@task.TaskDescription"
                         data-due-date="@task.DueDate.ToString("yyyy-MM-dd")"
                         data-is-completed="@task.IsCompleted.ToString().ToLower()">
@@ -67,7 +68,22 @@
             </header>
             <section class="modal-card-body">
                 <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
-                
+
+                <!-- Dropdown chọn User -->
+                <div class="field">
+                    <label class="label">Assign to User</label>
+                    <div class="control">
+                        <div class="select">
+                            <select asp-for="UserId" name="UserId" required>
+                                <option value="">-- Select User --</option>
+                                @foreach (var user in Model.Users)
+                                {
+                                    <option value="@user.Id">@user.FirstName @user.LastName (@user.Email)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div class="field">
                     <label class="label">Task Description</label>
                     <div class="control">
@@ -119,7 +135,22 @@
                         <input type="date" id="taskDueDate" name="DueDate" class="input" required />
                     </div>
                 </div>
-
+                <div class="field">
+                    <label class="label">Assigned User</label>
+                    <div class="control">
+                        <div class="select">
+                            <select id="assignedUser" name="AssignedId">
+                                <option value="">-- Select User --</option>
+                                @foreach (var user in Model.Users)
+                                {
+                                    <option value="@user.Id">
+                                        @user.FirstName @user.LastName
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div class="field">
                     <label class="label">Status</label>
                     <div class="control">

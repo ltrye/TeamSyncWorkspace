@@ -23,12 +23,41 @@ namespace TeamSyncWorkspace.Services
                 .OrderBy(t => t.DueDate)
                 .ToListAsync();
         }
+        public async Task<List<ApplicationUser>> GetUsersByWorkspaceIdAsync(string workspaceId)
+        {
+            try
+            {
+                var teamId = await _context.Workspaces
+                    .Where(w => w.WorkspaceId == workspaceId)
+                    .Select(w => w.TeamId)
+                    .FirstOrDefaultAsync();
 
-        public async Task<TimelineTask> AddTaskAsync(string workspaceId, string taskDescription, DateTime dueDate)
+                if (teamId == 0)
+                {
+                    _logger.LogWarning($"Workspace ID {workspaceId} không có team.");
+                    return new List<ApplicationUser>();
+                }
+
+                var users = await _context.TeamMembers
+                    .Where(tm => tm.TeamId == teamId)
+                    .Select(tm => tm.User) // Join với bảng ApplicationUser
+                    .ToListAsync();
+
+                return users;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi lấy user của workspace {workspaceId}: {ex.Message}");
+                return new List<ApplicationUser>();
+            }
+        }
+
+        public async Task<TimelineTask> AddTaskAsync(string workspaceId, int userId, string taskDescription, DateTime dueDate)
         {
             var newTask = new TimelineTask
             {
                 WorkspaceId = workspaceId,
+                AssignedId = userId, // Thêm UserId vào task
                 TaskDescription = taskDescription,
                 DueDate = dueDate,
                 IsCompleted = false
@@ -37,15 +66,18 @@ namespace TeamSyncWorkspace.Services
             _context.TimelineTasks.Add(newTask);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("New task added: {TaskDescription} for workspace {WorkspaceId} on {DueDate}", taskDescription, workspaceId, dueDate);
+            _logger.LogInformation("New task added: {TaskDescription} for workspace {WorkspaceId}, assigned to user {UserId} on {DueDate}",
+                                    taskDescription, workspaceId, userId, dueDate);
+
             return newTask;
         }
 
-        public async Task<bool> UpdateTaskAsync(int taskId, string taskDescription, DateTime dueDate, bool isCompleted)
+
+        public async Task<bool> UpdateTaskAsync(int taskId,int? AssignedID, string taskDescription, DateTime dueDate, bool isCompleted)
         {
             var task = await _context.TimelineTasks.FindAsync(taskId);
             if (task == null) return false;
-
+            task.AssignedId = AssignedID;
             task.TaskDescription = taskDescription;
             task.DueDate = dueDate;
             task.IsCompleted = isCompleted;

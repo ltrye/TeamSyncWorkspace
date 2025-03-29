@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Models;
@@ -87,5 +87,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             .WithMany() // Assuming CollabDoc has a collection of DocumentVersions
             .HasForeignKey(dv => dv.DocumentId)
             .OnDelete(DeleteBehavior.NoAction); // Keep cascade delete for DocumentId
+       
+
+
     }
 }

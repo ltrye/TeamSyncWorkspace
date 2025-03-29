@@ -13,4 +13,6 @@ public class TimelineTask
 
     [ForeignKey("WorkspaceId")]
     public Workspace Workspace { get; set; }
+    
+    public int? AssignedId { get; set; }
 }

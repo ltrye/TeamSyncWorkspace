@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.IdentityModel.Tokens;
 using TeamSyncWorkspace.Models;
 using TeamSyncWorkspace.Services;
 
@@ -27,9 +28,15 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
 
         [BindProperty]
         public int TaskId { get; set; }
+        [BindProperty]
+        public int? AssignedId { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public string WorkspaceId { get; set; }
+        [BindProperty]
+        public List<ApplicationUser> Users { get; set; } = new();
+        [BindProperty]
+        public int UserId { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -42,6 +49,7 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
             DateTime endDate = startDate.AddDays(6);
 
             Tasks = await _taskService.GetTasksForWeekAsync(WorkspaceId, startDate, endDate);
+            Users = await _taskService.GetUsersByWorkspaceIdAsync(WorkspaceId);
             return Page();
         }
 
@@ -58,9 +66,12 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
                 return Page();
             }
 
-            await _taskService.AddTaskAsync(WorkspaceId, TaskDescription, DueDate);
+            
+
+            await _taskService.AddTaskAsync(WorkspaceId, UserId, TaskDescription, DueDate);
             return RedirectToPage(new { workspaceId = WorkspaceId });
         }
+
 
         public async Task<IActionResult> OnPostUpdateTaskAsync()
         {
@@ -69,7 +80,7 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
                 return BadRequest("Invalid task ID");
             }
 
-            bool success = await _taskService.UpdateTaskAsync(TaskId, TaskDescription, DueDate, IsCompleted);
+            bool success = await _taskService.UpdateTaskAsync(TaskId,AssignedId, TaskDescription, DueDate, IsCompleted);
 
             if (!success)
             {

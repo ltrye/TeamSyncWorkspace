@@ -71,6 +71,7 @@
                     taskItem.dataset.taskDescription = row[i].taskDescription;
                     taskItem.dataset.dueDate = row[i].dueDate;
                     taskItem.dataset.isCompleted = row[i].isCompleted;
+                    taskItem.dataset.assignID = row[i].assignID;
                     taskItem.onclick = () => openTaskDetails(taskItem); //  Click opens modal
 
                     td.appendChild(taskItem);
@@ -129,13 +130,19 @@
         const dueDateInput = document.getElementById("taskDueDate");
         const statusSelect = document.getElementById("taskStatus");
         const taskIdInput = document.getElementById("taskId");
+        const assignedUserSelect = document.getElementById("assignedUser");
 
         modalTitle.innerText = `Task Details - ${taskItem.dataset.taskDescription}`;
         taskDescInput.value = taskItem.dataset.taskDescription;
         dueDateInput.value = taskItem.dataset.dueDate.split("T")[0];
         statusSelect.value = taskItem.dataset.isCompleted === "true" ? "true" : "false";
         taskIdInput.value = taskItem.dataset.taskId;
-
+        const assignID = taskItem.dataset.assignID;
+        if (assignID) {
+            assignedUserSelect.value = assignID;
+        } else {
+            assignedUserSelect.selectedIndex = 0; // Chọn mặc định nếu không có user
+        }
         modal.classList.add("is-active");
     }
 
