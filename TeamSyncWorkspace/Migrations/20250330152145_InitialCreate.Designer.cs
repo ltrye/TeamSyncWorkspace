@@ -12,8 +12,8 @@ using TeamSyncWorkspace.Data;
 namespace TeamSyncWorkspace.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250330134258_Chat")]
-    partial class Chat
+    [Migration("20250330152145_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
