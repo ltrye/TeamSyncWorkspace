@@ -12,8 +12,8 @@ using TeamSyncWorkspace.Data;
 namespace TeamSyncWorkspace.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250328182125_AddTeamIdToChat")]
-    partial class AddTeamIdToChat
+    [Migration("20250330134258_Chat")]
+    partial class Chat
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -728,6 +728,9 @@ namespace TeamSyncWorkspace.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
@@ -950,6 +953,9 @@ namespace TeamSyncWorkspace.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
+
+                    b.Property<int?>("AssignedId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
