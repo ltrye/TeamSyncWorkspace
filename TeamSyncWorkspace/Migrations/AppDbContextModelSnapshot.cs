@@ -282,6 +282,52 @@ namespace TeamSyncWorkspace.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("TeamSyncWorkspace.Models.Chat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsGroup")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Chats");
+                });
+
+            modelBuilder.Entity("TeamSyncWorkspace.Models.ChatMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatMembers");
+                });
+
             modelBuilder.Entity("TeamSyncWorkspace.Models.CollabDoc", b =>
                 {
                     b.Property<int>("DocId")
@@ -664,6 +710,39 @@ namespace TeamSyncWorkspace.Migrations
                     b.ToTable("Folders");
                 });
 
+            modelBuilder.Entity("TeamSyncWorkspace.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("TeamSyncWorkspace.Models.Notification", b =>
                 {
                     b.Property<int>("NotificationId")
@@ -981,6 +1060,25 @@ namespace TeamSyncWorkspace.Migrations
                     b.Navigation("Workspace");
                 });
 
+            modelBuilder.Entity("TeamSyncWorkspace.Models.ChatMember", b =>
+                {
+                    b.HasOne("TeamSyncWorkspace.Models.Chat", "Chat")
+                        .WithMany("ChatMembers")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeamSyncWorkspace.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TeamSyncWorkspace.Models.CollabDoc", b =>
                 {
                     b.HasOne("TeamSyncWorkspace.Models.ApplicationUser", "CreatedByUser")
@@ -1187,6 +1285,25 @@ namespace TeamSyncWorkspace.Migrations
                     b.Navigation("Workspace");
                 });
 
+            modelBuilder.Entity("TeamSyncWorkspace.Models.Message", b =>
+                {
+                    b.HasOne("TeamSyncWorkspace.Models.Chat", "Chat")
+                        .WithMany("Messages")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeamSyncWorkspace.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TeamSyncWorkspace.Models.Notification", b =>
                 {
                     b.HasOne("TeamSyncWorkspace.Models.ApplicationUser", "User")
@@ -1289,6 +1406,13 @@ namespace TeamSyncWorkspace.Migrations
                     b.Navigation("DocActions");
 
                     b.Navigation("TeamMemberships");
+                });
+
+            modelBuilder.Entity("TeamSyncWorkspace.Models.Chat", b =>
+                {
+                    b.Navigation("ChatMembers");
+
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("TeamSyncWorkspace.Models.Folder", b =>

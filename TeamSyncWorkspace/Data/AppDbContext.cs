@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Models;
@@ -31,6 +31,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<DocumentPermission> DocumentPermissions { get; set; }
     // Add to AppDbContext.cs
     public DbSet<ChatMessage> ChatMessages { get; set; }
+
+    public DbSet<Chat> Chats { get; set; }
+    public DbSet<ChatMember> ChatMembers { get; set; }
+    public DbSet<Message> Messages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,5 +91,44 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             .WithMany() // Assuming CollabDoc has a collection of DocumentVersions
             .HasForeignKey(dv => dv.DocumentId)
             .OnDelete(DeleteBehavior.NoAction); // Keep cascade delete for DocumentId
+
+        // Cấu hình Chat
+        modelBuilder.Entity<Chat>()
+            .HasMany(c => c.ChatMembers)
+            .WithOne(cm => cm.Chat)
+            .HasForeignKey(cm => cm.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Chat>()
+            .HasMany(c => c.Messages)
+            .WithOne(m => m.Chat)
+            .HasForeignKey(m => m.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cấu hình ChatMember
+        modelBuilder.Entity<ChatMember>()
+            .HasOne(cm => cm.Chat)
+            .WithMany(c => c.ChatMembers)
+            .HasForeignKey(cm => cm.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ChatMember>()
+            .HasOne(cm => cm.User)
+            .WithMany() // Không cần thuộc tính ngược trong ApplicationUser
+            .HasForeignKey(cm => cm.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Cấu hình Message
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Chat)
+            .WithMany(c => c.Messages)
+            .HasForeignKey(m => m.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.User)
+            .WithMany() // Không cần thuộc tính ngược trong ApplicationUser
+            .HasForeignKey(m => m.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }
