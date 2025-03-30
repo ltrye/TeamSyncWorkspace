@@ -26,6 +26,10 @@ export function createDocumentEditor() {
             const canEdit = docEditorConfig.canEdit;
             const currentUser = reactive(docEditorConfig.currentUser);
 
+
+            const tempDocument = ref(docEditorConfig.documentContent);
+
+
             // Get CSRF token
             const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
@@ -49,7 +53,7 @@ export function createDocumentEditor() {
                 updateCursorPosition,
                 editorLoaded,
                 cleanup: cleanupEditor
-            } = useEditor(documentId, docEditorConfig.documentContent, canEdit);
+            } = useEditor(documentId, docEditorConfig.documentContent, canEdit, tempDocument);
 
             const {
                 connection,
@@ -59,7 +63,7 @@ export function createDocumentEditor() {
                 broadcastChanges,
                 broadcastCursorPosition,
                 cleanup: cleanupCollaboration
-            } = useCollaboration(documentId, currentUser);
+            } = useCollaboration(documentId, currentUser, tempDocument);
 
             const {
                 isSaving,
@@ -105,6 +109,8 @@ export function createDocumentEditor() {
                 if (!canEdit || !editor.value || syncOperationInProgress.value) return;
 
                 syncOperationInProgress.value = true;
+
+
 
                 try {
                     // Save document

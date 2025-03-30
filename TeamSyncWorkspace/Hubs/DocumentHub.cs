@@ -42,9 +42,9 @@ namespace TeamSyncWorkspace.Hubs
             await _joinHandler.HandleJoinDocument(Clients, Groups, Context.ConnectionId, documentId, userInfo);
         }
 
-        public async Task UpdateDocument(int documentId, int userId, string content)
+        public async Task UpdateDocument(int documentId, int userId, string content, object delta)
         {
-            await _updateHandler.HandleUpdateDocument(Clients, documentId, userId, content);
+            await _updateHandler.HandleUpdateDocument(Clients, documentId, userId, content, delta);
         }
 
         public async Task LeaveDocument(int documentId)

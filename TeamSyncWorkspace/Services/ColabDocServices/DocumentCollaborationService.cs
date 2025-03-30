@@ -55,16 +55,17 @@ namespace TeamSyncWorkspace.Services.ColabDocServices
             return true;
         }
 
-        public bool RemoveUser(int documentId, string connectionId)
+        public bool RemoveUser(int documentId, string userId)
         {
             string documentKey = GetDocumentKey(documentId);
             bool isLastUser = false;
+
 
             if (_activeUsers.TryGetValue(documentKey, out var users))
             {
                 // Find the user by the given identifier
                 var userToRemove = users.FirstOrDefault(u =>
-                    GetUserIdFromUserInfo(u)?.ToString() == connectionId);
+                    GetUserIdFromUserInfo(u)?.ToString() == userId);
 
                 if (userToRemove != null)
                 {
@@ -77,6 +78,7 @@ namespace TeamSyncWorkspace.Services.ColabDocServices
                         isLastUser = true;
                     }
 
+                    Console.WriteLine($"User {userId} removed from document {documentId}.");
                     return true;
                 }
             }

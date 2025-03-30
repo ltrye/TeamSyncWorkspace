@@ -35,6 +35,7 @@ namespace TeamSyncWorkspace.Services.ColabDocServices
             // Check if already in cache
             if (_cache.TryGetValue(cacheKey, out TempDocument tempDoc))
             {
+                Console.WriteLine("Document found in cache");
                 return tempDoc;
             }
 
@@ -107,6 +108,7 @@ namespace TeamSyncWorkspace.Services.ColabDocServices
                     .SetPriority(CacheItemPriority.High);
                 _cache.Set(cacheKey, tempDoc, cacheOptions);
 
+                _logger.LogInformation("Updated temporary document {DocumentId} in cache", documentId);
                 return true;
             }
 
@@ -130,7 +132,7 @@ namespace TeamSyncWorkspace.Services.ColabDocServices
                 if (_cache.TryGetValue(cacheKey, out TempDocument tempDoc))
                 {
                     // Only save if the document is marked as dirty
-                    if (tempDoc.IsDirty && tempDoc.HasContentChanged())
+                    if (tempDoc.IsDirty)
                     {
                         // Check if document has been modified in the last 10 seconds
                         TimeSpan timeSinceLastModification = DateTime.UtcNow - tempDoc.LastModified;
