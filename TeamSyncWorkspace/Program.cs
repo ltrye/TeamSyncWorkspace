@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
@@ -63,6 +63,7 @@ builder.Services.AddScoped<TeamRoleService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<TeamRoleManagementService>();
+builder.Services.AddScoped<StatisticService>(); 
 // Add this line with the other service registrations
 builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<DocumentService>();
@@ -79,8 +80,6 @@ builder.Services.AddScoped<ChatHandler>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<FolderService>();
 builder.Services.AddScoped<FileService>();
-
-
 
 // Add SignalR services
 builder.Services.AddSignalR();
