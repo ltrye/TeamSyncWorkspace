@@ -312,6 +312,5 @@ namespace TeamSyncWorkspace.Services
                 .Where(c => c.IsGroup && c.ChatMembers.Any(cm => teamMemberIds.Contains(cm.UserId)))
                 .ToListAsync();
         }
-
     }
 }

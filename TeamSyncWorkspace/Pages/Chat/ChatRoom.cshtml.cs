@@ -47,6 +47,7 @@ namespace TeamSyncWorkspace.Pages.Chat
                 .Include(c => c.Messages)
                 .ThenInclude(m => m.User)
                 .Include(c => c.ChatMembers)
+                .ThenInclude(cm => cm.User)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
             if (Chat == null)
@@ -100,31 +101,20 @@ namespace TeamSyncWorkspace.Pages.Chat
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
-            // Lấy danh sách thành viên trong chat (ngoại trừ người gửi)
+            // Gửi thông báo đến các thành viên khác
             var chatMembers = chat.ChatMembers
                 .Where(cm => cm.UserId != CurrentUserId)
                 .ToList();
 
             foreach (var member in chatMembers)
             {
-                string chatWithName;
+                string chatWithName = chat.IsGroup ? chat.Name : member.User.UserName;
 
-                if (!chat.IsGroup) // Kiểm tra nếu là chat 1-1
-                {
-                    var otherMember = chat.ChatMembers.FirstOrDefault(cm => cm.UserId != CurrentUserId);
-                    chatWithName = otherMember != null ? otherMember.User.UserName : "Unknown";
-                }
-                else // Nếu là group chat
-                {
-                    chatWithName = chat.Name;
-                }
-
-                // Tạo thông báo cho thành viên
                 await _notificationService.CreateNotificationAsync(
                     member.UserId,
                     "New Message",
                     $"You have a new message in chat with {chatWithName}: \"{message.Content}\"",
-                    $"/Chat/ChatRoom?chatId={chatId}",
+                    $"/Chat/ChatRoom/{chatId}",
                     "Message",
                     chatId
                 );
@@ -164,6 +154,54 @@ namespace TeamSyncWorkspace.Pages.Chat
             return RedirectToPage(new { chatId = message.ChatId });
         }
 
+        public async Task<IActionResult> OnPostRemoveMemberAsync(int chatId, int userId)
+        {
+            var currentUserId = int.Parse(_userManager.GetUserId(User));
+
+            // Lấy thông tin group chat
+            var chat = await _context.Chats
+                .Include(c => c.ChatMembers)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null || !chat.IsGroup)
+            {
+                return NotFound("Chat not found or is not a group chat.");
+            }
+
+            // Kiểm tra quyền xóa thành viên
+            if (chat.CreatedBy != currentUserId && !chat.ChatMembers.Any(cm => cm.UserId == currentUserId && cm.IsAdmin))
+            {
+                return Forbid(); // Không có quyền xóa thành viên
+            }
+
+            // Xóa thành viên khỏi group chat
+            var memberToRemove = chat.ChatMembers.FirstOrDefault(cm => cm.UserId == userId);
+            if (memberToRemove != null)
+            {
+                _context.ChatMembers.Remove(memberToRemove);
+                await _context.SaveChangesAsync();
+            }
+
+            // Thông báo qua SignalR cho thành viên bị xóa
+            var hubContext = HttpContext.RequestServices.GetRequiredService<IHubContext<ChatHub>>();
+            await hubContext.Clients.User(userId.ToString())
+                .SendAsync("RemovedFromGroup", chatId.ToString(), chat.TeamId);
+
+            // Thông báo cho các thành viên còn lại trong group
+            await hubContext.Clients.Group(chatId.ToString())
+                .SendAsync("MemberRemoved", userId);
+
+            await _notificationService.CreateNotificationAsync(
+                    userId,
+                    "Removed from Group",
+                    $"You have been removed from the group chat '{chat.Name}'.",
+                    $"/Teams/Members/Index?teamId={chat.TeamId}",
+                    "Removal"
+                );
+
+            return RedirectToPage(new { chatId });
+        }
+
         public async Task<IActionResult> OnPostLeaveGroupAsync(int chatId, int teamId)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -173,7 +211,6 @@ namespace TeamSyncWorkspace.Pages.Chat
             }
 
             var userId = int.Parse(_userManager.GetUserId(User));
-            Console.WriteLine($"UserId: {userId}, ChatId: {chatId}");
 
             // Tìm thành viên trong nhóm
             var chatMember = await _context.ChatMembers
@@ -181,9 +218,11 @@ namespace TeamSyncWorkspace.Pages.Chat
 
             if (chatMember == null)
             {
-                Console.WriteLine("ChatMember not found.");
                 return NotFound("You are not a member of this group.");
             }
+
+            // Kiểm tra nếu người dùng là admin
+            bool isAdmin = chatMember.IsAdmin;
 
             // Xóa thành viên khỏi nhóm
             _context.ChatMembers.Remove(chatMember);
@@ -203,8 +242,84 @@ namespace TeamSyncWorkspace.Pages.Chat
                     await _context.SaveChangesAsync();
                 }
             }
+            else if (isAdmin)
+            {
+                var nextMember = remainingMembers.FirstOrDefault();
+                if (nextMember != null)
+                {
+                    nextMember.IsAdmin = true;
+                    _context.ChatMembers.Update(nextMember);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            var hubContext = HttpContext.RequestServices.GetRequiredService<IHubContext<ChatHub>>();
+            await hubContext.Clients.Group(chatId.ToString())
+                .SendAsync("MemberLeft", userId);
 
             return Redirect($"/Teams/Members/Index?teamId={teamId}");
+        }
+
+        public async Task<IActionResult> OnPostInviteMemberAsync(int chatId, string userEmail)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            // Lấy thông tin group chat
+            var chat = await _context.Chats
+                .Include(c => c.ChatMembers)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null || !chat.IsGroup)
+            {
+                return NotFound("Chat not found or is not a group chat.");
+            }
+
+            // Kiểm tra nếu người dùng hiện tại có quyền mời thành viên
+            if (!chat.ChatMembers.Any(cm => cm.UserId == int.Parse(_userManager.GetUserId(User)) && cm.IsAdmin))
+            {
+                return Forbid(); // Chỉ admin mới có quyền mời thành viên
+            }
+
+            // Tìm người dùng theo email
+            var userToInvite = await _userManager.FindByEmailAsync(userEmail);
+            if (userToInvite == null)
+            {
+                ModelState.AddModelError(string.Empty, "User with this email does not exist.");
+                return await OnGetAsync(chatId);
+            }
+
+            // Kiểm tra nếu người dùng đã là thành viên của group
+            if (chat.ChatMembers.Any(cm => cm.UserId == userToInvite.Id))
+            {
+                ModelState.AddModelError(string.Empty, "User is already a member of this group.");
+                return await OnGetAsync(chatId);
+            }
+
+            // Thêm người dùng vào group chat
+            var newMember = new ChatMember
+            {
+                ChatId = chatId,
+                UserId = userToInvite.Id,
+                IsAdmin = false // Thành viên mới không phải admin
+            };
+
+            _context.ChatMembers.Add(newMember);
+            await _context.SaveChangesAsync();
+
+            // Gửi thông báo cho người được mời
+            await _notificationService.CreateNotificationAsync(
+                userToInvite.Id,
+                "Group Invitation",
+                $"You have been invited to join the group chat '{chat.Name}'.",
+                $"/Chat/ChatRoom/{chatId}",
+                "Invitation"
+            );
+
+            return RedirectToPage(new { chatId });
         }
     }
 }

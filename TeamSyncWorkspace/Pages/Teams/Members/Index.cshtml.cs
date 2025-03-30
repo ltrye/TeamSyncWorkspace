@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TeamSyncWorkspace.Data;
+using TeamSyncWorkspace.Hubs;
 using TeamSyncWorkspace.Models;
 using TeamSyncWorkspace.Services;
 
@@ -192,11 +194,29 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
                 return RedirectToPage(new { teamId });
             }
 
-            // Remove the member
+            // Remove the member from the team
             var (success, message) = await _teamService.RemoveMemberFromTeamAsync(teamId, userId, currentUser.Id);
 
             if (success)
             {
+                // Remove the member from all group chats related to the team
+                var teamChats = await _context.Chats
+                    .Where(c => c.IsGroup && c.ChatMembers.Any(cm => cm.UserId == userId))
+                    .ToListAsync();
+
+                foreach (var chat in teamChats)
+                {
+                    var chatMember = await _context.ChatMembers
+                        .FirstOrDefaultAsync(cm => cm.ChatId == chat.Id && cm.UserId == userId);
+
+                    if (chatMember != null)
+                    {
+                        _context.ChatMembers.Remove(chatMember);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
                 // Send notification to the removed user
                 string notificationTitle = $"Removed from {team.TeamName}";
                 string notificationMessage = string.IsNullOrEmpty(reason)
@@ -236,7 +256,8 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
             {
                 Name = groupName,
                 IsGroup = true,
-                TeamId = teamId // Gán TeamId từ tham số
+                TeamId = teamId,
+                CreatedBy = currentUserId
             };
             _context.Chats.Add(chat);
             await _context.SaveChangesAsync();
@@ -245,10 +266,17 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
             userIds = userIds.Where(userId => userId != currentUserId).ToArray();
 
             // Thêm thành viên vào group chat
-            var members = userIds.Select(userId => new ChatMember { ChatId = chat.Id, UserId = userId }).ToList();
-            members.Add(new ChatMember { ChatId = chat.Id, UserId = currentUserId }); // Thêm currentUserId vào danh sách
+            var members = userIds.Select(userId => new ChatMember { ChatId = chat.Id, UserId = userId, IsAdmin = false }).ToList();
+            members.Add(new ChatMember { ChatId = chat.Id, UserId = currentUserId, IsAdmin = true }); // Thêm currentUserId vào danh sách
             _context.ChatMembers.AddRange(members);
             await _context.SaveChangesAsync();
+
+            var hubContext = HttpContext.RequestServices.GetRequiredService<IHubContext<ChatHub>>();
+            foreach (var userId in userIds)
+            {
+                await hubContext.Clients.User(userId.ToString())
+                    .SendAsync("GroupCreated", chat.Id, chat.Name, teamId);
+            }
 
             return RedirectToPage("/Chat/ChatRoom", new { chatId = chat.Id });
         }
@@ -272,14 +300,15 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
                 {
                     Name = $"{currentUser.UserName} & {otherUser.UserName}",
                     IsGroup = false,
-                    TeamId = teamId
+                    TeamId = teamId,
+                    CreatedBy = currentUserId
                 };
                 _context.Chats.Add(chat);
                 await _context.SaveChangesAsync();
 
                 _context.ChatMembers.AddRange(
-                    new ChatMember { ChatId = chat.Id, UserId = currentUserId },
-                    new ChatMember { ChatId = chat.Id, UserId = userId }
+                    new ChatMember { ChatId = chat.Id, UserId = currentUserId, IsAdmin = true },
+                    new ChatMember { ChatId = chat.Id, UserId = userId, IsAdmin = false }
                 );
                 await _context.SaveChangesAsync();
 
