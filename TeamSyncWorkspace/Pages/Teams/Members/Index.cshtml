@@ -603,6 +603,24 @@
             }
         });
     </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.start().then(() => {
+            console.log("Connected to SignalR Hub");
+        }).catch(err => console.error("SignalR connection error:", err));
+
+        // Lắng nghe sự kiện khi group chat mới được tạo
+        connection.on("GroupCreated", (chatId, chatName, teamId) => {
+            alert(`You have been added to a new group chat: ${chatName}`);
+            // Tùy chọn: Chuyển hướng đến group chat mới
+            window.location.href = `/Chat/ChatRoom/${chatId}`;
+        });
+    </script>
 }
 
 @section Styles {
