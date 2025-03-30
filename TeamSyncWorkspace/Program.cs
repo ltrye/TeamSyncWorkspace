@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Hubs;
@@ -83,6 +84,11 @@ builder.Services.AddScoped<FileService>();
 
 // Add SignalR services
 builder.Services.AddSignalR();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
+
+
 // Application configuration
 var app = builder.Build();
 

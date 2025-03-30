@@ -91,8 +91,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             .WithMany() // Assuming CollabDoc has a collection of DocumentVersions
             .HasForeignKey(dv => dv.DocumentId)
             .OnDelete(DeleteBehavior.NoAction); // Keep cascade delete for DocumentId
-
-        // Cấu hình Chat
+            // Cấu hình Chat
         modelBuilder.Entity<Chat>()
             .HasMany(c => c.ChatMembers)
             .WithOne(cm => cm.Chat)
@@ -130,5 +129,23 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             .WithMany() // Không cần thuộc tính ngược trong ApplicationUser
             .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.NoAction);
+        SeedAIUser(modelBuilder);
+    }
+    private void SeedAIUser(ModelBuilder modelBuilder)
+    {
+        var aiUser = new ApplicationUser
+        {
+            Id = -1, // Use a negative value for the Id
+            UserName = "AI Assistant",
+            NormalizedUserName = "AI ASSISTANT",
+            Email = "ai@assistant.com",
+            NormalizedEmail = "AI@ASSISTANT.COM",
+            EmailConfirmed = true,
+            FirstName = "AI",
+            LastName = "Assistant",
+            SecurityStamp = Guid.NewGuid().ToString("D")
+        };
+
+        modelBuilder.Entity<ApplicationUser>().HasData(aiUser);
     }
 }
