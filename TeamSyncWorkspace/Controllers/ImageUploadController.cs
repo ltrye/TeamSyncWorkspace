@@ -50,7 +50,7 @@ namespace TeamSyncWorkspace.Controllers
                 fileName = $"{fileName}_{DateTime.Now:yyyyMMddHHmmss}{fileExtension}";
 
                 // Create uploads directory if it doesn't exist
-                var uploadPath = Path.Combine(Path.GetTempPath(), "uploads", "ckeditor", "images");
+                var uploadPath = Path.Combine(_environment.WebRootPath, "uploads", "ckeditor", "images");
                 Directory.CreateDirectory(uploadPath);
 
                 // Save the file
