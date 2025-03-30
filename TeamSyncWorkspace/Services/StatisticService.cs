@@ -14,19 +14,24 @@ namespace TeamSyncWorkspace.Services
         }
 
         // 📌 Lấy số lượng Task theo trạng thái
-        public async Task<List<object>> GetTaskStatusAsync(string workspaceId)
+        public async Task<List<object>> GetTaskStatusAsync(string workspaceId, DateTime startDate)
         {
-            var tasks = await _context.TimelineTasks
-                .Where(t => t.WorkspaceId == workspaceId)
+            DateTime endDate = startDate.AddDays(6); // Ngày cuối tuần
+
+            var taskData = await _context.TimelineTasks
+                .Where(t => t.WorkspaceId == workspaceId && t.DueDate >= startDate && t.DueDate <= endDate)
                 .GroupBy(t => t.IsCompleted)
                 .Select(g => new
                 {
                     label = g.Key ? "Complete" : "Pending",
-                    value = g.Count()
+                    count = g.Count()
                 }).ToListAsync();
 
-            return tasks.Cast<object>().ToList();
+           
+
+            return taskData.Cast<object>().ToList();
         }
+
         public async Task<Workspace> GetWorkspaceAsync(string id)
         {
             
@@ -40,11 +45,13 @@ namespace TeamSyncWorkspace.Services
 
 
         // 📌 Tính phần trăm công việc của từng thành viên
-        public async Task<List<object>> GetMemberTaskPercentageAsync(string workspaceId)
+        public async Task<List<object>> GetMemberTaskPercentageAsync(string workspaceId, DateTime startDate)
         {
-            // Lấy danh sách công việc có AssignedId
+            DateTime endDate = startDate.AddDays(6); // Ngày cuối của tuần
+
+            // Lấy danh sách công việc có AssignedId trong khoảng thời gian tuần
             var memberTasks = await _context.TimelineTasks
-                .Where(t => t.WorkspaceId == workspaceId && t.AssignedId != null)
+                .Where(t => t.WorkspaceId == workspaceId && t.AssignedId != null && t.DueDate >= startDate && t.DueDate <= endDate)
                 .GroupBy(t => t.AssignedId)
                 .Select(g => new
                 {
@@ -55,19 +62,19 @@ namespace TeamSyncWorkspace.Services
                     tasks = g.Count()
                 }).ToListAsync();
 
-            // Tính tổng số công việc
+            // Tổng số công việc trong tuần
             int totalAssignedTasks = memberTasks.Sum(m => m.tasks);
-            int totalTasks = await _context.TimelineTasks.CountAsync(t => t.WorkspaceId == workspaceId);
+            int totalTasks = await _context.TimelineTasks.CountAsync(t => t.WorkspaceId == workspaceId && t.DueDate >= startDate && t.DueDate <= endDate);
             int unassignedTasks = totalTasks - totalAssignedTasks;
 
-            // Tạo danh sách kết quả
+            // Tính phần trăm công việc của từng thành viên
             var result = memberTasks.Select(m => new
             {
                 name = m.name,
                 percentage = totalTasks == 0 ? 0 : ((double)m.tasks / totalTasks * 100)
             }).ToList();
 
-            // Thêm "Unassigned" vào danh sách nếu có công việc chưa được nhận
+            // Nếu có công việc chưa được giao, thêm vào danh sách
             if (unassignedTasks > 0)
             {
                 result.Add(new
@@ -79,6 +86,7 @@ namespace TeamSyncWorkspace.Services
 
             return result.Cast<object>().ToList();
         }
+
         public async Task<List<TimelineTask>> GetTasksAsync(string workspaceId)
         {
             return await _context.TimelineTasks

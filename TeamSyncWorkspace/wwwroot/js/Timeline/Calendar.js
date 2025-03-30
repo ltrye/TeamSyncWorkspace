@@ -33,13 +33,27 @@
         // Table Header (Weekdays)
         let thead = document.createElement("thead");
         let headerRow = document.createElement("tr");
+
         for (let i = 0; i < 7; i++) {
             let day = currentDate.add(i, "day");
+            let dayLabel = day.format("ddd D"); // Ví dụ: "Sun 30"
+            let dayValue = day.format("YYYY-MM-DD"); // Định dạng chuẩn
+
             let th = document.createElement("th");
             th.classList.add("day-header");
-            th.innerText = day.format("ddd D");
+            th.innerText = dayLabel;
+            th.dataset.filterValue = dayValue;
+            th.dataset.workspaceId = workspaceId;
+
+            // Thêm sự kiện click để chuyển trang
+            th.onclick = function () {
+                window.location.href = `/Statistic/TaskList/TaskList?WorkspaceId=${this.dataset.workspaceId}&FilterType=day&FilterValue=${this.dataset.filterValue}`;
+            };
+            console.log(th.dataset);
+
             headerRow.appendChild(th);
         }
+
         thead.appendChild(headerRow);
         table.appendChild(thead);
 
@@ -72,7 +86,7 @@
                     taskItem.dataset.dueDate = row[i].dueDate;
                     taskItem.dataset.isCompleted = row[i].isCompleted;
                     taskItem.dataset.assignedId = row[i].assignedId;
-                    taskItem.onclick = () => openTaskDetails(taskItem); //  Click opens modal
+                    taskItem.onclick = () => openTaskDetails(taskItem); // Click mở modal
 
                     td.appendChild(taskItem);
                 }
@@ -85,6 +99,9 @@
         table.appendChild(tbody);
         calendarElem.appendChild(table);
     }
+
+
+
 
     function navigateWeek(offset) {
         currentDate = currentDate.add(offset, "week");

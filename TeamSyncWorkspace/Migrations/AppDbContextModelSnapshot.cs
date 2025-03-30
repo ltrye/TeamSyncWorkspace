@@ -758,7 +758,6 @@ namespace TeamSyncWorkspace.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Message")

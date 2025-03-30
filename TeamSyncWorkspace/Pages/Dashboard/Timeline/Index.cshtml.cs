@@ -10,10 +10,12 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
     public class IndexModel : PageModel
     {
         private readonly TaskService _taskService;
+        private readonly NotificationService _notificationService;
 
-        public IndexModel(TaskService taskService)
+        public IndexModel(TaskService taskService, NotificationService notificationService)
         {
             _taskService = taskService;
+            _notificationService = notificationService;
         }
 
         public List<TimelineTask> Tasks { get; private set; }
@@ -25,7 +27,7 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
         public DateTime DueDate { get; set; }
 
         [BindProperty]
-        public bool IsCompleted { get; set; }
+        public bool IsCompleted { get; set; } = false;
 
         [BindProperty]
         public int TaskId { get; set; }
@@ -78,6 +80,15 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
             
 
             await _taskService.AddTaskAsync(WorkspaceId, AssignedId, TaskDescription, DueDate);
+            if (AssignedId != null)
+            {
+                string title = IsCompleted ? "Done Task" : "Assign Task";
+                string message = IsCompleted
+                    ? $"You have done the task {TaskDescription}"
+                    : $"You have been assigned the task {TaskDescription}";
+
+                await _notificationService.CreateNotificationAsync((int)AssignedId, title, message);
+            }
             return RedirectToPage(new { workspaceId = WorkspaceId });
         }
 
@@ -90,7 +101,14 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
             }
 
             bool success = await _taskService.UpdateTaskAsync(TaskId,AssignedId, TaskDescription, DueDate, IsCompleted);
-
+            if (IsCompleted && AssignedId != null)
+            {
+                _notificationService.CreateNotificationAsync((int)AssignedId, "Done Task", "You have done the task" + TaskDescription);
+            }
+            if (!IsCompleted && AssignedId != null)
+            {
+                _notificationService.CreateNotificationAsync((int)AssignedId, "Assign Task", "You have been assigned the task" + TaskDescription);
+            }
             if (!success)
             {
                 return NotFound("Task not found");

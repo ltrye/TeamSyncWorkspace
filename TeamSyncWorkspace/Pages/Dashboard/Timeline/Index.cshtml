@@ -227,7 +227,7 @@
                     <label class="label">Assign to User</label>
                     <div class="control">
                         <div class="select">
-                            <select asp-for="UserId" name="UserId" required>
+                            <select asp-for="AssignedId" name="AssignedId" >
                                 <option value="0">-- Select User --</option>
                                 @foreach (var user in Model.Users)
                                 {
