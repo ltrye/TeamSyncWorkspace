@@ -73,14 +73,15 @@ export function useCollaboration(documentId, currentUser, tempDocument) {
             });
 
             connection.value.on("UserLeft", (userId) => {
-                console.log("User left event:", userId);
-                activeCollaborators.value = activeCollaborators.value.filter(u => u.id !== userId);
 
+                activeCollaborators.value = activeCollaborators.value.filter(u => parseInt(u.id) !== parseInt(userId));
+                console.log("User left event with id", userId);
                 // Remove cursor position data
                 if (cursorPositions.value[userId]) {
                     const newPositions = { ...cursorPositions.value };
                     delete newPositions[userId];
                     cursorPositions.value = newPositions;
+                    console.log("Removed cursor position for user:", userId);
                 }
 
             });
@@ -198,6 +199,7 @@ export function useCollaboration(documentId, currentUser, tempDocument) {
                 currentUser,
                 JSON.stringify(cursorData)
             );
+            console.log("Broadcasted cursor position:", cursorData);
         } catch (error) {
             console.error('Error broadcasting cursor position:', error);
         }

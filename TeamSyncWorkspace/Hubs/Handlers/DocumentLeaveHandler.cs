@@ -32,6 +32,8 @@ namespace TeamSyncWorkspace.Hubs.Handlers
         {
             string documentKey = $"document_{documentId}";
 
+            Console.WriteLine("DocumentLeaveHandler: " + documentKey);
+            Console.WriteLine("UserId: " + userId);
             try
             {
                 // Remove user from SignalR group

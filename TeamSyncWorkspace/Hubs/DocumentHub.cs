@@ -39,6 +39,9 @@ namespace TeamSyncWorkspace.Hubs
 
         public async Task JoinDocument(int documentId, object userInfo)
         {
+            // Store documentId in connection context for later use
+            Context.Items["documentId"] = documentId;
+
             await _joinHandler.HandleJoinDocument(Clients, Groups, Context.ConnectionId, documentId, userInfo);
         }
 
@@ -85,9 +88,21 @@ namespace TeamSyncWorkspace.Hubs
             try
             {
                 // When a user disconnects, we need to handle this in the leave handler
-                // Implementation moved to a service could be added here
+                // Get documentId from connection context or track it when user joins
+                int? documentId = null;
 
-                // For now just call base implementation
+                // Try to get the documentId from connection context items
+                if (Context.Items.ContainsKey("documentId"))
+                {
+                    documentId = (int)Context.Items["documentId"];
+                }
+
+                // Only call leave handler if we have a valid document ID
+                if (documentId.HasValue)
+                {
+                    await _leaveHandler.HandleLeaveDocument(Clients, Groups, Context.ConnectionId, documentId.Value, Context.UserIdentifier);
+                }
+
                 await base.OnDisconnectedAsync(exception);
             }
             catch (Exception ex)

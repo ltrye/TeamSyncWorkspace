@@ -51,6 +51,7 @@ export function createDocumentEditor() {
                 applyExternalChanges,
                 cursorPosition,
                 updateCursorPosition,
+                setupCursorTracking,
                 editorLoaded,
                 cleanup: cleanupEditor
             } = useEditor(documentId, docEditorConfig.documentContent, canEdit, tempDocument);
@@ -138,6 +139,7 @@ export function createDocumentEditor() {
                 }
             });
 
+
             const userColors = {};
             const colorOptions = [
                 '#FF5733', '#33FF57', '#3357FF', '#FF33E9',
@@ -182,7 +184,10 @@ export function createDocumentEditor() {
 
                 );
 
-
+                // Connect cursor tracking to broadcasting
+                setupCursorTracking((cursorData) => {
+                    broadcastCursorPosition(cursorData);
+                });
                 // Add to the onMounted function after setupSignalR
                 await initChat();
 
@@ -191,6 +196,7 @@ export function createDocumentEditor() {
 
                 // Load team members
                 await loadTeamMembers();
+
 
                 // Close dropdowns when clicking outside
                 document.addEventListener('click', (e) => {

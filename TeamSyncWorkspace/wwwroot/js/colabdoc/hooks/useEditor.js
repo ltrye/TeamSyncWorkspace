@@ -1,5 +1,38 @@
 import EditorPositioning from '../utils/editorPositioning.js';
 
+
+/**
+ * Sets up cursor movement tracking for collaboration
+ * @param {Function} onCursorChange - Callback for cursor position changes
+ */
+const setupCursorTracking = (onCursorChange) => {
+    if (!editor.value || !canEdit) return;
+
+    // Use EditorPositioning utility to get cursor position
+    const throttledCursorUpdate = _.throttle(() => {
+        const position = EditorPositioning.updateCursorPosition(editor.value, canEdit);
+        if (position) {
+            onCursorChange(position);
+        }
+    }, 100); // Throttle to avoid too many updates
+
+    // Track selection changes
+    editor.value.model.document.selection.on('change:range', throttledCursorUpdate);
+    editor.value.model.document.selection.on('change:attribute', throttledCursorUpdate);
+
+    // Track cursor position during typing
+    editor.value.editing.view.document.on('keydown', throttledCursorUpdate);
+    editor.value.editing.view.document.on('keyup', throttledCursorUpdate);
+
+    // Track cursor during mouse movement
+    editor.value.editing.view.document.on('mouseup', throttledCursorUpdate);
+    editor.value.editing.view.document.on('mousedown', throttledCursorUpdate);
+    editor.value.editing.view.document.on('focus', throttledCursorUpdate);
+
+    // Send initial cursor position
+    setTimeout(throttledCursorUpdate, 500);
+};
+
 export function useEditor(documentId, content, canEdit, tempDocument) {
     const { ref, markRaw } = Vue;
 
@@ -340,6 +373,7 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
         initEditor,
         getContent,
         applyExternalChanges,
-        cleanup
+        cleanup,
+        setupCursorTracking,
     };
 }
