@@ -1,16 +1,15 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Thống kê";
+    ViewData["Title"] = "Statistic";
 }
+
 <style>
-    /* Tổng thể */
     .container {
         max-width: 1200px;
         margin: auto;
     }
 
-    /* Thẻ card chứa biểu đồ */
     .chart-container {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         border-radius: 12px;
@@ -25,7 +24,6 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
-    /* Header của card */
     .card-header {
         background: linear-gradient(135deg, #42A5F5, #1E88E5);
         color: white;
@@ -37,65 +35,158 @@
         border-top-right-radius: 12px;
     }
 
-    /* Điều chỉnh canvas */
-    canvas {
-        width: 100% !important;
-        height: 280px !important;
-        display: block;
+    #taskStatusChart {
+        width: 300px !important;
+        height: 300px !important;
+        display: block !important;
     }
 
-    /* Hiệu ứng tooltip */
-    .chartjs-tooltip {
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 8px;
-        border-radius: 8px;
+    .week-nav {
+        text-align: center;
+        margin-bottom: 20px;
     }
+
+        .week-nav button {
+            background: #1976D2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            transition: 0.3s;
+        }
+
+            .week-nav button:hover {
+                background: #1565C0;
+            }
+    /* Sidebar */
+    .sidebar {
+        background: linear-gradient(135deg, #ffffff, #f3f3f3);
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        height: 100%;
+        position: sticky;
+        top: 20px;
+        width: 250px;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .sidebar ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+            .sidebar ul li {
+                margin-bottom: 14px;
+                padding: 10px 16px;
+                border-radius: 8px;
+                transition: background 0.3s ease-in-out;
+            }
+
+                .sidebar ul li a {
+                    text-decoration: none;
+                    color: #222;
+                    font-weight: 600;
+                    font-size: 18px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    transition: color 0.3s ease-in-out;
+                }
+
+                /* Hover hiệu ứng đẹp hơn */
+                .sidebar ul li:hover {
+                    background: #e8f5e9;
+                }
+
+                .sidebar ul li a:hover {
+                    color: #2e7d32;
+                }
+
+                /* Icon (nếu có) */
+                .sidebar ul li a i {
+                    font-size: 20px;
+                    color: #4CAF50;
+                }
 
     /* Responsive */
-  
+    
+        .sidebar
 
     {
-        flex-direction: column;
+        width: 200px;
+        padding: 16px;
     }
 
-    .col-md-6 {
-        width: 100%;
+    .sidebar ul li a {
+        font-size: 16px;
     }
 
     }
 </style>
-<h2 class="text-center mt-4">📊 Thống kê Công Việc</h2>
-@if (Model.Workspace != null)
-{
-    <p class="text-center font-weight-bold">📌 Workspace: @Model.Workspace.WorkspaceName</p>
-}
-else
-{
-    <p class="text-center font-weight-bold">📌 Workspace not found</p>
-}
-<div class="container mt-5">
-    <div class="row d-flex justify-content-center align-items-center">
-        <!-- Biểu đồ Trạng thái Task (Trái) -->
-        <div class="col-md-6">
-            <div class="card chart-container">
-                <div class="card-header text-center">
-                    <h4>📌 Trạng thái Công Việc</h4>
-                </div>
-                <div class="card-body">
-                    <canvas id="taskStatusChart"></canvas>
-                </div>
+<!-- Sidebar -->
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-md-3">
+            <div class="sidebar">
+                <h5>Timeline Task</h5>
+                <ul>
+                    <li><a href="/Statistic/TaskList/TaskList?workspaceId=@Model.WorkspaceId">Task List</a></li>
+                    <li><a href="/Statistic?workspaceId=@Model.WorkspaceId">Statistic</a></li>
+                    <li><a href="/Dashboard/Timeline/Index?workspaceId=@Model.WorkspaceId">TimeLine</a></li>
+                </ul>
             </div>
         </div>
+        <!-- Main Content (Right Side) -->
+        <div class="col-md-9">
+            <h2 class="text-center mt-4">📊 Task Statistics</h2>
+            @if (Model.Workspace != null)
+            {
+                <p class="text-center font-weight-bold">📌 Workspace: @Model.Workspace.WorkspaceName</p>
+            }
+            else
+            {
+                <p class="text-center font-weight-bold">📌 Workspace not found</p>
+            }
 
-        <!-- Biểu đồ Công việc của Thành viên (Phải) -->
-        <div class="col-md-6">
-            <div class="card chart-container">
-                <div class="card-header text-center">
-                    <h4>👥 Công Việc Của Thành Viên</h4>
-                </div>
-                <div class="card-body">
-                    <canvas id="memberTaskChart"></canvas>
+            <!-- Week Navigation Buttons -->
+            <div class="week-nav">
+                <button onclick="changeWeek(-1)">⬅ Previous Week</button>
+                <span id="currentWeekLabel"></span>
+                <button onclick="changeWeek(1)">Next Week ➡</button>
+            </div>
+
+            <div class="container mt-5">
+                <div class="row d-flex justify-content-center align-items-center">
+                    <div class="col-md-6">
+                        <div class="card chart-container">
+                            <div class="card-header text-center">
+                                <h4>📌 Task Status</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="taskStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card chart-container">
+                            <div class="card-header text-center">
+                                <h4>👥 Member Tasks</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="memberTaskChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Thêm nút xuất Excel -->
+                    <div class="text-center mt-3">
+                        <button onclick="exportTaskStatistics()" class="btn btn-info">📊 Export Task Statistics</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -103,47 +194,117 @@ else
 </div>
 
 
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Thêm thư viện SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", async function () {
-        const workspaceId = "@Model.WorkspaceId"; // Truyền từ Razor vào JS
+    
+   
+
+    async function exportTaskStatistics() {
+        try {
+            const workspaceId = "@Model.WorkspaceId";
+            const formattedDate = currentWeekStart.toISOString().split("T")[0];
+
+            const [taskDataResponse, memberTaskResponse] = await Promise.all([
+                fetch(`/api/statistics/task-status/${workspaceId}?startDate=${formattedDate}`),
+                fetch(`/api/statistics/member-tasks/${workspaceId}?startDate=${formattedDate}`)
+            ]);
+
+            if (!taskDataResponse.ok || !memberTaskResponse.ok) {
+                throw new Error("Error fetching data.");
+            }
+
+            const taskData = await taskDataResponse.json();
+            const memberTasks = await memberTaskResponse.json();
+
+            // Chuẩn bị dữ liệu Excel
+            let ws_data = [["Task Status", "Count"], ...taskData.map(t => [t.label, t.count])];
+            let ws_member = [["Member", "Task Percentage (%)"], ...memberTasks.map(m => [m.name, m.percentage])];
+
+            let ws1 = XLSX.utils.aoa_to_sheet(ws_data);
+            let ws2 = XLSX.utils.aoa_to_sheet(ws_member);
+
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws1, "Task Status");
+            XLSX.utils.book_append_sheet(wb, ws2, "Member Tasks");
+
+            XLSX.writeFile(wb, "Task_Statistics.xlsx");
+        } catch (error) {
+            console.error("❌ Export Error:", error);
+            alert("Failed to export statistics!");
+        }
+    }
+</script>
+<!-- Bootstrap & Chart.js -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Get Monday of the current week
+    function getMonday(d) {
+        d = new Date(d);
+        d.setHours(0, 0, 0, 0);
+        const day = d.getDay();
+        const diff = day === 0 ? -6 : 1 - day; // If Sunday, move back to the previous Monday
+        d.setDate(d.getDate() + diff);
+        return d;
+    }
+
+    let currentWeekStart = getMonday(new Date());
+
+    document.addEventListener("DOMContentLoaded", function () {
+        updateCharts(currentWeekStart);
+    });
+
+    function changeWeek(offset) {
+        currentWeekStart.setDate(currentWeekStart.getDate() + offset * 7);
+        updateCharts(currentWeekStart);
+    }
+
+    async function updateCharts(startDate) {
+        const workspaceId = "@Model.WorkspaceId";
+        const formattedDate = startDate.toISOString().split("T")[0];
+        document.getElementById("currentWeekLabel").innerText = `📆 Week starting: ${formattedDate}`;
 
         try {
-            const taskDataResponse = await fetch(`/api/statistics/task-status/${workspaceId}`);
-            const taskData = await taskDataResponse.json();
+            const [taskDataResponse, memberTaskResponse] = await Promise.all([
+                fetch(`/api/statistics/task-status/${workspaceId}?startDate=${formattedDate}`),
+                fetch(`/api/statistics/member-tasks/${workspaceId}?startDate=${formattedDate}`)
+            ]);
 
-            const memberTaskResponse = await fetch(`/api/statistics/member-tasks/${workspaceId}`);
+            if (!taskDataResponse.ok || !memberTaskResponse.ok) {
+                throw new Error("Error loading data from API.");
+            }
+
+            const taskData = await taskDataResponse.json();
             const memberTasks = await memberTaskResponse.json();
 
             console.log("Task Data:", taskData);
             console.log("Member Tasks:", memberTasks);
 
-            // Khởi tạo gradient màu sắc cho Pie Chart
+            // Hide chart if no data
+            if (!taskData || taskData.length === 0) {
+                console.warn("No task status data available.");
+                document.getElementById("taskStatusChart").style.display = "none";
+                return;
+            } else {
+                document.getElementById("taskStatusChart").style.display = "block";
+            }
+
+            if (window.taskStatusChart instanceof Chart) {
+                window.taskStatusChart.destroy();
+            }
+
+            // Draw Pie Chart (Task Status)
             const ctxPie = document.getElementById("taskStatusChart").getContext("2d");
-            const pieGradient1 = ctxPie.createLinearGradient(0, 0, 0, 400);
-            pieGradient1.addColorStop(0, "#4CAF50");
-            pieGradient1.addColorStop(1, "#8BC34A");
-
-            const pieGradient2 = ctxPie.createLinearGradient(0, 0, 0, 400);
-            pieGradient2.addColorStop(0, "#E91E63");
-            pieGradient2.addColorStop(1, "#FF4081");
-
-            const pieGradient3 = ctxPie.createLinearGradient(0, 0, 0, 400);
-            pieGradient3.addColorStop(0, "#2196F3");
-            pieGradient3.addColorStop(1, "#64B5F6");
-
-            // Biểu đồ tròn (Pie Chart) cho trạng thái task
-            const taskStatusChart = new Chart(ctxPie, {
+            window.taskStatusChart = new Chart(ctxPie, {
                 type: "pie",
                 data: {
                     labels: taskData.map(t => t.label),
                     datasets: [{
-                        data: taskData.map(t => t.value),
-                        backgroundColor: [pieGradient1, pieGradient2, pieGradient3],
+                        data: taskData.map(t => t.count),
+                        backgroundColor: ["#4CAF50", "#E91E63", "#2196F3"],
                         borderWidth: 2,
                         hoverOffset: 8
                     }]
@@ -151,46 +312,33 @@ else
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: {
-                            position: "right",
-                            onClick: function (e, legendItem) {
-                                // Lấy label từ legendItem và chuyển hướng
-                                const label = legendItem.text;
-                                window.location.href = `Statistic/TaskList/TaskList?WorkspaceId=${workspaceId}&FilterType=status&FilterValue=${label}`;
-                            }
-                        },
-                        tooltip: { enabled: true, backgroundColor: "#000", titleColor: "#fff", bodyColor: "#fff" }
+                        legend: { position: "right" },
+                        tooltip: { enabled: true }
                     },
-                    animation: {
-                        animateScale: true,
-                        animateRotate: true
-                    },
-                    // Thêm sự kiện nhấp chuột cho các phần của Pie Chart
-                    onClick: function (e, elements) {
+                    onClick: (event, elements) => {
                         if (elements.length > 0) {
                             const index = elements[0].index;
-                            const label = this.data.labels[index];
-                            window.location.href = `Statistic/TaskList/TaskList?WorkspaceId=${workspaceId}&FilterType=status&FilterValue=${label}`;
+                            const memberId = taskData[index].label;
+                            window.location.href = `Statistic/TaskList/TaskList?WorkspaceId=${workspaceId}&FilterType=status&FilterValue=${memberId}`;
                         }
                     }
                 }
             });
 
-            // Gradient cho biểu đồ cột
-            const ctxBar = document.getElementById("memberTaskChart").getContext("2d");
-            const barGradient = ctxBar.createLinearGradient(0, 0, 0, 400);
-            barGradient.addColorStop(0, "#FF9800");
-            barGradient.addColorStop(1, "#FF5722");
+            // Draw Bar Chart (Member Tasks)
+            if (window.memberTaskChart instanceof Chart) {
+                window.memberTaskChart.destroy();
+            }
 
-            // Biểu đồ cột (Bar Chart) cho công việc của thành viên
-            const memberTaskChart = new Chart(ctxBar, {
+            const ctxBar = document.getElementById("memberTaskChart").getContext("2d");
+            window.memberTaskChart = new Chart(ctxBar, {
                 type: "bar",
                 data: {
                     labels: memberTasks.map(m => m.name),
                     datasets: [{
-                        label: "Phần trăm công việc (%)",
+                        label: "Task Percentage (%)",
                         data: memberTasks.map(m => m.percentage),
-                        backgroundColor: barGradient,
+                        backgroundColor: "#FF9800",
                         borderRadius: 8,
                         barThickness: 40
                     }]
@@ -198,36 +346,24 @@ else
                 options: {
                     responsive: true,
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: "#333", font: { weight: "bold" } }
-                        },
-                        x: {
-                            ticks: { color: "#333", font: { weight: "bold" } }
-                        }
+                        y: { beginAtZero: true },
+                        x: { ticks: { color: "#333", font: { weight: "bold" } } }
                     },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true, backgroundColor: "#222", titleColor: "#fff", bodyColor: "#fff" }
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: "easeInOutBounce"
-                    },
-                    // Thêm sự kiện nhấp chuột cho các cột trong Bar Chart
-                    onClick: function (e, elements) {
+                    onClick: (event, elements) => {
                         if (elements.length > 0) {
                             const index = elements[0].index;
-                            const label = this.data.labels[index];
-                            window.location.href = `/Statistic/TaskList/TaskList?WorkspaceId=${workspaceId}&FilterType=member&FilterValue=${label}`;
+                            const memberId = memberTasks[index].name;
+                            window.location.href = `Statistic/TaskList/TaskList?WorkspaceId=${workspaceId}&FilterType=member&FilterValue=${memberId}`;
                         }
                     }
                 }
             });
 
         } catch (error) {
-            console.error("Lỗi khi tải dữ liệu:", error);
+            console.error("❌ Error loading data:", error);
+            alert("Unable to load data. Please try again later!");
         }
-    });
+    }
 </script>
+
 
