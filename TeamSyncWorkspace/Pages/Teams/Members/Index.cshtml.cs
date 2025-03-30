@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Models;
 using TeamSyncWorkspace.Services;
 
@@ -22,6 +24,7 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
         private readonly NotificationService _notificationService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<IndexModel> _logger;
+        private readonly AppDbContext _context;
 
         public IndexModel(
             TeamService teamService,
@@ -30,7 +33,8 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
             InvitationService invitationService,
             NotificationService notificationService,
             UserManager<ApplicationUser> userManager,
-            ILogger<IndexModel> logger)
+            ILogger<IndexModel> logger,
+            AppDbContext context)
         {
             _teamService = teamService;
             _teamRoleService = teamRoleService;
@@ -39,6 +43,7 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
             _notificationService = notificationService;
             _userManager = userManager;
             _logger = logger;
+            _context = context;
         }
 
         public Team Team { get; set; }
@@ -49,8 +54,18 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
         public bool CanRemoveMembers { get; set; }
         public int CurrentUserId { get; set; }
 
+        public int CurrentTeamId { get; set; }
+
         [TempData]
         public string StatusMessage { get; set; }
+
+        [TempData]
+        public string SuccessMessage { get; set; }
+
+        [TempData]
+        public string ErrorMessage { get; set; }
+
+        public List<Models.Chat> GroupChats { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int teamId)
         {
@@ -61,6 +76,7 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
             }
 
             CurrentUserId = user.Id;
+            CurrentTeamId = teamId;
 
             // Get team information
             Team = await _teamService.GetTeamByIdAsync(teamId);
@@ -86,6 +102,9 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
             CanManageRoles = await _teamRoleService.UserCanPerformActionAsync(teamId, user.Id, ActivityType.ManageRoles);
             CanInviteMembers = await _teamRoleService.UserCanPerformActionAsync(teamId, user.Id, ActivityType.InviteMembers);
             CanRemoveMembers = await _teamRoleService.UserCanPerformActionAsync(teamId, user.Id, ActivityType.RemoveMembers);
+
+            // Lấy danh sách Group Chats liên quan đến team
+            GroupChats = await _teamService.GetGroupChatsByTeamIdAsync(teamId,CurrentUserId);
 
             return Page();
         }
@@ -194,6 +213,80 @@ namespace TeamSyncWorkspace.Pages.Teams.Members
 
             StatusMessage = message;
             return RedirectToPage(new { teamId });
+        }
+
+        public async Task<IActionResult> OnPostCreateGroupChatAsync(string groupName, int[] userIds, int teamId)
+        {
+            var currentUserId = int.Parse(_userManager.GetUserId(User));
+
+            if (userIds == null || userIds.Length == 0)
+            {
+                ErrorMessage = "You must select at least one member to create a group.";
+                return RedirectToPage(new { teamId });
+            }
+
+            if (string.IsNullOrWhiteSpace(groupName))
+            {
+                ErrorMessage = "Group name cannot be empty.";
+                return RedirectToPage(new { teamId });
+            }
+
+            // Tạo group chat mới với TeamId
+            var chat = new Models.Chat
+            {
+                Name = groupName,
+                IsGroup = true,
+                TeamId = teamId // Gán TeamId từ tham số
+            };
+            _context.Chats.Add(chat);
+            await _context.SaveChangesAsync();
+
+            // Loại bỏ currentUserId khỏi userIds nếu nó đã tồn tại
+            userIds = userIds.Where(userId => userId != currentUserId).ToArray();
+
+            // Thêm thành viên vào group chat
+            var members = userIds.Select(userId => new ChatMember { ChatId = chat.Id, UserId = userId }).ToList();
+            members.Add(new ChatMember { ChatId = chat.Id, UserId = currentUserId }); // Thêm currentUserId vào danh sách
+            _context.ChatMembers.AddRange(members);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("/Chat/ChatRoom", new { chatId = chat.Id });
+        }
+
+        public async Task<IActionResult> OnPostCreateChatAsync(int userId, int teamId)
+        {
+            var currentUserId = int.Parse(_userManager.GetUserId(User));
+
+            var existingChat = await _context.Chats
+                .Where(c => !c.IsGroup)
+                .FirstOrDefaultAsync(c =>
+                    c.ChatMembers.Any(cm => cm.UserId == currentUserId) &&
+                    c.ChatMembers.Any(cm => cm.UserId == userId));
+
+            if (existingChat == null)
+            {
+                var currentUser = await _userManager.FindByIdAsync(currentUserId.ToString());
+                var otherUser = await _userManager.FindByIdAsync(userId.ToString());
+
+                var chat = new Models.Chat
+                {
+                    Name = $"{currentUser.UserName} & {otherUser.UserName}",
+                    IsGroup = false,
+                    TeamId = teamId
+                };
+                _context.Chats.Add(chat);
+                await _context.SaveChangesAsync();
+
+                _context.ChatMembers.AddRange(
+                    new ChatMember { ChatId = chat.Id, UserId = currentUserId },
+                    new ChatMember { ChatId = chat.Id, UserId = userId }
+                );
+                await _context.SaveChangesAsync();
+
+                return RedirectToPage("/Chat/ChatRoom", new { chatId = chat.Id });
+            }
+
+            return RedirectToPage("/Chat/ChatRoom", new { chatId = existingChat.Id });
         }
     }
 }

@@ -2,7 +2,9 @@ using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Hubs;
 using TeamSyncWorkspace.Hubs.Handlers;
@@ -45,6 +47,13 @@ builder.Services.AddAuthentication()
     });
 
 builder.Services.AddAuthorization();
+
+// Add email sender service
+var smtpServer = builder.Configuration["Smtp:Server"];
+var smtpPort = int.Parse(builder.Configuration["Smtp:Port"]);
+var smtpUser = builder.Configuration["Smtp:User"];
+var smtpPass = builder.Configuration["Smtp:Pass"];
+builder.Services.AddSingleton<IEmailSender>(new EmailSender(smtpServer, smtpPort, smtpUser, smtpPass));
 
 // Register application services
 builder.Services.AddScoped<DashboardService>();
@@ -103,7 +112,6 @@ app.UseAuthorization();
 app.MapControllers();
 // Add route mapping with authentication-based redirection
 app.MapRazorPages();
-
 //app.MapGet("/api/tasks", async (AppDbContext db, string workspaceId, DateTime startDate, DateTime endDate, ILogger<Program> logger) =>
 //{
 //    logger.LogInformation("Fetching tasks for workspaceId: {WorkspaceId}, StartDate: {StartDate}, EndDate: {EndDate}",
@@ -126,6 +134,7 @@ app.MapRazorPages();
 // Configure endpoint
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<DocumentHub>("/hubs/document");
+app.MapHub<ChatHub>("/chatHub");
 // Default route handling
 app.Use(async (context, next) =>
 {

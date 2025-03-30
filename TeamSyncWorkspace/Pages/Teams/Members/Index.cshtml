@@ -1,4 +1,4 @@
-@page
+﻿@page
 @model TeamSyncWorkspace.Pages.Teams.Members.IndexModel
 @using TeamSyncWorkspace.Models
 @{
@@ -35,6 +35,66 @@
                         </button>
                     </div>
                 }
+                <div class="level-item">
+                    <button class="button is-primary is-light js-modal-trigger" data-target="createGroupChatModal">
+                        <span class="icon">
+                            <i class="bi bi-chat-dots"></i>
+                        </span>
+                        <span>Create Group Chat</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="createGroupChatModal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <form method="post" asp-page-handler="CreateGroupChat">
+                    <input type="hidden" name="teamId" value="@Model.CurrentTeamId" />
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">Create Group Chat</p>
+                        <button type="button" class="delete" aria-label="close"></button>
+                    </header>
+                    <section class="modal-card-body">
+                        <!-- Hiển thị thông báo -->
+                        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                        {
+                            <div class="notification is-danger">
+                                @Model.ErrorMessage
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                        {
+                            <div class="notification is-success">
+                                @Model.SuccessMessage
+                            </div>
+                        }
+
+                        <div class="field">
+                            <label class="label">Group Name</label>
+                            <div class="control">
+                                <input type="text" name="groupName" class="input" placeholder="Enter group name" required />
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Select Members</label>
+                            <div class="control">
+                                @foreach (var member in Model.TeamMembers)
+                                {
+                                    <label class="checkbox">
+                                        <input type="checkbox" name="userIds" value="@member.UserId" />
+                                        @member.User.FirstName @member.User.LastName
+                                    </label>
+                                    <br />
+                                }
+                            </div>
+                        </div>
+                    </section>
+                    <footer class="modal-card-foot">
+                        <button type="submit" class="button is-primary">Create Group</button>
+                        <button type="button" class="button is-light">Cancel</button>
+                    </footer>
+                </form>
             </div>
         </div>
         
@@ -69,6 +129,7 @@
                         <th>Member</th>
                         <th>Role</th>
                         <th>Joined</th>
+                        <th>Chat</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -96,6 +157,23 @@
                             </td>
                             <td>
                                 <span class="has-text-grey is-size-7">@member.JoinedDate.ToString("MMM d, yyyy")</span>
+                            </td>
+                            <td>
+                                <div class="buttons are-small">
+                                    @if (Model.CurrentUserId != @member.UserId)
+                                    {
+                                        <form method="post" asp-page-handler="CreateChat">
+                                            <input type="hidden" name="userId" value="@member.UserId" />
+                                            <input type="hidden" name="teamId" value="@Model.CurrentTeamId" />
+                                            <button type="submit" class="button is-info is-light">
+                                                <span class="icon is-small">
+                                                    <i class="bi bi-chat-dots"></i>
+                                                </span>
+                                                <span>Chat</span>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             </td>
                             <td>
                                 <div class="buttons are-small">
@@ -131,6 +209,26 @@
                     }
                 </tbody>
             </table>
+        </div>
+        <div class="box has-shadow mt-5">
+            <p class="title is-5">Group Chats</p>
+            @if (Model.GroupChats != null && Model.GroupChats.Any())
+            {
+                <ul>
+                    @foreach (var chat in Model.GroupChats)
+                    {
+                        <li>
+                            <a asp-page="/Chat/ChatRoom" asp-route-chatId="@chat.Id">
+                                @chat.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="has-text-grey">No group chats available.</p>
+            }
         </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -299,5 +299,19 @@ namespace TeamSyncWorkspace.Services
             return await _context.TeamMembers
                  .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == id && tm.Role == "Admin");
         }
+
+        public async Task<List<Chat>> GetGroupChatsByTeamIdAsync(int teamId, int userId)
+        {
+
+            var teamMemberIds = await _context.TeamMembers
+                .Where(tm => tm.TeamId == teamId && tm.UserId == userId)
+                .Select(tm => tm.UserId)
+                .ToListAsync();
+
+            return await _context.Chats
+                .Where(c => c.IsGroup && c.ChatMembers.Any(cm => teamMemberIds.Contains(cm.UserId)))
+                .ToListAsync();
+        }
+
     }
 }
