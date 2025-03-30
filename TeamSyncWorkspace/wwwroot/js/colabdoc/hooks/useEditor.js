@@ -1,3 +1,5 @@
+import EditorPositioning from '../utils/editorPositioning.js';
+
 export function useEditor(documentId, content, canEdit, tempDocument) {
     const { ref, markRaw } = Vue;
 
@@ -9,6 +11,10 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
     const syncOperationInProgress = ref(false);
     const editorLoaded = ref(false);
     const cursorPosition = ref(null);
+    const previousDocumentState = ref({
+        structure: null,
+        selectionPaths: []
+    });
 
     /**
      * Initializes the editor with provided factory function
@@ -99,16 +105,7 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
      * @returns {boolean} - Whether to sync immediately
      */
     const shouldSyncImmediately = (operations) => {
-        for (const op of operations) {
-            // Sync immediately on significant changes
-            if (op.baseVersion &&
-                (op.type === 'insert' || op.type === 'remove') &&
-                (op.position?.path?.[0] !== undefined || // Paragraph level changes
-                    (op.nodes && op.nodes.length > 10))) {  // Large text operations
-                return true;
-            }
-        }
-        return false;
+        return true; // For now, always sync immediately
     };
 
     /**
@@ -154,37 +151,7 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
     const updateCursorPosition = () => {
         if (!editor.value || !canEdit) return;
 
-        const viewSelection = editor.value.editing.view.document.selection;
-
-        // Get selection ranges
-        const ranges = [];
-        for (const range of viewSelection.getRanges()) {
-            // Convert view range to DOM range
-            const domRange = editor.value.editing.view.domConverter.viewRangeToDom(range);
-            if (!domRange) continue;
-
-            const rect = domRange.getBoundingClientRect();
-            const editorElement = document.querySelector('#editor');
-            const editorRect = editorElement.getBoundingClientRect();
-
-            // Calculate relative position
-            ranges.push({
-                left: rect.left - editorRect.left,
-                top: rect.top - editorRect.top,
-                width: rect.width,
-                height: rect.height
-            });
-        }
-
-        // Set cursor position data
-        cursorPosition.value = {
-            ranges,
-            timestamp: Date.now(),
-            caretPosition: {
-                focus: editor.value.model.document.selection.focus.toJSON(),
-                anchor: editor.value.model.document.selection.anchor.toJSON()
-            }
-        };
+        cursorPosition.value = EditorPositioning.updateCursorPosition(editor.value, canEdit);
     };
 
     /**
@@ -255,8 +222,8 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
             updateTempDocument(delta, prefixLength, suffixLength, safeRemoved, safeAdded);
         }
 
-        // Restore editor state
-        restoreEditorState(ranges, isBackward, scrollPosition);
+        // Restore editor state using the utility
+        EditorPositioning.restoreEditorState(editor.value, ranges, isBackward, scrollPosition, previousDocumentState);
     };
 
     /**
@@ -299,7 +266,39 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
         });
 
         // Build content in parts with careful bounds checking
+        console.log("Prefix:", prefix, "Safe added:", safeAdded);
         let newContent = prefix + safeAdded;
+
+        // Add middle portion if needed
+        if (midStartIndex < currentContent.length && midLength > 0) {
+            const midSection = currentContent.substring(midStartIndex, midStartIndex + midLength);
+            newContent += midSection;
+        }
+
+        // Add suffix if needed
+        if (suffixLength > 0 && currentContent.length >= suffixLength) {
+            const suffixStart = Math.max(0, currentContent.length - suffixLength);
+            const suffix = currentContent.substring(suffixStart);
+            newContent += suffix;
+        }
+
+        console.log("Original length:", currentContent.length, "New length:", newContent.length);
+        return newContent;
+    };
+
+    /**
+     * Updates the temporary document with the same delta
+     * @param {object} delta - Text delta object
+     * @param {number} prefixLength - Length of unchanged prefix
+     * @param {number} suffixLength - Length of unchanged suffix
+     * @param {string} safeRemoved - Text being removed
+            midEndIndex,
+            midLength
+        });
+
+        // Build content in parts with careful bounds checking
+        console.log("Prefix:", prefix, "Safe added:", safeAdded);
+        let newContent = prefix + safeAdded.trim();
 
         // Add middle portion if needed
         if (midStartIndex < currentContent.length && midLength > 0) {
@@ -340,128 +339,126 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
 
         // Update the temporary document
         tempDocument.value = updatedTempContent;
-
-        // If the editor content differs from the temporary document, merge them
-        if (updatedTempContent !== editor.value.getData()) {
-            reconcileEditorWithTempDocument(updatedTempContent);
-        }
     };
 
-    /**
-     * Reconciles differences between editor and temporary document
-     * @param {string} updatedTempContent - Updated temporary document content
-     */
-    const reconcileEditorWithTempDocument = (updatedTempContent) => {
-        console.log("Selective node update from server to editor...");
-
-        try {
-            // First, validate if the HTML is well-formed
-            const isValidHtml = validateHtmlStructure(updatedTempContent);
-
-            if (!isValidHtml) {
-                console.warn("HTML structure validation failed - falling back to full update");
-                editor.value.setData(updatedTempContent);
-                return;
-            }
-
-            // Parse HTML content into DOM structures
-            const parser = new DOMParser();
-            const editorDoc = parser.parseFromString(editor.value.getData(), 'text/html');
-            const tempDoc = parser.parseFromString(updatedTempContent, 'text/html');
-
-            // Get node arrays
-            const editorNodes = Array.from(editorDoc.body.childNodes);
-            const tempNodes = Array.from(tempDoc.body.childNodes);
-
-            // Find modified nodes
-            const nodeChanges = identifyChangedNodes(editorNodes, tempNodes);
-            console.log("Node changes:", nodeChanges);
-
-            if (nodeChanges.length === 0) {
-                console.log("No specific node changes detected");
-                // If we can't identify specific changes, fall back to full update
-                editor.value.setData(updatedTempContent);
-            } else {
-                applySelectiveNodeUpdates(editorNodes, tempNodes, nodeChanges);
-            }
-        } catch (error) {
-            console.error("Error performing selective update:", error);
-            // Fallback to simple replacement if the selective update fails
-            editor.value.setData(updatedTempContent);
-        }
-    };
-
-    /**
-     * Applies selective node updates to the editor
-     * @param {Array} editorNodes - Editor DOM nodes
-     * @param {Array} tempNodes - Temporary document DOM nodes
-     * @param {Array} nodeChanges - List of node changes
-     */
-    const applySelectiveNodeUpdates = (editorNodes, tempNodes, nodeChanges) => {
-        // Perform selective node updates using CKEditor API
-        editor.value.model.change(writer => {
-            const editorRoot = editor.value.model.document.getRoot();
-
-            // Apply each identified change to the editor
-            nodeChanges.forEach(change => {
-                if (change.type === 'replace' || change.type === 'update') {
-                    // Get the HTML for the updated node
-                    const tempNode = tempNodes[change.tempIndex];
-                    const nodeHtml = nodeToHtml(tempNode);
-
-                    // Find the corresponding position in the editor model
-                    const position = findNodePosition(editorRoot, change.editorIndex);
-                    if (position) {
-                        // Calculate the length of the node to replace
-                        const nodeToReplace = editorNodes[change.editorIndex];
-                        const endPosition = findNodeEndPosition(position, nodeToReplace);
-
-                        if (endPosition) {
-                            // Create a range covering the node to replace
-                            const range = writer.createRange(position, endPosition);
-
-                            // Remove the old content
-                            writer.remove(range);
-
-                            // Insert the new content at the same position
-                            const viewFragment = editor.value.data.processor.toView(nodeHtml);
-                            const modelFragment = editor.value.data.toModel(viewFragment);
-                            writer.insert(modelFragment, position);
-                        }
-                    }
-                }
-            });
-        });
-    };
-
-    /**
-     * Restores editor state after content changes
-     * @param {Array} ranges - Selection ranges to restore
-     * @param {boolean} isBackward - Whether selection is backward
-     * @param {number} scrollPosition - Scroll position to restore
-     */
     const restoreEditorState = (ranges, isBackward, scrollPosition) => {
         // Restore selection if we had any ranges
         if (ranges.length) {
             editor.value.model.change(writer => {
-                // Need to convert saved positions to new positions in the document
                 try {
-                    const newRanges = ranges.map(range => {
-                        // Try to find equivalent positions in new document structure
-                        const root = editor.value.model.document.getRoot();
-                        const startPath = range.start.path;
-                        const endPath = range.end.path;
+                    // Analyze current document structure
+                    const root = editor.value.model.document.getRoot();
+                    const currentDocStructure = analyzeDocumentStructure(root);
 
-                        // Create new positions based on paths (if they still exist in the document)
-                        const start = writer.createPositionFromPath(root, startPath, 'toNearestPosition');
-                        const end = writer.createPositionFromPath(root, endPath, 'toNearestPosition');
+                    // Store ranges to track paragraph positions
+                    const selectionPaths = ranges.map(range => ({
+                        startPath: [...range.start.path],
+                        endPath: [...range.end.path]
+                    }));
+
+                    // Compare with previous structure to detect inserted paragraphs
+                    let insertedParas = 0;
+                    let insertionPoint = -1;
+
+                    if (previousDocumentState.value.structure) {
+                        const prevStructure = previousDocumentState.value.structure;
+                        const prevPaths = previousDocumentState.value.selectionPaths;
+
+                        // Determine if paragraphs were inserted and where
+                        if (currentDocStructure.totalParagraphs > prevStructure.totalParagraphs) {
+                            insertedParas = currentDocStructure.totalParagraphs - prevStructure.totalParagraphs;
+
+                            // Try to find where paragraphs were inserted by comparing content
+                            for (let i = 0; i < prevStructure.paragraphs.length; i++) {
+                                if (i >= currentDocStructure.paragraphs.length) break;
+
+                                // If content doesn't match, assume insertion happened here
+                                if (prevStructure.paragraphs[i].text !== currentDocStructure.paragraphs[i].text) {
+                                    insertionPoint = i;
+                                    break;
+                                }
+                            }
+
+                            // If we couldn't determine insertion point, use cursor position as hint
+                            if (insertionPoint === -1 && prevPaths.length > 0) {
+                                insertionPoint = prevPaths[0].startPath[0];
+                            }
+
+                            console.log("Detected paragraph insertion:", {
+                                inserted: insertedParas,
+                                at: insertionPoint
+                            });
+                        }
+                    }
+
+                    const newRanges = ranges.map(range => {
+                        const startPath = [...range.start.path];
+                        const endPath = [...range.end.path];
+
+                        // If paragraphs were inserted before our position, adjust the position accordingly
+                        if (insertedParas > 0 && insertionPoint >= 0) {
+                            // Only adjust if our position is after the insertion point
+                            if (startPath[0] >= insertionPoint) {
+                                startPath[0] += insertedParas;
+                            }
+
+                            if (endPath[0] >= insertionPoint) {
+                                endPath[0] += insertedParas;
+                            }
+
+                            console.log("Adjusted selection paths:", {
+                                original: [range.start.path, range.end.path],
+                                adjusted: [startPath, endPath]
+                            });
+                        }
+
+                        // Create positions with adjusted paths, with fallback to safe positions
+                        let start, end;
+
+                        try {
+                            // Try to create position directly with adjusted path
+                            if (startPath[0] < root.childCount) {
+                                const node = root.getChild(startPath[0]);
+                                const offset = Math.min(startPath[1] || 0, node.maxOffset || 0);
+                                start = writer.createPositionAt(node, offset);
+                            } else {
+                                // Fallback to last paragraph if index out of bounds
+                                const lastNode = root.getChild(root.childCount - 1);
+                                start = writer.createPositionAt(lastNode, 0);
+                            }
+
+                            if (endPath[0] < root.childCount) {
+                                const node = root.getChild(endPath[0]);
+                                const offset = Math.min(endPath[1] || 0, node.maxOffset || 0);
+                                end = writer.createPositionAt(node, offset);
+                            } else {
+                                const lastNode = root.getChild(root.childCount - 1);
+                                end = writer.createPositionAt(lastNode, lastNode.maxOffset || 0);
+                            }
+                        } catch (e) {
+                            console.warn("Error creating adjusted positions:", e);
+                            // Last resort fallback - create position at document start
+                            start = writer.createPositionAt(root, 0);
+                            end = writer.createPositionAt(root, 0);
+                        }
 
                         return writer.createRange(start, end);
                     });
 
                     writer.setSelection(newRanges, { backward: isBackward });
+
+                    // Save current state for next comparison
+                    previousDocumentState.value = {
+                        structure: currentDocStructure,
+                        selectionPaths: selectionPaths
+                    };
+
+                    // Log restored position for debugging
+                    console.log("Restored selection at:",
+                        editor.value.model.document.selection.getFirstPosition().path);
+
                 } catch (e) {
-                    console.warn('Could not restore selection after content change', e);
+                    console.warn('Could not restore selection after content change:', e);
                 }
             });
         }
@@ -472,6 +469,44 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
             editorElement.scrollTop = scrollPosition;
         }
     };
+
+    /**
+     * Analyzes document structure and provides paragraph information
+     * @param {Object} root - Editor root node
+     * @returns {Object} - Document structure information with content signatures
+     */
+    function analyzeDocumentStructure(root) {
+        const paragraphs = [];
+        let totalChars = 0;
+
+        for (let i = 0; i < root.childCount; i++) {
+            const node = root.getChild(i);
+            const nodeLength = node.maxOffset || 0;
+            totalChars += nodeLength;
+
+            // Create content signature for better paragraph comparison
+            const text = node.textContent || '';
+            const contentSignature = text.length > 20 ?
+                text.substring(0, 10) + '...' + text.substring(text.length - 10) :
+                text;
+
+            paragraphs.push({
+                index: i,
+                type: node.name,
+                length: nodeLength,
+                text: text,
+                signature: contentSignature,
+                startOffset: totalChars - nodeLength,
+                endOffset: totalChars
+            });
+        }
+
+        return {
+            paragraphs,
+            totalParagraphs: root.childCount,
+            totalChars
+        };
+    }
 
     /**
      * Cleans up editor resources
@@ -489,221 +524,6 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
             clearTimeout(typingTimeout.value);
         }
     };
-
-    // HELPER FUNCTIONS FOR NODE COMPARISON AND MANIPULATION
-    // ------------------------------------------------------
-
-    /**
-     * Finds common prefix length between two node arrays
-     * @param {Array} nodesA - First array of nodes
-     * @param {Array} nodesB - Second array of nodes
-     * @returns {number} - Common prefix length
-     */
-    function findCommonPrefixLength(nodesA, nodesB) {
-        const maxLength = Math.min(nodesA.length, nodesB.length);
-        let i = 0;
-
-        while (i < maxLength &&
-            nodesA[i].nodeType === nodesB[i].nodeType &&
-            nodesA[i].nodeName === nodesB[i].nodeName &&
-            nodesA[i].textContent === nodesB[i].textContent) {
-            i++;
-        }
-
-        return i;
-    }
-
-    /**
-     * Finds common suffix length between two node arrays
-     * @param {Array} nodesA - First array of nodes
-     * @param {Array} nodesB - Second array of nodes
-     * @returns {number} - Common suffix length
-     */
-    function findCommonSuffixLength(nodesA, nodesB) {
-        const maxLength = Math.min(nodesA.length, nodesB.length);
-        let i = 0;
-
-        while (i < maxLength &&
-            nodesA[nodesA.length - 1 - i].nodeType === nodesB[nodesB.length - 1 - i].nodeType &&
-            nodesA[nodesA.length - 1 - i].nodeName === nodesB[nodesB.length - 1 - i].nodeName &&
-            nodesA[nodesA.length - 1 - i].textContent === nodesB[nodesB.length - 1 - i].textContent) {
-            i++;
-        }
-
-        return i;
-    }
-
-    /**
-     * Converts a DOM node to HTML string
-     * @param {Node} node - DOM node
-     * @returns {string} - HTML string
-     */
-    function nodeToHtml(node) {
-        const wrapper = document.createElement('div');
-        wrapper.appendChild(node.cloneNode(true));
-        return wrapper.innerHTML;
-    }
-
-    /**
-     * Identifies which nodes have changed between two node arrays
-     * @param {Array} editorNodes - Editor DOM nodes
-     * @param {Array} tempNodes - Temporary document DOM nodes
-     * @returns {Array} - List of node changes
-     */
-    function identifyChangedNodes(editorNodes, tempNodes) {
-        const changes = [];
-
-        // Find common prefix and suffix
-        const commonPrefixLength = findCommonPrefixLength(editorNodes, tempNodes);
-        const remainingEditorNodes = editorNodes.slice(commonPrefixLength);
-        const remainingTempNodes = tempNodes.slice(commonPrefixLength);
-        const commonSuffixLength = findCommonSuffixLength(remainingEditorNodes, remainingTempNodes);
-
-        // Calculate the changed middle section
-        const editorChangeStart = commonPrefixLength;
-        const editorChangeEnd = editorNodes.length - commonSuffixLength;
-        const tempChangeStart = commonPrefixLength;
-        const tempChangeEnd = tempNodes.length - commonSuffixLength;
-
-        // Record each changed node
-        for (let i = tempChangeStart; i < tempChangeEnd; i++) {
-            // Map to the corresponding editor node if available
-            const editorIndex = editorChangeStart + (i - tempChangeStart);
-            if (editorIndex < editorChangeEnd) {
-                changes.push({
-                    type: 'update',
-                    tempIndex: i,
-                    editorIndex: editorIndex
-                });
-            } else {
-                changes.push({
-                    type: 'add',
-                    tempIndex: i,
-                    insertAfter: editorChangeEnd - 1
-                });
-            }
-        }
-
-        return changes;
-    }
-
-    /**
-     * Finds the position of a node in the editor model
-     * @param {object} root - Editor root node
-     * @param {number} nodeIndex - Index of the node
-     * @returns {object|null} - Position in the editor model
-     */
-    function findNodePosition(root, nodeIndex) {
-        try {
-            // Simplified approach - assuming each paragraph is a separate node
-            return root.getChild(nodeIndex).getPosition(0);
-        } catch (e) {
-            console.warn('Could not find node position:', e);
-            return null;
-        }
-    }
-
-    /**
-     * Finds the end position of a node
-     * @param {object} startPosition - Start position of the node
-     * @param {Node} node - DOM node
-     * @returns {object|null} - End position in the editor model
-     */
-    function findNodeEndPosition(startPosition, node) {
-        try {
-            // Simplified approach - get approximate node length
-            const nodeLength = node.textContent.length;
-            return startPosition.getShiftedBy(nodeLength);
-        } catch (e) {
-            console.warn('Could not find node end position:', e);
-            return null;
-        }
-    }
-
-    /**
-     * Validates HTML structure to ensure it's well-formed
-     * @param {string} htmlContent - HTML content to validate
-     * @returns {boolean} - Whether the HTML is valid
-     */
-    function validateHtmlStructure(htmlContent) {
-        try {
-            // 1. Check for tag balance
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-
-            // Look for parsing errors
-            const parserErrors = doc.querySelectorAll('parsererror');
-            if (parserErrors.length > 0) {
-                console.warn("HTML parsing error detected:", parserErrors[0].textContent);
-                return false;
-            }
-
-            // 2. Check for broken HTML tags in the content
-            if (hasPartialTags(htmlContent)) {
-                console.warn("Detected partial HTML tags in content");
-                return false;
-            }
-
-            // 3. Special check for tables to ensure they're complete
-            const tables = doc.querySelectorAll('table');
-            for (const table of tables) {
-                // Check if table has any broken structures
-                if (!validateTableStructure(table)) {
-                    return false;
-                }
-            }
-
-            return true;
-        } catch (error) {
-            console.error("HTML validation error:", error);
-            return false;
-        }
-    }
-
-    /**
-     * Checks for partial HTML tags in content
-     * @param {string} html - HTML content
-     * @returns {boolean} - Whether partial tags are found
-     */
-    function hasPartialTags(html) {
-        // Check for cases where tags might be broken
-        const suspiciousPatterns = [
-            /< [a-z]+[^>]*$/i,           // Opening tag cut off at the end
-            /^[^<]*>/i,                  // Closing tag without opening
-            /<[a-z]+[^>]*$/i,            // Incomplete opening tag
-            /< \/[a-z]+/i,               // Malformed closing tag
-            /<[a-z]+ [^>]*[^\/]>(?![^<]*<\/)/i  // Self-closing tag missing slash
-        ];
-
-        return suspiciousPatterns.some(pattern => pattern.test(html));
-    }
-
-    /**
-     * Validates table structure to ensure it's well-formed
-     * @param {Element} table - Table DOM element
-     * @returns {boolean} - Whether the table is valid
-     */
-    function validateTableStructure(table) {
-        // Basic structure checks for tables
-        const rows = table.querySelectorAll('tr');
-        if (rows.length === 0) return false;
-
-        // Check each row has at least one cell
-        for (const row of rows) {
-            const cells = row.querySelectorAll('td, th');
-            if (cells.length === 0) return false;
-
-            // Check each cell is properly closed
-            for (const cell of cells) {
-                if (cell.innerHTML.includes('<td') || cell.innerHTML.includes('<th') ||
-                    cell.innerHTML.includes('</tr') || cell.innerHTML.includes('</table')) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
 
     return {
         editor,
