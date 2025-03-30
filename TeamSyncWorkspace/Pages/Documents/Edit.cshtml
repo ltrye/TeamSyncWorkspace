@@ -35,7 +35,7 @@
                 '--cursor-rgb': hexToRgb(cursor.userInfo.color || getUserColor(userId))
             }">
             <div v-for="(range, i) in cursor.ranges" :key="`selection-${userId}-${i}`" class="remote-cursor-selection"
-                :style="{
+                 :style="{
                     left: `${range.left}px`,
                     top: `${range.top}px`,
                     width: `${range.width}px`,
@@ -62,14 +62,14 @@
             <div class="columns is-justify-content-center">
                 <div class="back-button-container  mr-1">
                     <a href="/Documents/Index?workspaceId=@Model.Document.WorkspaceId"
-                        class="p-2 button is-normal  is-light has-tooltip-right" data-tooltip="Back to Documents">
+                       class="p-2 button is-normal  is-light has-tooltip-right" data-tooltip="Back to Documents">
                         <span class="icon">
                             <i class="bi bi-arrow-left"></i>
                         </span>
                     </a>
                 </div>
-                <input type="text" class="document-title-input" v-model="documentTitle" @@input="titleChanged = true"
-                    @@blur = "updateDocumentTitle" @@keydown.enter = "$event.target.blur()" placeholder = "Document Title" >
+                <input type="text" class="document-title-input" v-model="documentTitle" @@input ="titleChanged = true"
+                @@blur ="updateDocumentTitle" @@keydown.enter ="$event.target.blur()" placeholder="Document Title">
             </div>
 
             <div class="editor-status" style="height:18px">
@@ -102,7 +102,7 @@
                 </div>
             </div>
             <div class="editor-actions">
-                <button class="button is-small is-light" @@click="shareDocument">
+                <button class="button is-small is-light" @@click ="shareDocument">
                     <span class="icon">
                         <i class="bi bi-share"></i>
                     </span>
@@ -111,7 +111,7 @@
 
                 <div class="dropdown is-right" :class="{'is-active': showExportOptions}">
                     <div class="dropdown-trigger">
-                        <button class="button is-small is-light" @@click="showExportOptions = !showExportOptions">
+                        <button class="button is-small is-light" @@click ="showExportOptions = !showExportOptions">
                             <span class="icon">
                                 <i class="bi bi-download"></i>
                             </span>
@@ -123,19 +123,19 @@
                     </div>
                     <div class="dropdown-menu">
                         <div class="dropdown-content">
-                            <a class="dropdown-item" @@click="exportAsPdf">
+                            <a class="dropdown-item" @@click ="exportAsPdf">
                                 <span class="icon is-small">
                                     <i class="bi bi-file-pdf"></i>
                                 </span>
                                 <span>Export as PDF</span>
                             </a>
-                            <a class="dropdown-item" @@click="exportAsDocx">
+                            <a class="dropdown-item" @@click ="exportAsDocx">
                                 <span class="icon is-small">
                                     <i class="bi bi-file-word"></i>
                                 </span>
                                 <span>Export as Word</span>
                             </a>
-                            <a class="dropdown-item" @@click="printDocument">
+                            <a class="dropdown-item" @@click ="printDocument">
                                 <span class="icon is-small">
                                     <i class="bi bi-printer"></i>
                                 </span>
@@ -150,8 +150,6 @@
 
     <div class="editor-main">
         <div class="editor-content">
-
-
             <!-- Loading screen - will be hidden once the editor is loaded -->
             <div v-if="!editorLoaded" class="editor-loading-overlay">
                 <div class="editor-loading-content">
@@ -166,7 +164,7 @@
             <div class="main-container" :class="{ 'is-hidden': !editorLoaded }">
                 <div class="presence" style="margin:0px" id="editor-presence"></div>
                 <div class="editor-container editor-container_document-editor editor-container_include-outline editor-container_include-annotations editor-container_include-pagination"
-                    id="editor-container">
+                     id="editor-container">
                     <div class="editor-container__menu-bar" id="editor-menu-bar"></div>
                     <div class="editor-container__toolbar" id="editor-toolbar"></div>
                     <div class="editor-container__editor-wrapper">
@@ -190,12 +188,11 @@
             </div>
         </div>
 
-
         <!-- Chat -->
         <div class="chat-container" :class="{ 'is-open': isChatOpen }">
             <div class="chat-header">
                 <h3 class="chat-title">Chat</h3>
-                <button class="chat-close-button" @@click="toggleChat">
+                <button class="chat-close-button" @@click ="toggleChat">
                     <span class="icon">
                         <i class="bi bi-x-lg"></i>
                     </span>
@@ -208,10 +205,10 @@
                     <p class="text-muted">Start the conversation with your team!</p>
                 </div>
                 <div v-for="message in chatMessages" :key="message.id" class="chat-message"
-                    :class="{ 'is-sender': message.isCurrentUser }">
+                     :class="{ 'is-sender': message.isCurrentUser, 'is-ai': message.userId === -1 }">
                     <div class="message-avatar">
                         <img :src="message.userAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(message.userName)}&size=32&background=3273DC&color=FFFFFF`"
-                            alt="User Avatar" class="image is-32x32 is-rounded">
+                             alt="User Avatar" class="image is-32x32 is-rounded">
                     </div>
                     <div class="message-content">
                         <div class="message-header">
@@ -223,18 +220,24 @@
                 </div>
             </div>
             <div class="chat-input">
-                <input type="text" v-model="newMessage" placeholder="Type a message..." @@keydown.enter="sendMessage"
-                    class="input is-small">
+                <div v-html="highlightedMessage" class="input is-small" contenteditable="true" @@input ="newMessage = $event.target.innerText"></div>
                 <button class="button is-primary is-small" @@click="sendMessage">
                     <span class="icon">
                         <i class="bi bi-send"></i>
                     </span>
                 </button>
+                <div v-if="showAIDropdown" class="dropdown is-active" style="position: absolute; width: 100%; top: -50px;">
+                    <div class="dropdown-menu" style="width: 100%;">
+                        <div class="dropdown-content">
+                            <a class="dropdown-item" @@click="selectAIOption">TeamSync AI</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Add this chat toggle button to the editor actions -->
-        <button class="chat-toggle-button" @@click="toggleChat">
+        <button class="chat-toggle-button" @@click ="toggleChat">
             <span class="icon">
                 <i class="bi bi-chat-dots"></i>
             </span>
@@ -245,28 +248,29 @@
 
     <!-- Share Document Modal -->
     <div class="modal" :class="{ 'is-active': showShareModal }">
-        <div class="modal-background" @@click="showShareModal = false"></div>
+        <div class="modal-background" @@click ="showShareModal = false"></div>
         <div class="modal-card">
             <header class="modal-card-head">
                 <p class="modal-card-title">Share Document</p>
-                <button class="delete" aria-label="close" @@click="showShareModal = false"></button>
+                <button class="delete" aria-label="close" @@click ="showShareModal = false"></button>
             </header>
             <section class="modal-card-body">
                 <div class="field">
                     <label class="label">Team Members</label>
                     <div class="box p-3" style="max-height: 200px; overflow-y: auto;">
                         <div v-for="member in teamMembers" :key="member.id"
-                            class="is-flex is-justify-content-space-between is-align-items-center mb-2">
+                             class="is-flex is-justify-content-space-between is-align-items-center mb-2">
                             <div class="is-flex is-align-items-center">
                                 <img :src="getAvatarUrl(member)" class="image is-32x32 is-rounded mr-2">
                                 <div>
-                                    <p class="has-text-weight-medium mb-0">{{ member.firstName }} {{ member.lastName }}
+                                    <p class="has-text-weight-medium mb-0">
+                                        {{ member.firstName }} {{ member.lastName }}
                                     </p>
                                     <p class="is-size-7 has-text-grey mb-0">{{ member.email }}</p>
                                 </div>
                             </div>
                             <div class="select is-small" v-if="member.id !== currentUser.id">
-                                <select v-model="member.permission" @@change="updatePermission(member)">
+                                <select v-model="member.permission" @@change ="updatePermission(member)">
                                     <option value="view">Can View</option>
                                     <option value="edit">Can Edit</option>
                                 </select>
@@ -279,7 +283,7 @@
                 </div>
             </section>
             <footer class="modal-card-foot">
-                <button class="button" @@click="showShareModal = false">Close</button>
+                <button class="button" @@click ="showShareModal = false">Close</button>
             </footer>
         </div>
     </div>
@@ -322,4 +326,9 @@
     <link rel="stylesheet" href="~/css/colab-doc/cursor-styles.css">
     <link rel="stylesheet" href="~/css/colab-doc/chat.css">
 
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
 }

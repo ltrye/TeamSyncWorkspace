@@ -280,6 +280,26 @@ namespace TeamSyncWorkspace.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "70050bb1-c4ed-4408-8c80-60cc84588a56",
+                            Email = "ai@assistant.com",
+                            EmailConfirmed = true,
+                            FirstName = "AI",
+                            LastName = "Assistant",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "AI@ASSISTANT.COM",
+                            NormalizedUserName = "AI ASSISTANT",
+                            PhoneNumberConfirmed = false,
+                            RoleId = 0,
+                            SecurityStamp = "5b490a21-eb6d-452a-a992-16efd3c4c2a5",
+                            TwoFactorEnabled = false,
+                            UserName = "AI Assistant"
+                        });
                 });
 
             modelBuilder.Entity("TeamSyncWorkspace.Models.CollabDoc", b =>

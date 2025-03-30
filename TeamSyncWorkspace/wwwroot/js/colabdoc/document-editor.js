@@ -98,7 +98,12 @@ export function createDocumentEditor() {
                 toggleChat,
                 handleReceiveMessage,
                 handleChatHistory,
-                formatChatTime
+                formatChatTime,
+                showAIDropdown,
+                aiSelected,
+                checkForAITrigger,
+                handleSpaceKey,
+                selectAIOption
             } = useChat(documentId, currentUser, connection);
             // Combined function to sync changes
             const syncChanges = async () => {
@@ -252,7 +257,12 @@ export function createDocumentEditor() {
                 unreadMessages,
                 sendMessage,
                 toggleChat,
-                formatChatTime
+                formatChatTime,
+                showAIDropdown,
+                aiSelected,
+                checkForAITrigger,
+                handleSpaceKey,
+                selectAIOption
             };
         }
     });
