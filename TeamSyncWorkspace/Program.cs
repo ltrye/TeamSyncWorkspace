@@ -80,18 +80,18 @@ builder.Services.AddSignalR();
 var app = builder.Build();
 
 var uploadsPath = Path.Combine(Path.GetTempPath(), "uploads");
-// if (!Directory.Exists(uploadsPath))
-// {
-//     try
-//     {
-//         Directory.CreateDirectory(uploadsPath);
-//         app.Logger.LogInformation("Created uploads directory at: {UploadsPath}", uploadsPath);
-//     }
-//     catch (Exception ex)
-//     {
-//         app.Logger.LogError(ex, "Failed to create uploads directory at: {UploadsPath}", uploadsPath);
-//     }
-// }
+if (!Directory.Exists(uploadsPath))
+{
+    try
+    {
+        Directory.CreateDirectory(uploadsPath);
+        app.Logger.LogInformation("Created uploads directory at: {UploadsPath}", uploadsPath);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Failed to create uploads directory at: {UploadsPath}", uploadsPath);
+    }
+}
 
 
 
