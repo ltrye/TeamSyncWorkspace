@@ -1,0 +1,135 @@
+﻿@page
+@model TeamSyncWorkspace.Pages.TaskList.TaskListModel
+@{
+    ViewData["Title"] = "Danh sách Task";
+}
+<style>
+    /* Container cho bảng */
+    .table-container {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        padding: 20px;
+        margin-bottom: 40px;
+    }
+
+    /* Header của bảng */
+    .table thead th {
+        background: linear-gradient(135deg, #4CAF50, #388E3C);
+        color: white;
+        text-align: center;
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    /* Body của bảng */
+    .table tbody tr {
+        transition: all 0.3s ease-in-out;
+    }
+
+        .table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Hover effect */
+        .table tbody tr:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Các ô dữ liệu */
+    .table td, .table th {
+        padding: 15px;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* Select dropdown */
+    .table select {
+        border-radius: 8px;
+        padding: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .table select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+
+    /* Nút cập nhật */
+    .btn-primary {
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        border: none;
+        padding: 8px 14px;
+        font-size: 14px;
+        border-radius: 8px;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1976D2, #0D47A1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+</style>
+<h2 class="text-center mt-4">📋 Danh sách Task</h2>
+<p class="text-center font-weight-bold">📌 Workspace: @Model.Workspace.WorkspaceName</p>
+
+<!-- Bảng hiển thị danh sách task -->
+<div class="container mt-5 table-container">
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Task ID</th>
+                <th>Mô tả</th>
+                <th>Ngày hết hạn</th>
+                <th>Trạng thái</th>
+                <th>Người được giao</th>
+                <th></th> <!-- Cột cho nút Cập nhật -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in Model.Tasks)
+            {
+                <form asp-page-handler="UpdateTask" method="post">
+                    <input type="hidden" asp-for="WorkspaceId" />
+                    <input type="hidden" asp-for="FilterType" />
+                    <input type="hidden" asp-for="FilterValue" />
+                    <input type="hidden" name="TaskId" value="@task.TaskId" />
+                <tr>
+                    <td>@task.TaskId</td>
+                    <td>@task.TaskDescription</td>
+                    <td>@task.DueDate.ToShortDateString()</td>
+                    <td>
+                        <select name="IsCompleted" class="form-control">
+                            <option value="false" selected="@(!task.IsCompleted)">Pending</option>
+                            <option value="true" selected="@(task.IsCompleted)">Complete</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select asp-for="AssignedId" name="AssignedId" class="form-control">
+                            <option value="">-- Select User --</option>
+                                @foreach (var user in Model.Users)
+                                {
+                                <option value="@user.Id" selected="@(task.AssignedId == user.Id)">
+                                        @user.FirstName @user.LastName (@user.Email)
+                                </option>
+                                }
+                        </select>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-primary btn-sm">Cập nhật</button>
+                    </td>
+                </tr>
+                </form>
+            }
+        </tbody>
+    </table>
+</div>

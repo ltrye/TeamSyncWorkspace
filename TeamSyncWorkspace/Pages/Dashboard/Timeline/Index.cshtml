@@ -7,15 +7,162 @@
 <head>
     <link rel="stylesheet" href="~/css/Timeline/Calendar.css" asp-append-version="true">
 </head>
+<style>
+    /* Container chứa 3 nút */
+    .button-container {
+        display: flex;
+        justify-content: center; /* Căn giữa theo chiều ngang */
+        gap: 10px; /* Khoảng cách giữa các nút */
+        margin-top: 20px;
+    }
 
+    /* Định dạng chung cho nút */
+    .button {
+        padding: 10px 18px;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #f8f9fa;
+        color: #333;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+        /* Hiệu ứng hover */
+        .button:hover {
+            background-color: #e9ecef;
+            border-color: #bbb;
+        }
+
+    /* Định dạng nút dạng <a> để đồng bộ */
+    .button-container a {
+        text-decoration: none;
+        display: inline-block;
+        line-height: normal;
+    }
+    /* Container chứa 3 nút */
+    .button-container {
+        display: flex;
+        justify-content: center; /* Căn giữa ngang */
+        gap: 12px; /* Khoảng cách giữa các nút */
+        margin-bottom: 20px;
+    }
+
+    /* Định dạng chung cho button */
+    .button {
+        padding: 10px 16px;
+        font-size: 15px;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        color: #333;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+        .button:hover {
+            background-color: #e9ecef;
+            border-color: #bbb;
+        }
+
+    /* Container tổng (căn giữa giao diện) */
+    .columns {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    /* Khung lịch chiếm 70% màn hình, task list chiếm 30% */
+    .column.is-three-quarters {
+        flex: 3;
+    }
+
+    .column.is-4 {
+        flex: 1.5;
+    }
+
+    /* Box hiển thị lịch và task */
+    .box {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Lịch căn giữa */
+    .calendar-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    /* Nút điều hướng tuần */
+    .calendar-nav {
+        padding: 8px 14px;
+        font-size: 14px;
+        border-radius: 6px;
+        background: #f0f0f0;
+        transition: 0.2s;
+    }
+
+        .calendar-nav:hover {
+            background: #e0e0e0;
+        }
+
+    /* Khu vực chứa ngày trong tuần */
+    #weekdays {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        padding: 10px 0;
+    }
+
+    /* Task List */
+    .task-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .task-item {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        transition: background 0.2s;
+    }
+
+        .task-item:hover {
+            background: #f7f7f7;
+        }
+
+</style>
 <!-- Title using Bulma -->
 <h1 class="title is-1">Timeline</h1>
 <h4 class="subtitle is-4">@DateTime.Today.ToString("MMMM yyyy")</h4>
 
 <!-- Add Task Button -->
-<button class="button is-primary js-modal-trigger" data-target="addTaskModal">
-    Add Task
-</button>
+<div class="button-container">
+    <!-- Add Task -->
+    <button class="button js-modal-trigger" data-target="addTaskModal">
+        Add Task
+    </button>
+
+    <!-- List Task -->
+    <a href="/Statistic/TaskList/TaskList?workspaceId=@Model.WorkspaceId" class="button">
+        List Task
+    </a>
+
+    <!-- Summary -->
+    <form method="get" asp-page="/Statistic/Index">
+        <input type="hidden" name="workspaceId" value="@Model.WorkspaceId" />
+        <button type="submit" class="button">Summary</button>
+    </form>
+</div>
+
+
 
 <div class="columns">
     <!-- Left: Calendar Layout -->
@@ -39,15 +186,22 @@
 
             <ul id="taskList" class="task-list">
                 @foreach (var task in Model.Tasks.OrderBy(t => t.DueDate))
-                {
+                {   
                     <li class="task-item"
                         data-task-id="@task.TaskId"
+                        
                         data-task-description="@task.TaskDescription"
                         data-due-date="@task.DueDate.ToString("yyyy-MM-dd")"
-                        data-is-completed="@task.IsCompleted.ToString().ToLower()">
+                        data-is-completed="@task.IsCompleted.ToString().ToLower()"
+                        data-assigned-id="@(task.AssignedId ?? -1)">
+
                         <strong>@task.DueDate.ToString("ddd, MMM dd"):</strong>
                         @task.TaskDescription
                         (@(task.IsCompleted ? "Completed" : "Pending"))
+                        <br />
+                        <span>Task ID: @task.TaskId</span>
+                        <br />
+                        <span>Assigned ID: @task.AssignedId</span> <!-- 👀 Debug -->
                     </li>
                 }
             </ul>
@@ -67,7 +221,22 @@
             </header>
             <section class="modal-card-body">
                 <input type="hidden" name="WorkspaceId" value="@Model.WorkspaceId" />
-                
+
+                <!-- Dropdown chọn User -->
+                <div class="field">
+                    <label class="label">Assign to User</label>
+                    <div class="control">
+                        <div class="select">
+                            <select asp-for="UserId" name="UserId" required>
+                                <option value="0">-- Select User --</option>
+                                @foreach (var user in Model.Users)
+                                {
+                                    <option value="@user.Id">@user.FirstName @user.LastName (@user.Email)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div class="field">
                     <label class="label">Task Description</label>
                     <div class="control">
@@ -119,7 +288,22 @@
                         <input type="date" id="taskDueDate" name="DueDate" class="input" required />
                     </div>
                 </div>
-
+                <div class="field">
+                    <label class="label">Assigned User</label>
+                    <div class="control">
+                        <div class="select">
+                            <select id="assignedUser" name="AssignedId">
+                                <option value="0">-- Select User --</option>
+                                @foreach (var user in Model.Users)
+                                {
+                                    <option value="@user.Id">
+                                        @user.FirstName @user.LastName
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div class="field">
                     <label class="label">Status</label>
                     <div class="control">
