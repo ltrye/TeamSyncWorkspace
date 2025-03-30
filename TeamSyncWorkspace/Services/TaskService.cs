@@ -52,7 +52,7 @@ namespace TeamSyncWorkspace.Services
             }
         }
 
-        public async Task<TimelineTask> AddTaskAsync(string workspaceId, int userId, string taskDescription, DateTime dueDate)
+        public async Task<TimelineTask> AddTaskAsync(string workspaceId, int? userId, string taskDescription, DateTime dueDate)
         {
             var newTask = new TimelineTask
             {

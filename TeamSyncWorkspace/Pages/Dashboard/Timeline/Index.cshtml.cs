@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
+using System.Threading.Tasks;
 using TeamSyncWorkspace.Models;
 using TeamSyncWorkspace.Services;
 
@@ -49,6 +50,10 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
             DateTime endDate = startDate.AddDays(6);
 
             Tasks = await _taskService.GetTasksForWeekAsync(WorkspaceId, startDate, endDate);
+            foreach (var task in Tasks)
+            {
+                Console.WriteLine($"TaskID: {task.TaskId}, AssignedId: {task.AssignedId}");
+            }
             Users = await _taskService.GetUsersByWorkspaceIdAsync(WorkspaceId);
             return Page();
         }
@@ -65,10 +70,14 @@ namespace TeamSyncWorkspace.Pages.Teams.Timeline
                 ModelState.AddModelError("", "Task description and due date are required.");
                 return Page();
             }
+            if (AssignedId == 0)
+            {
+                AssignedId = null;
+            }
 
             
 
-            await _taskService.AddTaskAsync(WorkspaceId, UserId, TaskDescription, DueDate);
+            await _taskService.AddTaskAsync(WorkspaceId, AssignedId, TaskDescription, DueDate);
             return RedirectToPage(new { workspaceId = WorkspaceId });
         }
 

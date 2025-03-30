@@ -71,7 +71,7 @@
                     taskItem.dataset.taskDescription = row[i].taskDescription;
                     taskItem.dataset.dueDate = row[i].dueDate;
                     taskItem.dataset.isCompleted = row[i].isCompleted;
-                    taskItem.dataset.assignID = row[i].assignID;
+                    taskItem.dataset.assignedId = row[i].assignedId;
                     taskItem.onclick = () => openTaskDetails(taskItem); //  Click opens modal
 
                     td.appendChild(taskItem);
@@ -116,6 +116,10 @@
             li.dataset.taskDescription = task.taskDescription;
             li.dataset.dueDate = task.dueDate;
             li.dataset.isCompleted = task.isCompleted;
+            li.dataset.assignedId = task.assignedId !== null && task.assignedId !== undefined
+                ? task.assignedId
+                : "null";
+            console.log("Task Data:", li.dataset); // 🔍 Debug xem có nhận được không
             li.innerHTML = `<strong>${dayjs(task.dueDate).format("ddd, MMM DD")}:</strong> ${task.taskDescription} (${task.isCompleted ? "Completed" : "Pending"})`;
             li.onclick = () => openTaskDetails(li); //  Click opens modal
 
@@ -137,11 +141,13 @@
         dueDateInput.value = taskItem.dataset.dueDate.split("T")[0];
         statusSelect.value = taskItem.dataset.isCompleted === "true" ? "true" : "false";
         taskIdInput.value = taskItem.dataset.taskId;
-        const assignID = taskItem.dataset.assignID;
+        const assignID = taskItem.dataset.assignedId;
         if (assignID) {
+            console.log("Assigned ID:", assignID);
+
             assignedUserSelect.value = assignID;
         } else {
-            assignedUserSelect.selectedIndex = 0; // Chọn mặc định nếu không có user
+            assignedUserSelect.value = 0;
         }
         modal.classList.add("is-active");
     }
