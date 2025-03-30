@@ -146,7 +146,8 @@ export default {
      * @returns {Object|null} Cursor position information
      */
     updateCursorPosition(editor, canEdit) {
-        if (!editor || !canEdit) return null;
+        // if (!editor || !canEdit) return null;
+        console.log("Updating cursor position...");
 
         const viewSelection = editor.editing.view.document.selection;
 

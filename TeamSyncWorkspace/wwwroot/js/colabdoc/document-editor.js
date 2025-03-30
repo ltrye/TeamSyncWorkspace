@@ -126,10 +126,8 @@ export function createDocumentEditor() {
 
 
             // Watch cursor position changes
-            watch(cursorPosition, (newPosition) => {
-                if (newPosition) {
-                    broadcastCursorPosition(newPosition);
-                }
+            watch(cursorPositions, (newPosition) => {
+                console.log('Cursor position changed:', newPosition);
             });
 
             // Watch for document title changes
@@ -168,10 +166,18 @@ export function createDocumentEditor() {
                 return `${r}, ${g}, ${b}`;
             };
 
+            // Add this in the setup function
+            const remoteCursorsContainer = ref(null);
+
             // Initialize components
             onMounted(async () => {
                 // Initialize editor
-                await initEditor(createEditor, syncChanges);
+                initEditor(createEditor, syncChanges,
+                    (cursorData) => broadcastCursorPosition(cursorData)
+
+                );
+
+
 
                 // Set up collaboration
                 await setupSignalR((content) => applyExternalChanges(content),
@@ -184,10 +190,7 @@ export function createDocumentEditor() {
 
                 );
 
-                // Connect cursor tracking to broadcasting
-                setupCursorTracking((cursorData) => {
-                    broadcastCursorPosition(cursorData);
-                });
+
                 // Add to the onMounted function after setupSignalR
                 await initChat();
 
@@ -203,6 +206,29 @@ export function createDocumentEditor() {
                     if (!e.target.closest('.dropdown-trigger')) {
                         showExportOptions.value = false;
                     }
+                });
+
+                // Mount the remote cursor container to the editor
+                setTimeout(() => {
+                    const editorElement = document.querySelector('#editor');
+                    const cursorsContainer = document.querySelector('#remote-cursors-container');
+
+                    if (editorElement && cursorsContainer) {
+                        editorElement.parentNode.style.position = 'relative';
+                        cursorsContainer.style.position = 'absolute';
+                        cursorsContainer.style.top = '0';
+                        cursorsContainer.style.left = '0';
+                        cursorsContainer.style.width = '100%';
+                        cursorsContainer.style.height = '100%';
+                        cursorsContainer.style.pointerEvents = 'none';
+                        cursorsContainer.style.zIndex = '10';
+                    }
+                }, 1000);
+
+                // Add a watcher for cursor positions
+                watch(cursorPositions, (newPositions) => {
+                    console.log('Cursor positions updated:', newPositions);
+                    renderRemoteCursors(newPositions);
                 });
             });
 
@@ -221,6 +247,55 @@ export function createDocumentEditor() {
             // Handle print document
             const handlePrintDocument = () => {
                 printDocument(documentTitle.value, getContent);
+            };
+
+            // Add this function to the setup
+            const renderRemoteCursors = (positions) => {
+                const container = document.querySelector('#remote-cursors-container');
+                if (!container) return;
+
+                // Clear existing cursors
+                container.innerHTML = '';
+
+                // Create cursor elements for each user
+                Object.entries(positions).forEach(([userId, cursor]) => {
+                    if (!cursor || !cursor.ranges || !cursor.ranges.length) return;
+
+                    const cursorColor = cursor.userInfo?.color || getUserColor(userId);
+                    const cursorRgb = hexToRgb(cursorColor);
+
+                    const cursorElement = document.createElement('div');
+                    cursorElement.className = 'remote-cursor';
+                    cursorElement.style.setProperty('--cursor-color', cursorColor);
+                    cursorElement.style.setProperty('--cursor-rgb', cursorRgb);
+
+                    // Add selection ranges
+                    cursor.ranges.forEach((range, i) => {
+                        const selectionElement = document.createElement('div');
+                        selectionElement.className = 'remote-cursor-selection';
+                        selectionElement.style.left = `${range.left}px`;
+                        selectionElement.style.top = `${range.top}px`;
+                        selectionElement.style.width = `${range.width}px`;
+                        selectionElement.style.height = `${range.height}px`;
+                        cursorElement.appendChild(selectionElement);
+                    });
+
+                    // Add caret
+                    const lastRange = cursor.ranges[cursor.ranges.length - 1];
+                    const caretElement = document.createElement('div');
+                    caretElement.className = 'remote-cursor-caret';
+                    caretElement.style.left = `${lastRange.left + lastRange.width || 0}px`;
+                    caretElement.style.top = `${lastRange.top || 0}px`;
+
+                    // Add name label
+                    const nameElement = document.createElement('div');
+                    nameElement.className = 'remote-cursor-name';
+                    nameElement.textContent = cursor.userInfo?.name || `User ${userId}`;
+                    caretElement.appendChild(nameElement);
+
+                    cursorElement.appendChild(caretElement);
+                    container.appendChild(cursorElement);
+                });
             };
 
             // Return state and methods to the template

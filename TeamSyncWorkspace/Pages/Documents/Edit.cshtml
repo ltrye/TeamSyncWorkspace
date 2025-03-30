@@ -28,31 +28,11 @@
 
 
 <!-- Add this to your #app div -->
-<div id="remote-cursors-container" class="remote-cursor-container">
-    <template v-for="(cursor, userId) in cursorPositions" :key="userId">
-        <div class="remote-cursor" :style="{
-                '--cursor-color': cursor.userInfo.color || getUserColor(userId),
-                '--cursor-rgb': hexToRgb(cursor.userInfo.color || getUserColor(userId))
-            }">
-            <div v-for="(range, i) in cursor.ranges" :key="`selection-${userId}-${i}`" class="remote-cursor-selection"
-                :style="{
-                    left: `${range.left}px`,
-                    top: `${range.top}px`,
-                    width: `${range.width}px`,
-                    height: `${range.height}px`
-                }"></div>
-            <div class="remote-cursor-caret" :style="{
-                    left: `${cursor.ranges[cursor.ranges.length - 1]?.left + cursor.ranges[cursor.ranges.length - 1]?.width || 0}px`,
-                    top: `${cursor.ranges[cursor.ranges.length - 1]?.top || 0}px`,
-                }">
-                <div class="remote-cursor-name">
-                    {{ cursor.userInfo.name }}
-                </div>
-            </div>
-        </div>
-    </template>
-</div>
-
+<!-- Update the remote cursors container to be positioned properly -->
+@* <div class="editor-container__editor">
+    <div id="remote-cursors-container" class="remote-cursor-container"></div>
+    <div id="editor"></div>
+</div> *@
 
 <div id="app" class="document-editor">
     <div class="editor-header">
@@ -69,7 +49,7 @@
                     </a>
                 </div>
                 <input type="text" class="document-title-input" v-model="documentTitle" @@input="titleChanged = true"
-                    @@blur = "updateDocumentTitle" @@keydown.enter = "$event.target.blur()" placeholder = "Document Title" >
+                    @@blur="updateDocumentTitle" @@keydown.enter="$event.target.blur()" placeholder="Document Title">
             </div>
 
             <div class="editor-status" style="height:18px">
@@ -174,6 +154,7 @@
                             <div id="editor-outline"></div>
                         </div>
                         <div class="editor-container__editor">
+                            <div id="remote-cursors-container" class="remote-cursor-container"></div>
                             <div id="editor"></div>
                         </div>
                         <div class="editor-container__sidebar">

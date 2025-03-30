@@ -5,17 +5,19 @@ import EditorPositioning from '../utils/editorPositioning.js';
  * Sets up cursor movement tracking for collaboration
  * @param {Function} onCursorChange - Callback for cursor position changes
  */
-const setupCursorTracking = (onCursorChange) => {
-    if (!editor.value || !canEdit) return;
+const setupCursorTracking = (onCursorChange, editor) => {
+    // if (!editor.value || !canEdit) return;
 
     // Use EditorPositioning utility to get cursor position
     const throttledCursorUpdate = _.throttle(() => {
-        const position = EditorPositioning.updateCursorPosition(editor.value, canEdit);
+        const position = EditorPositioning.updateCursorPosition(editor.value, true);
         if (position) {
+            // console.log('Cursor position updated:', position);
             onCursorChange(position);
         }
     }, 100); // Throttle to avoid too many updates
 
+    // console.log(editor.value);
     // Track selection changes
     editor.value.model.document.selection.on('change:range', throttledCursorUpdate);
     editor.value.model.document.selection.on('change:attribute', throttledCursorUpdate);
@@ -55,7 +57,7 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
      * @param {Function} onSyncChanges - Callback for syncing changes
      * @returns {boolean} - Success status
      */
-    const initEditor = async (createEditorFn, onSyncChanges) => {
+    const initEditor = async (createEditorFn, onSyncChanges, onCursorChange) => {
         try {
             const editorElement = document.querySelector('#editor');
             const editorInstance = await createEditorFn("#editor", "#editor-toolbar", "#editor-menu-bar");
@@ -68,6 +70,10 @@ export function useEditor(documentId, content, canEdit, tempDocument) {
 
             if (canEdit) {
                 setupEditorListeners(onSyncChanges);
+                // Setup cursor tracking after editor is initialized
+                if (onCursorChange) {
+                    setupCursorTracking(onCursorChange, editor);
+                }
             }
 
             // Mark editor as loaded

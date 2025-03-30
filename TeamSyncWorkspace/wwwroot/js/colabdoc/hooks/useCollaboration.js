@@ -90,6 +90,7 @@ export function useCollaboration(documentId, currentUser, tempDocument) {
             connection.value.on("CursorPosition", (userId, userInfo, cursorData) => {
                 if (userId !== currentUser.id) {
                     // Update or add the cursor position
+                    // console.log("Cursor position event:", userId, cursorData);
                     cursorPositions.value = {
                         ...cursorPositions.value,
                         [userId]: {
