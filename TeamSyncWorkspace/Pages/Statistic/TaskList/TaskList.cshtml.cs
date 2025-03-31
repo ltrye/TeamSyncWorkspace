@@ -10,11 +10,12 @@ namespace TeamSyncWorkspace.Pages.TaskList
     {
         private readonly StatisticService _statisticService;
         private readonly Data.AppDbContext _context;
-
-        public TaskListModel(StatisticService statisticService, Data.AppDbContext appDbContext)
+        private readonly NotificationService _notificationService;
+        public TaskListModel(StatisticService statisticService, Data.AppDbContext appDbContext, NotificationService notificationService)
         {
             _statisticService = statisticService;
             this._context = appDbContext;
+            this._notificationService = notificationService;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -37,52 +38,76 @@ namespace TeamSyncWorkspace.Pages.TaskList
             {
                 return NotFound();
             }
-
+            // Cập nhật trạng thái hoàn thành và người được giao
             task.IsCompleted = IsCompleted;
             task.AssignedId = AssignedId;
+            if (AssignedId != null)
+            {
+                string title = IsCompleted ? "Done Task" : "Assign Task";
+                string message = IsCompleted
+                    ? $"You have done the task {task.TaskDescription}"
+                    : $"You have been assigned the task {task.TaskDescription}";
+
+                await _notificationService.CreateNotificationAsync((int)AssignedId, title, message);
+            }
+
+
 
             await _context.SaveChangesAsync();
 
-            // Cập nhật giá trị FilterType và FilterValue
+            // Cập nhật giá trị FilterType và FilterValue để duy trì bộ lọc
             this.FilterType = FilterType;
             this.FilterValue = FilterValue;
 
-            // Lấy lại danh sách task giống như OnGetAsync()
+            // Lấy danh sách người dùng
             Users = await _context.Users.ToListAsync();
+
+            // Lấy thông tin workspace
             Workspace = await _statisticService.GetWorkspaceAsync(task.WorkspaceId);
             if (Workspace == null)
             {
                 return NotFound("Workspace not found");
             }
 
+            // Lấy danh sách tất cả các task trong workspace
             var allTasks = await _statisticService.GetTasksAsync(task.WorkspaceId);
 
+            // Áp dụng bộ lọc nếu có
             if (!string.IsNullOrEmpty(FilterType) && !string.IsNullOrEmpty(FilterValue))
             {
-                if (FilterType == "status")
+                switch (FilterType)
                 {
-                    bool isCompleted = FilterValue.Equals("Complete");
-                    Tasks = allTasks.Where(t => t.IsCompleted == isCompleted).ToList();
-                }
-                else if (FilterType == "member")
-                {
-                    if (FilterValue == "Unassigned")
-                    {
-                        Tasks = allTasks.Where(t => t.AssignedId == null).ToList();
-                    }
-                    else
-                    {
-                        var users = await _context.Users
-                            .Where(u => (u.FirstName + " " + u.LastName) == FilterValue)
-                            .Select(u => u.Id)
-                            .ToListAsync();
+                    case "status":
+                        bool isCompleted = FilterValue.Equals("Complete");
+                        Tasks = allTasks.Where(t => t.IsCompleted == isCompleted).ToList();
+                        break;
 
-                        Tasks = allTasks.Where(t => t.AssignedId.HasValue && users.Contains(t.AssignedId.Value)).ToList();
-                    }
-                }
-                else
-                {
-                    Tasks = allTasks;
+                    case "member":
+                        if (FilterValue == "Unassigned")
+                        {
+                            Tasks = allTasks.Where(t => t.AssignedId == null).ToList();
+                        }
+                        else
+                        {
+                            var users = await _context.Users
+                                .Where(u => (u.FirstName + " " + u.LastName) == FilterValue)
+                                .Select(u => u.Id)
+                                .ToListAsync();
+
+                            Tasks = allTasks.Where(t => t.AssignedId.HasValue && users.Contains(t.AssignedId.Value)).ToList();
+                        }
+                        break;
+
+                    case "day":
+                        if (DateTime.TryParse(FilterValue, out DateTime filterDate))
+                        {
+                            Tasks = allTasks.Where(t => t.DueDate.Date == filterDate.Date).ToList();
+                        }
+                        break;
+
+                    default:
+                        Tasks = allTasks;
+                        break;
                 }
             }
             else
@@ -92,6 +117,7 @@ namespace TeamSyncWorkspace.Pages.TaskList
 
             return Page();
         }
+
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -99,7 +125,10 @@ namespace TeamSyncWorkspace.Pages.TaskList
             {
                 return BadRequest("Missing workspaceId");
             }
+
+            // Lấy danh sách người dùng
             Users = await _context.Users.ToListAsync();
+
             // Lấy thông tin workspace
             Workspace = await _statisticService.GetWorkspaceAsync(WorkspaceId);
             if (Workspace == null)
@@ -107,37 +136,45 @@ namespace TeamSyncWorkspace.Pages.TaskList
                 return NotFound("Workspace not found");
             }
 
-            // Lấy danh sách task
+            // Lấy danh sách tất cả các task trong workspace
             var allTasks = await _statisticService.GetTasksAsync(WorkspaceId);
 
+            // Áp dụng bộ lọc nếu có
             if (!string.IsNullOrEmpty(FilterType) && !string.IsNullOrEmpty(FilterValue))
             {
-                if (FilterType == "status")
+                switch (FilterType)
                 {
-                    bool isCompleted = FilterValue.Equals("Complete");
-                    Tasks = allTasks.Where(t => t.IsCompleted == isCompleted).ToList();
-                }
-                else if (FilterType == "member")
-                {
-                    if (FilterValue == "Unassigned")
-                    {
-                        Tasks = allTasks.Where(t => t.AssignedId == null).ToList();
-                    }
-                    else
-                    {
-                        // Lấy danh sách Id của người dùng có tên khớp với FilterValue
-                        var users = await _context.Users
-                            .Where(u => (u.FirstName + " " + u.LastName) == FilterValue)
-                            .Select(u => u.Id)
-                            .ToListAsync();
+                    case "status":
+                        bool isCompleted = FilterValue.Equals("Complete", StringComparison.OrdinalIgnoreCase);
+                        Tasks = allTasks.Where(t => t.IsCompleted == isCompleted).ToList();
+                        break;
 
-                        // Lọc các task mà AssignedId nằm trong danh sách Id của người dùng
-                        Tasks = allTasks.Where(t => t.AssignedId.HasValue && users.Contains(t.AssignedId.Value)).ToList();
-                    }
-                }
-                else
-                {
-                    Tasks = allTasks;
+                    case "member":
+                        if (FilterValue == "Unassigned")
+                        {
+                            Tasks = allTasks.Where(t => t.AssignedId == null).ToList();
+                        }
+                        else
+                        {
+                            var users = await _context.Users
+                                .Where(u => (u.FirstName + " " + u.LastName) == FilterValue)
+                                .Select(u => u.Id)
+                                .ToListAsync();
+
+                            Tasks = allTasks.Where(t => t.AssignedId.HasValue && users.Contains(t.AssignedId.Value)).ToList();
+                        }
+                        break;
+
+                    case "day":
+                        if (DateTime.TryParse(FilterValue, out DateTime filterDate))
+                        {
+                            Tasks = allTasks.Where(t => t.DueDate.Date == filterDate.Date).ToList();
+                        }
+                        break;
+
+                    default:
+                        Tasks = allTasks;
+                        break;
                 }
             }
             else
@@ -147,5 +184,6 @@ namespace TeamSyncWorkspace.Pages.TaskList
 
             return Page();
         }
+
     }
 }
