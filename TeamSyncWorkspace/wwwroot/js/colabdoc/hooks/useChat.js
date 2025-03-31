@@ -1,5 +1,5 @@
 export function useChat(documentId, currentUser, connection) {
-    const { ref, computed, watch} = Vue;
+    const { ref, computed, watch } = Vue;
 
     const chatMessages = ref([]);
     const newMessage = ref('');
@@ -21,13 +21,14 @@ export function useChat(documentId, currentUser, connection) {
     };
 
     // Watch for changes in newMessage to highlight @AI
-    watch(newMessage, (newVal) => {
-        if (newVal.includes('@AI')) {
-            highlightedMessage.value = newVal.replace(/(@AI)/g, '<span class="highlight">$1</span>');
-        } else {
-            highlightedMessage.value = newVal;
-        }
-    });
+    // watch(newMessage, (newVal) => {
+    //     console.log('New message:', newVal);
+    //     if (newVal.includes('@AI')) {
+    //         highlightedMessage.value = newVal.replace(/(@AI)/g, '<span class="highlight">$1</span>');
+    //     } else {
+    //         highlightedMessage.value = newVal;
+    //     }
+    // });
 
     // Send a new message
 
@@ -78,7 +79,14 @@ export function useChat(documentId, currentUser, connection) {
 
             // Clear the message input
             newMessage.value = '';
+            highlightedMessage.value = '';
             showAIDropdown.value = false;
+
+            // Directly clear the contenteditable div
+            const chatInputDiv = document.querySelector('.chat-input [contenteditable]');
+            if (chatInputDiv) {
+                chatInputDiv.innerHTML = '';
+            }
         } catch (error) {
             console.error('Error sending chat message:', error);
         }
