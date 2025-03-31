@@ -138,7 +138,7 @@ namespace TeamSyncWorkspace.Hubs
                 if (message.StartsWith("@AI "))
                 {
                     var prompt = message.Substring(4);
-                    var aiResponse = await _chatHandler.GetAIResponse(prompt);
+                    var aiResponse = await _chatHandler.GetAIResponse(prompt, documentId);
 
                     if (!string.IsNullOrEmpty(aiResponse))
                     {

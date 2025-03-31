@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,7 +54,7 @@ namespace TeamSyncWorkspace.Hubs.Handlers
                 if (message.StartsWith("@AI "))
                 {
                     var prompt = message.Substring(4);
-                    var aiResponse = await GetAIResponse(prompt);
+                    var aiResponse = await GetAIResponse(prompt, documentId);
                     if (!string.IsNullOrEmpty(aiResponse))
                     {
                         var aiMessage = new ChatMessage
@@ -105,21 +105,23 @@ namespace TeamSyncWorkspace.Hubs.Handlers
                 throw;
             }
         }
-        public async Task<string?> GetAIResponse(string prompt)
+        public async Task<string?> GetAIResponse(string prompt, int documentId)
         {
             var client = _httpClientFactory.CreateClient();
             var apiKey = _configuration["OpenAI:ApiKey"];
             var apiUrl = _configuration["AI:ApiUrl"];
 
+
+            var context = _context.CollabDocs.FirstOrDefault(d => d.DocId == documentId)?.Content;
             var requestBody = new
             {
-                model = "scb10x/llama3.1-typhoon2-8b-instruct",
+                model = "meta-llama/llama-3.2-3b-instruct:free",
                 messages = new[]
                 {
             new
             {
                 role = "user",
-                content = prompt
+                content = prompt + " đây là context " + context + " nếu câu hỏi ko liên quan tới doc thì không cần quan tâm"
             }
         }
             };
