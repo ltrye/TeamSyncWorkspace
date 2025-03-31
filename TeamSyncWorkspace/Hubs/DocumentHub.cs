@@ -39,12 +39,15 @@ namespace TeamSyncWorkspace.Hubs
 
         public async Task JoinDocument(int documentId, object userInfo)
         {
+            // Store documentId in connection context for later use
+            Context.Items["documentId"] = documentId;
+
             await _joinHandler.HandleJoinDocument(Clients, Groups, Context.ConnectionId, documentId, userInfo);
         }
 
-        public async Task UpdateDocument(int documentId, int userId, string content)
+        public async Task UpdateDocument(int documentId, int userId, string content, object delta)
         {
-            await _updateHandler.HandleUpdateDocument(Clients, documentId, userId, content);
+            await _updateHandler.HandleUpdateDocument(Clients, documentId, userId, content, delta);
         }
 
         public async Task LeaveDocument(int documentId)
@@ -85,9 +88,21 @@ namespace TeamSyncWorkspace.Hubs
             try
             {
                 // When a user disconnects, we need to handle this in the leave handler
-                // Implementation moved to a service could be added here
+                // Get documentId from connection context or track it when user joins
+                int? documentId = null;
 
-                // For now just call base implementation
+                // Try to get the documentId from connection context items
+                if (Context.Items.ContainsKey("documentId"))
+                {
+                    documentId = (int)Context.Items["documentId"];
+                }
+
+                // Only call leave handler if we have a valid document ID
+                if (documentId.HasValue)
+                {
+                    await _leaveHandler.HandleLeaveDocument(Clients, Groups, Context.ConnectionId, documentId.Value, Context.UserIdentifier);
+                }
+
                 await base.OnDisconnectedAsync(exception);
             }
             catch (Exception ex)
@@ -124,6 +139,66 @@ namespace TeamSyncWorkspace.Hubs
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading chat history for document {DocumentId}", documentId);
+            }
+        }
+        public async Task SendAIChatMessage(int documentId, int userId, object userInfo, string message)
+        {
+            string documentKey = $"document_{documentId}";
+            try
+            {
+                // Broadcast to all clients in the group
+                await Clients.Group(documentKey).SendAsync("ReceiveChatMessage", userId, userInfo, message, DateTime.UtcNow);
+
+                // Check if the message contains @AI
+                if (message.StartsWith("@AI "))
+                {
+                    var prompt = message.Substring(4);
+                    var aiResponse = await _chatHandler.GetAIResponse(prompt);
+
+                    if (!string.IsNullOrEmpty(aiResponse))
+                    {
+                        // Broadcast AI response to all clients in the group
+                        await Clients.Group(documentKey).SendAsync("ReceiveChatMessage", -1, new { Name = "AI" }, aiResponse, DateTime.UtcNow);
+
+                        // Persist AI message to database
+                        await _chatHandler.HandleSaveChatMessage(documentId, -1, aiResponse);
+                    }
+                }
+                else
+                {
+                    // Persist user message to database
+                    await _chatHandler.HandleSaveChatMessage(documentId, userId, message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending chat message for document {DocumentId}", documentId);
+            }
+        }
+
+        public async Task StreamAIChatMessage(int documentId, int userId, object userInfo, string message)
+        {
+            string documentKey = $"document_{documentId}";
+            try
+            {
+                // Broadcast to all clients in the group
+                await Clients.Group(documentKey).SendAsync("ReceiveChatMessage", userId, userInfo, message, DateTime.UtcNow);
+
+                // Check if the message contains @AI
+                if (message.StartsWith("@AI "))
+                {
+                    var prompt = message.Substring(4);
+                    await _chatHandler.StreamAIResponse(documentId, userId, prompt);
+                }
+                else
+                {
+                    // Persist user message to database
+                    await _chatHandler.HandleSaveChatMessage(documentId, userId, message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending chat message for document {DocumentId}", documentId);
             }
         }
 

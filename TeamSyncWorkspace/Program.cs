@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Hubs;
 using TeamSyncWorkspace.Hubs.Handlers;
@@ -63,7 +65,7 @@ builder.Services.AddScoped<TeamRoleService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<TeamRoleManagementService>();
-builder.Services.AddScoped<StatisticService>(); 
+builder.Services.AddScoped<StatisticService>();
 // Add this line with the other service registrations
 builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<DocumentService>();
@@ -83,8 +85,31 @@ builder.Services.AddScoped<FileService>();
 
 // Add SignalR services
 builder.Services.AddSignalR();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
+
+
 // Application configuration
 var app = builder.Build();
+
+var uploadsPath = Path.Combine(Path.GetTempPath(), "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    try
+    {
+        Directory.CreateDirectory(uploadsPath);
+        app.Logger.LogInformation("Created uploads directory at: {UploadsPath}", uploadsPath);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Failed to create uploads directory at: {UploadsPath}", uploadsPath);
+    }
+}
+
+
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -103,7 +128,15 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
+// Serve static files from /tmp/uploads
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Path.GetTempPath(), "uploads")),
+    RequestPath = "/files"
+});
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

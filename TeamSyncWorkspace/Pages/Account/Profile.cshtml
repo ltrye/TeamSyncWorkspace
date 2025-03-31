@@ -31,8 +31,40 @@
         <div class="column is-3">
             <div class="box has-shadow">
                 <div class="has-text-centered">
-                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{Model.CurrentUser.FirstName} {Model.CurrentUser.LastName}"))&size=128&background=E5E5E5&color=707070" 
-                         alt="avatar" class="image is-128x128 is-rounded mx-auto mb-4" />
+                    <form method="post" enctype="multipart/form-data" asp-page-handler="UpdateProfilePicture" class="mb-4">
+                        <!-- Profile picture display -->
+                        @if (!string.IsNullOrEmpty(Model.CurrentUser.ProfileImageUrl))
+                        {
+                            <img src="@Model.CurrentUser.ProfileImageUrl" 
+                                 alt="avatar" class="image is-128x128 is-rounded mx-auto mb-4" />
+                        }
+                        else
+                        {
+                            <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{Model.CurrentUser.FirstName} {Model.CurrentUser.LastName}"))&size=128&background=E5E5E5&color=707070" 
+                                 alt="avatar" class="image is-128x128 is-rounded mx-auto mb-4" />
+                        }
+                        
+                        <!-- Profile picture upload field -->
+                        <div class="file has-name is-boxed is-centered mb-4">
+                            <label class="file-label">
+                                <input asp-for="Input.ProfilePicture" class="file-input" type="file" accept="image/*">
+                                <span class="file-cta">
+                                    <span class="file-icon">
+                                        <i class="bi bi-upload"></i>
+                                    </span>
+                                    <span class="file-label">
+                                        Choose a file…
+                                    </span>
+                                </span>
+                                <span class="file-name" id="profile-picture-filename">
+                                    No file selected
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="button is-small is-info mb-4">Update Picture</button>
+                    </form>
+                    
                     <h4 class="title is-4 mb-2">@Model.CurrentUser.FirstName @Model.CurrentUser.LastName</h4>
                     <p class="has-text-grey mb-4">@Model.CurrentUser.Email</p>
                     <form method="post" asp-page-handler="Logout">
@@ -176,6 +208,20 @@
                     $notification.parentNode.removeChild($notification);
                 });
             });
+            
+            // Update filename display when profile picture is selected
+            const fileInput = document.querySelector('input[type=file].file-input');
+            const filenameDisplay = document.getElementById('profile-picture-filename');
+            
+            if (fileInput && filenameDisplay) {
+                fileInput.addEventListener('change', () => {
+                    if (fileInput.files.length > 0) {
+                        filenameDisplay.textContent = fileInput.files[0].name;
+                    } else {
+                        filenameDisplay.textContent = 'No file selected';
+                    }
+                });
+            }
         });
     </script>
     <partial name="_ValidationScriptsPartial" />

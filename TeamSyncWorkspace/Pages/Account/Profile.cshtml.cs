@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,15 +15,18 @@ namespace TeamSyncWorkspace.Pages.Account
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AccountService _accountService;
+        private readonly FileService _fileService;
         private readonly ILogger<ProfileModel> _logger;
 
         public ProfileModel(
             UserManager<ApplicationUser> userManager,
             AccountService accountService,
+            FileService fileService,
             ILogger<ProfileModel> logger)
         {
             _userManager = userManager;
             _accountService = accountService;
+            _fileService = fileService;
             _logger = logger;
         }
 
@@ -39,6 +43,7 @@ namespace TeamSyncWorkspace.Pages.Account
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string Email { get; set; }
+            public IFormFile ProfilePicture { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -112,6 +117,50 @@ namespace TeamSyncWorkspace.Pages.Account
             return RedirectToPage();
         }
 
+        public async Task<IActionResult> OnPostUpdateProfilePictureAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            if (Input.ProfilePicture != null)
+            {
+                var profilePicturePath = await _fileService.UploadProfilePictureAsync(Input.ProfilePicture, user.Id.ToString());
+
+                if (profilePicturePath != null)
+                {
+                    user.ProfileImageUrl = profilePicturePath;
+                    var result = await _userManager.UpdateAsync(user);
+
+                    if (result.Succeeded)
+                    {
+                        StatusMessage = "Your profile picture has been updated";
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                        CurrentUser = user;
+                        return Page();
+                    }
+                }
+                else
+                {
+                    StatusMessage = "Error: Please upload a valid image file (JPG, PNG, or GIF)";
+                }
+            }
+            else
+            {
+                StatusMessage = "Error: No profile picture was selected";
+            }
+
+            return RedirectToPage();
+        }
+
         public async Task<IActionResult> OnPostLogoutAsync()
         {
             await _accountService.SignOutAsync(HttpContext, IdentityConstants.ApplicationScheme);
@@ -119,7 +168,6 @@ namespace TeamSyncWorkspace.Pages.Account
             return RedirectToPage("/Account/Login");
         }
 
-        // Add these public methods to check user properties
         public async Task<bool> HasPasswordAsync(ApplicationUser user)
         {
             return await _accountService.HasPasswordAsync(user);
