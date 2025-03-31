@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Models;
 using File = TeamSyncWorkspace.Models.File;
@@ -18,18 +18,54 @@ public class FileService
         _context = context;
         _environment = environment;
     }
+    public async Task<string> UploadProfilePictureAsync(IFormFile file, string userId)
+    {
+        if (file == null || file.Length == 0)
+            return null; // Invalid file
 
+        // Check if it's an image file
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(fileExtension))
+            return null; // Not an allowed image type
+
+        // Generate unique file name
+        var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+
+        // Create profile pictures directory
+        var profileDirectory = Path.Combine(Path.GetTempPath(), "uploads", "profile");
+        if (!Directory.Exists(profileDirectory))
+        {
+            Directory.CreateDirectory(profileDirectory);
+        }
+
+        var uploadPath = Path.Combine(profileDirectory, uniqueFileName);
+
+        // Save file to server
+        using (var fileStream = new FileStream(uploadPath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        // Return the relative path to the file
+        return $"/files/profile/{uniqueFileName}";
+    }
     public async Task<bool> UploadFileAsync(IFormFile file, int folderId)
     {
+
+
         if (file == null || file.Length == 0)
             return false; // Invalid file
 
+        Console.WriteLine($"[INFO] Uploading file: {file.FileName} to folder ID: {folderId}");
+
         // Generate unique file name
         var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-        var uploadPath = Path.Combine(_environment.WebRootPath, "uploads", uniqueFileName);
+        var uploadPath = Path.Combine(Path.GetTempPath(), "uploads", uniqueFileName);
 
         // Ensure "uploads" directory exists
-        var directory = Path.Combine(_environment.WebRootPath, "uploads");
+        var directory = Path.Combine(Path.GetTempPath(), "uploads");
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
@@ -46,7 +82,7 @@ public class FileService
         {
             FolderId = folderId,
             FileName = file.FileName,
-            FilePath = $"/uploads/{uniqueFileName}", // Store relative path
+            FilePath = $"/files/{uniqueFileName}", // Store relative path
             UploadedDate = DateTime.UtcNow
         };
 
@@ -66,6 +102,7 @@ public class FileService
 
     public async Task<bool> DeleteFileAsync(int fileId)
     {
+        Console.WriteLine($"[INFO] Deleting file with ID: {fileId}");
         try
         {
             var file = await _context.Files.FindAsync(fileId);

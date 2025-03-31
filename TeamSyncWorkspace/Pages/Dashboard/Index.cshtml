@@ -42,12 +42,17 @@
                     <p class="subtitle is-7 has-text-grey mb-0">@Model.TeamMembers.Count members in this team</p>
                 </div>
                 <div class="px-0 py-2">
-                    @foreach (var member in Model.TeamMembers)
+                                       @foreach (var member in Model.TeamMembers)
                     {
                         <div class="list-item px-4">
                             <div class="is-flex is-align-items-center">
-                                <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}"))&size=32&background=E5E5E5&color=707070" 
-                                     class="image is-32x32 is-rounded mr-3" alt="Avatar" />
+                                @{
+                                    var hasProfileImage = !string.IsNullOrEmpty(member.User.ProfileImageUrl);
+                                    var avatarUrl = hasProfileImage 
+                                        ? member.User.ProfileImageUrl 
+                                        : $"https://ui-avatars.com/api/?name={Uri.EscapeDataString($"{member.User.FirstName} {member.User.LastName}")}&size=32&background=E5E5E5&color=707070";
+                                }
+                                <img src="@avatarUrl" class="avatar mr-3" alt="@member.User.FirstName @member.User.LastName" />
                                 <div>
                                     <span class="has-text-weight-medium">@member.User.FirstName @member.User.LastName</span>
                                     <p class="has-text-grey is-size-7 mb-0">Joined @member.JoinedDate.ToString("MMM dd, yyyy")</p>
