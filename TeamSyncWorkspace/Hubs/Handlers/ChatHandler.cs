@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Models.Documents;
+using HtmlAgilityPack;
 
 namespace TeamSyncWorkspace.Hubs.Handlers
 {
@@ -113,6 +114,7 @@ namespace TeamSyncWorkspace.Hubs.Handlers
 
 
             var context = _context.CollabDocs.FirstOrDefault(d => d.DocId == documentId)?.Content;
+            var plainTextContext = ExtractPlainText(context);
             var requestBody = new
             {
                 model = "meta-llama/llama-3.2-3b-instruct:free",
@@ -121,7 +123,7 @@ namespace TeamSyncWorkspace.Hubs.Handlers
             new
             {
                 role = "user",
-                content = prompt + " đây là context " + context + " nếu câu hỏi ko liên quan tới doc thì không cần quan tâm"
+                content = prompt + " đây là context " + plainTextContext + " nếu câu hỏi ko liên quan tới doc thì không cần quan tâm"
             }
         }
             };
@@ -222,6 +224,16 @@ namespace TeamSyncWorkspace.Hubs.Handlers
                 await _context.SaveChangesAsync();
             }
         }
+        private string ExtractPlainText(string html)
+        {
+            if (string.IsNullOrEmpty(html))
+                return string.Empty;
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            return doc.DocumentNode.InnerText;
+        }
     }
 
 
@@ -246,4 +258,6 @@ namespace TeamSyncWorkspace.Hubs.Handlers
         [JsonPropertyName("content")]
         public string Content { get; set; }
     }
+
+
 }
