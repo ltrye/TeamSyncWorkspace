@@ -8,14 +8,16 @@ namespace TeamSyncWorkspace.Pages.TaskList
 {
     public class TaskListModel : PageModel
     {
+        private readonly TaskService _taskService;
         private readonly StatisticService _statisticService;
         private readonly Data.AppDbContext _context;
         private readonly NotificationService _notificationService;
-        public TaskListModel(StatisticService statisticService, Data.AppDbContext appDbContext, NotificationService notificationService)
+        public TaskListModel(StatisticService statisticService, Data.AppDbContext appDbContext, NotificationService notificationService, TaskService taskService)
         {
             _statisticService = statisticService;
             this._context = appDbContext;
             this._notificationService = notificationService;
+            _taskService = taskService;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -60,7 +62,7 @@ namespace TeamSyncWorkspace.Pages.TaskList
             this.FilterValue = FilterValue;
 
             // Lấy danh sách người dùng
-            Users = await _context.Users.ToListAsync();
+            Users = await _taskService.GetUsersByWorkspaceIdAsync(WorkspaceId); 
 
             // Lấy thông tin workspace
             Workspace = await _statisticService.GetWorkspaceAsync(task.WorkspaceId);
@@ -127,7 +129,7 @@ namespace TeamSyncWorkspace.Pages.TaskList
             }
 
             // Lấy danh sách người dùng
-            Users = await _context.Users.ToListAsync();
+            Users = await _taskService.GetUsersByWorkspaceIdAsync(WorkspaceId);
 
             // Lấy thông tin workspace
             Workspace = await _statisticService.GetWorkspaceAsync(WorkspaceId);
