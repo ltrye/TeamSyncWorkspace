@@ -772,7 +772,7 @@ namespace TeamSyncWorkspace.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageUrl", "RoleId", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { -1, 0, "1d316e4b-5378-4c1d-9a78-e7435131419a", "ai@assistant.com", true, "AI", "Assistant", false, null, "AI@ASSISTANT.COM", "AI ASSISTANT", null, null, false, null, 0, "8c852f3e-6727-4380-91df-b7feb6aa2967", false, "AI Assistant" });
+                values: new object[] { -1, 0, "fd911dc1-9afd-4581-b1ce-719fde86b197", "ai@assistant.com", true, "AI", "Assistant", false, null, "AI@ASSISTANT.COM", "AI ASSISTANT", null, null, false, null, 0, "4c231f36-fb7d-4431-94bd-805e21db4592", false, "AI Assistant" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AIMembers_WorkspaceId",

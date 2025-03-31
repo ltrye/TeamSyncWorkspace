@@ -12,8 +12,8 @@ using TeamSyncWorkspace.Data;
 namespace TeamSyncWorkspace.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250330173706_migra1")]
-    partial class migra1
+    [Migration("20250331033209_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -283,6 +283,26 @@ namespace TeamSyncWorkspace.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "fd911dc1-9afd-4581-b1ce-719fde86b197",
+                            Email = "ai@assistant.com",
+                            EmailConfirmed = true,
+                            FirstName = "AI",
+                            LastName = "Assistant",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "AI@ASSISTANT.COM",
+                            NormalizedUserName = "AI ASSISTANT",
+                            PhoneNumberConfirmed = false,
+                            RoleId = 0,
+                            SecurityStamp = "4c231f36-fb7d-4431-94bd-805e21db4592",
+                            TwoFactorEnabled = false,
+                            UserName = "AI Assistant"
+                        });
                 });
 
             modelBuilder.Entity("TeamSyncWorkspace.Models.Chat", b =>
@@ -292,6 +312,9 @@ namespace TeamSyncWorkspace.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsGroup")
                         .HasColumnType("bit");
@@ -318,6 +341,9 @@ namespace TeamSyncWorkspace.Migrations
 
                     b.Property<int>("ChatId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

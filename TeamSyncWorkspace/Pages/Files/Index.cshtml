@@ -10,7 +10,8 @@
     <!-- Back Button -->
     @if (Model.CurrentFolder.ParentFolderId.HasValue)
     {
-        <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@Model.CurrentFolder.ParentFolderId" class="button is-light mb-4">
+        <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@Model.CurrentFolder.ParentFolderId"
+            class="button is-light mb-4">
             [&larr;] Back
         </a>
     }
@@ -39,10 +40,12 @@
                 <tr>
                     <td><i class="bi bi-folder"></i></td>
                     <td>
-                        <a href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@folder.FolderId">@folder.FolderName</a>
+                        <a
+                            href="/Files/Index?workspaceId=@Model.WorkspaceId&folderId=@folder.FolderId">@folder.FolderName</a>
                     </td>
                     <td>
-                        <button class="button is-danger is-small" onclick="openDeleteModal(@folder.FolderId, '@folder.FolderName')">[X] Delete</button>
+                        <button class="button is-danger is-small"
+                            onclick="openDeleteModal(@folder.FolderId, '@folder.FolderName')">[X] Delete</button>
                     </td>
                 </tr>
             }
@@ -55,7 +58,8 @@
                     <td>@file.FileName</td>
                     <td>
                         <a href="@file.FilePath" class="button is-link is-small" target="_blank"> [O] View</a>
-                        <button class="button is-danger is-small" onclick="openDeleteFileModal(@file.FolderId, '@file.FileName')" >[X] Delete</button>
+                        <button class="button is-danger is-small"
+                            onclick="openDeleteFileModal(@file.FileId, '@file.FileName')">[X] Delete</button>
                     </td>
                 </tr>
             }
@@ -190,4 +194,3 @@
         document.getElementById("deleteFileModal").classList.remove("is-active");
     }
 </script>
-

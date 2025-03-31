@@ -286,7 +286,7 @@ namespace TeamSyncWorkspace.Migrations
                         {
                             Id = -1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "1d316e4b-5378-4c1d-9a78-e7435131419a",
+                            ConcurrencyStamp = "fd911dc1-9afd-4581-b1ce-719fde86b197",
                             Email = "ai@assistant.com",
                             EmailConfirmed = true,
                             FirstName = "AI",
@@ -296,7 +296,7 @@ namespace TeamSyncWorkspace.Migrations
                             NormalizedUserName = "AI ASSISTANT",
                             PhoneNumberConfirmed = false,
                             RoleId = 0,
-                            SecurityStamp = "8c852f3e-6727-4380-91df-b7feb6aa2967",
+                            SecurityStamp = "4c231f36-fb7d-4431-94bd-805e21db4592",
                             TwoFactorEnabled = false,
                             UserName = "AI Assistant"
                         });

@@ -53,8 +53,12 @@ public class FileService
     }
     public async Task<bool> UploadFileAsync(IFormFile file, int folderId)
     {
+
+
         if (file == null || file.Length == 0)
             return false; // Invalid file
+
+        Console.WriteLine($"[INFO] Uploading file: {file.FileName} to folder ID: {folderId}");
 
         // Generate unique file name
         var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
@@ -98,6 +102,7 @@ public class FileService
 
     public async Task<bool> DeleteFileAsync(int fileId)
     {
+        Console.WriteLine($"[INFO] Deleting file with ID: {fileId}");
         try
         {
             var file = await _context.Files.FindAsync(fileId);
