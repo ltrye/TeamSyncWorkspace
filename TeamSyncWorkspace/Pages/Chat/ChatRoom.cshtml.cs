@@ -299,6 +299,23 @@ namespace TeamSyncWorkspace.Pages.Chat
                 return await OnGetAsync(chatId);
             }
 
+            // Kiểm tra nếu người được mời thuộc cùng một team với người mời
+            var currentUserTeams = await _context.TeamMembers
+                .Where(tm => tm.UserId == currentUser.Id)
+                .Select(tm => tm.TeamId)
+                .ToListAsync();
+
+            var userToInviteTeams = await _context.TeamMembers
+                .Where(tm => tm.UserId == userToInvite.Id)
+                .Select(tm => tm.TeamId)
+                .ToListAsync();
+
+            if (!currentUserTeams.Intersect(userToInviteTeams).Any())
+            {
+                ModelState.AddModelError(string.Empty, "You can only invite users who are in the same team.");
+                return await OnGetAsync(chatId);
+            }
+
             // Thêm người dùng vào group chat
             var newMember = new ChatMember
             {
