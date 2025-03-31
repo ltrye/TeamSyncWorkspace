@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using TeamSyncWorkspace.Data;
 using TeamSyncWorkspace.Hubs;
 using TeamSyncWorkspace.Hubs.Handlers;
@@ -23,8 +23,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(
-    // options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-    options => options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!)
+    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    // options => options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!)
     );
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>

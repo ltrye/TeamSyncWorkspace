@@ -12,8 +12,8 @@ using TeamSyncWorkspace.Data;
 namespace TeamSyncWorkspace.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250330185755_SeedUserAI")]
-    partial class SeedUserAI
+    [Migration("20250331032852_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -289,7 +289,7 @@ namespace TeamSyncWorkspace.Migrations
                         {
                             Id = -1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "f7e41779-07ae-49f8-9758-6d2309766f80",
+                            ConcurrencyStamp = "1d316e4b-5378-4c1d-9a78-e7435131419a",
                             Email = "ai@assistant.com",
                             EmailConfirmed = true,
                             FirstName = "AI",
@@ -299,7 +299,7 @@ namespace TeamSyncWorkspace.Migrations
                             NormalizedUserName = "AI ASSISTANT",
                             PhoneNumberConfirmed = false,
                             RoleId = 0,
-                            SecurityStamp = "f515c60d-85f1-44d3-ac43-b90639297fbd",
+                            SecurityStamp = "8c852f3e-6727-4380-91df-b7feb6aa2967",
                             TwoFactorEnabled = false,
                             UserName = "AI Assistant"
                         });
@@ -787,7 +787,6 @@ namespace TeamSyncWorkspace.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Message")
