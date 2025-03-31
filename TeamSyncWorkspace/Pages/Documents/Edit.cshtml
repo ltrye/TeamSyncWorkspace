@@ -28,31 +28,11 @@
 
 
 <!-- Add this to your #app div -->
-<div id="remote-cursors-container" class="remote-cursor-container">
-    <template v-for="(cursor, userId) in cursorPositions" :key="userId">
-        <div class="remote-cursor" :style="{
-                '--cursor-color': cursor.userInfo.color || getUserColor(userId),
-                '--cursor-rgb': hexToRgb(cursor.userInfo.color || getUserColor(userId))
-            }">
-            <div v-for="(range, i) in cursor.ranges" :key="`selection-${userId}-${i}`" class="remote-cursor-selection"
-                 :style="{
-                    left: `${range.left}px`,
-                    top: `${range.top}px`,
-                    width: `${range.width}px`,
-                    height: `${range.height}px`
-                }"></div>
-            <div class="remote-cursor-caret" :style="{
-                    left: `${cursor.ranges[cursor.ranges.length - 1]?.left + cursor.ranges[cursor.ranges.length - 1]?.width || 0}px`,
-                    top: `${cursor.ranges[cursor.ranges.length - 1]?.top || 0}px`,
-                }">
-                <div class="remote-cursor-name">
-                    {{ cursor.userInfo.name }}
-                </div>
-            </div>
-        </div>
-    </template>
-</div>
-
+<!-- Update the remote cursors container to be positioned properly -->
+@* <div class="editor-container__editor">
+    <div id="remote-cursors-container" class="remote-cursor-container"></div>
+    <div id="editor"></div>
+</div> *@
 
 <div id="app" class="document-editor">
     <div class="editor-header">
@@ -68,8 +48,8 @@
                         </span>
                     </a>
                 </div>
-                <input type="text" class="document-title-input" v-model="documentTitle" @@input ="titleChanged = true"
-                @@blur ="updateDocumentTitle" @@keydown.enter ="$event.target.blur()" placeholder="Document Title">
+                <input type="text" class="document-title-input" v-model="documentTitle" @@input="titleChanged = true"
+                    @@blur="updateDocumentTitle" @@keydown.enter="$event.target.blur()" placeholder="Document Title">
             </div>
 
             <div class="editor-status" style="height:18px">
@@ -91,7 +71,7 @@
             <div class="collaborators is-flex is-align-items-center gap-2">
                 <div v-for="user in activeCollaborators" :key="user.id" class="collaborator-tooltip-container">
                     <div class="collaborator-avatar" :class="{ 'is-online': user.isOnline }">
-                        <img :src="user.avatar" alt="User Avatar" class="image is-32x32 is-rounded">
+                        <img :src="user.avatar" alt="User Avatar" class="avatar image is-32x32 is-rounded">
                     </div>
                     <div class="collaborator-tooltip">
                         <div class="collaborator-tooltip-content">
@@ -172,6 +152,7 @@
                             <div id="editor-outline"></div>
                         </div>
                         <div class="editor-container__editor">
+                            <div id="remote-cursors-container" class="remote-cursor-container"></div>
                             <div id="editor"></div>
                         </div>
                         <div class="editor-container__sidebar">
@@ -303,7 +284,9 @@
             currentUser: {
                 id: @Model.CurrentUser.Id,
                 name: @Html.Raw(Json.Serialize(User.Identity?.Name ?? "User")),
-                avatar: 'https://ui-avatars.com/api/?name=@Uri.EscapeDataString(User.Identity?.Name ?? "User")&size=32&background=3273DC&color=FFFFFF'
+                avatar: @Html.Raw(Json.Serialize(string.IsNullOrEmpty(Model.CurrentUser.ProfileImageUrl) 
+                ? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(User.Identity?.Name ?? "User")}&size=32&background=3273DC&color=FFFFFF"
+                : Model.CurrentUser.ProfileImageUrl))
             }
         };
 

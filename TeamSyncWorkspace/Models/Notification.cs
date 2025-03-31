@@ -16,7 +16,7 @@ namespace TeamSyncWorkspace.Models
 
         public string Message { get; set; }
 
-        public string Link { get; set; }
+        public string? Link { get; set; }
 
         public DateTime CreatedDate { get; set; }
 

@@ -21,5 +21,6 @@ RUN dotnet publish "./TeamSyncWorkspace.csproj" -c $BUILD_CONFIGURATION -o /app/
 
 FROM base AS final
 WORKDIR /app
+RUN mkdir -p /tmp/uploads
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "TeamSyncWorkspace.dll"]
