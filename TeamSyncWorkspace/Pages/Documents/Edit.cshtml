@@ -71,7 +71,7 @@
             <div class="collaborators is-flex is-align-items-center gap-2">
                 <div v-for="user in activeCollaborators" :key="user.id" class="collaborator-tooltip-container">
                     <div class="collaborator-avatar" :class="{ 'is-online': user.isOnline }">
-                        <img :src="user.avatar" alt="User Avatar" class="image is-32x32 is-rounded">
+                        <img :src="user.avatar" alt="User Avatar" class="avatar image is-32x32 is-rounded">
                     </div>
                     <div class="collaborator-tooltip">
                         <div class="collaborator-tooltip-content">
@@ -280,7 +280,9 @@
             currentUser: {
                 id: @Model.CurrentUser.Id,
                 name: @Html.Raw(Json.Serialize(User.Identity?.Name ?? "User")),
-                avatar: 'https://ui-avatars.com/api/?name=@Uri.EscapeDataString(User.Identity?.Name ?? "User")&size=32&background=3273DC&color=FFFFFF'
+                avatar: @Html.Raw(Json.Serialize(string.IsNullOrEmpty(Model.CurrentUser.ProfileImageUrl) 
+                ? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(User.Identity?.Name ?? "User")}&size=32&background=3273DC&color=FFFFFF"
+                : Model.CurrentUser.ProfileImageUrl))
             }
         };
 

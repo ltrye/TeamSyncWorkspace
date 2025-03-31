@@ -18,7 +18,39 @@ public class FileService
         _context = context;
         _environment = environment;
     }
+    public async Task<string> UploadProfilePictureAsync(IFormFile file, string userId)
+    {
+        if (file == null || file.Length == 0)
+            return null; // Invalid file
 
+        // Check if it's an image file
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(fileExtension))
+            return null; // Not an allowed image type
+
+        // Generate unique file name
+        var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+
+        // Create profile pictures directory
+        var profileDirectory = Path.Combine(Path.GetTempPath(), "uploads", "profile");
+        if (!Directory.Exists(profileDirectory))
+        {
+            Directory.CreateDirectory(profileDirectory);
+        }
+
+        var uploadPath = Path.Combine(profileDirectory, uniqueFileName);
+
+        // Save file to server
+        using (var fileStream = new FileStream(uploadPath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        // Return the relative path to the file
+        return $"/files/profile/{uniqueFileName}";
+    }
     public async Task<bool> UploadFileAsync(IFormFile file, int folderId)
     {
         if (file == null || file.Length == 0)
