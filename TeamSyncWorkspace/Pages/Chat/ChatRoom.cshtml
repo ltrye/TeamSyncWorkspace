@@ -1,0 +1,321 @@
+﻿@page "{chatId:int}"
+@model TeamSyncWorkspace.Pages.Chat.ChatRoomModel
+@{
+    ViewData["Title"] = Model.Chat.IsGroup ? Model.Chat.Name : "Chat 1-1";
+}
+
+<div class="container is-fluid">
+    <div class="columns is-centered mt-6">
+        <div class="column is-8">
+            <div class="box has-shadow">
+                <div class="p-5" style="position: relative;">
+
+                    <!-- Nút Back -->
+                    <a href="/Teams/Members/Index?teamId=@Model.TeamId" class="button is-light mb-4">
+                        <span class="icon">
+                            <i class="bi bi-arrow-left"></i>
+                        </span>
+                        <span>Back</span>
+                    </a>
+
+                    @if (Model.Chat.IsGroup)
+                    {
+                        <div class="is-flex is-align-items-center" style="position: absolute; top: 10px; right: 10px;">
+                            <!-- Nút Leave Group -->
+                            <form method="post" asp-page-handler="LeaveGroup" style="margin-right: 10px;">
+                                <input type="hidden" name="chatId" value="@Model.ChatId" />
+                                <input type="hidden" name="teamId" value="@Model.TeamId" />
+                                <button type="submit" class="button is-danger is-small">Leave Group</button>
+                            </form>
+
+                            <!-- Nút Invite Member -->
+                            <button id="inviteMemberButton" class="button is-info is-small" style="margin-right: 10px;">
+                                <span class="icon">
+                                    <i class="bi bi-person-plus"></i> <!-- Icon Invite -->
+                                </span>
+                                <span>Invite</span>
+                            </button>
+
+                            <!-- Nút 3 gạch -->
+                            <button id="toggleMembersButton" class="button is-light">
+                                <span class="icon">
+                                    <i class="bi bi-list"></i> <!-- Icon 3 gạch -->
+                                </span>
+                            </button>
+                        </div>
+                    }
+
+                    <h1 class="title is-3 mb-5">@ViewData["Title"]</h1>
+
+                    <!-- Form Invite Member (ẩn mặc định) -->
+                    <div id="inviteMemberForm" class="box has-shadow mt-3" style="display: none;">
+                        <h2 class="title is-5">Invite Member</h2>
+                        <form method="post" asp-page-handler="InviteMember">
+                            <input type="hidden" name="chatId" value="@Model.ChatId" />
+                            <div class="field">
+                                <label class="label">User Email</label>
+                                <div class="control">
+                                    <input type="email" name="userEmail" class="input" placeholder="Enter user's email" required />
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <button type="submit" class="button is-info">Invite</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Danh sách thành viên (ẩn mặc định, chỉ hiển thị nếu là group chat) -->
+                    @if (Model.Chat.IsGroup)
+                    {
+                        <div id="groupMembers" class="box has-shadow mt-3" style="display: none;">
+                            <h2 class="title is-5">Group Members</h2>
+                            <ul>
+                                @foreach (var member in Model.Chat.ChatMembers)
+                                {
+                                    <li class="is-flex is-align-items-center mb-2" data-user-id="@member.UserId">
+                                        <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(member.User.UserName))&size=32&background=E5E5E5&color=707070"
+                                             class="image is-32x32 is-rounded mr-3" alt="Avatar" />
+                                        <span>@member.User.UserName</span>
+
+                                        <!-- Hiển thị nút Remove nếu thành viên không phải admin và không phải CurrentUser -->
+                                        @if (!member.IsAdmin && member.UserId != Model.CurrentUserId)
+                                        {
+                                            <form method="post" asp-page-handler="RemoveMember" class="ml-auto">
+                                                <input type="hidden" name="chatId" value="@Model.ChatId" />
+                                                <input type="hidden" name="userId" value="@member.UserId" />
+                                                <button type="submit" class="button is-danger is-small">Remove</button>
+                                            </form>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <!-- Danh sách tin nhắn -->
+                    <div id="chat-messages" class="box has-background-light p-4" style="max-height: 400px; overflow-y: auto;">
+                        @if (Model.Messages != null && Model.Messages.Any())
+                        {
+                            foreach (var message in Model.Messages.OrderBy(m => m.Timestamp))
+                            {
+                                if (!message.IsDeleted) // Chỉ hiển thị tin nhắn chưa bị xóa
+                                {
+                                    <article class="media @((message.UserId == Model.CurrentUserId) ? "is-right" : "is-left")">
+                                        @if (message.UserId != Model.CurrentUserId)
+                                        {
+                                            <figure class="media-left">
+                                                <p class="image is-48x48">
+                                                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(message.User.UserName))&size=48&background=E5E5E5&color=707070" alt="Avatar">
+                                                </p>
+                                            </figure>
+                                        }
+                                        <div class="media-content">
+                                            <div class="content">
+                                                <p>
+                                                    <strong>@message.User.UserName</strong>
+                                                    <small>@message.Timestamp.ToString("g")</small>
+                                                    <br />
+                                                    @message.Content
+                                                </p>
+                                            </div>
+                                        </div>
+                                        @if (message.UserId == Model.CurrentUserId)
+                                        {
+                                            <div class="media-right">
+                                                <form method="post" asp-page-handler="DeleteMessage">
+                                                    <input type="hidden" name="messageId" value="@message.Id" />
+                                                    <button type="submit" class="button is-danger is-small">Delete</button>
+                                                </form>
+                                            </div>
+                                        }
+                                    </article>
+                                    <hr />
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <p class="has-text-grey">No messages yet. Start the conversation!</p>
+                        }
+                    </div>
+
+                    <!-- Form gửi tin nhắn -->
+                    <form method="post" asp-page-handler="SendMessage">
+                        <input type="hidden" name="ChatId" value="@Model.ChatId" />
+                        <div class="field">
+                            <div class="control">
+                                <textarea name="Content" class="textarea" placeholder="Type your message..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <button type="submit" class="button is-info is-fullwidth">Send</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .media.is-left {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .media.is-right {
+        justify-content: flex-end;
+        text-align: right;
+    }
+
+        .media.is-right .media-content {
+            background-color: #d1f7c4; /* Màu nền cho tin nhắn của người dùng hiện tại */
+            border-radius: 10px;
+            padding: 10px;
+            display: inline-block;
+        }
+
+    .media.is-left .media-content {
+        background-color: #f1f1f1; /* Màu nền cho tin nhắn của người khác */
+        border-radius: 10px;
+        padding: 10px;
+        display: inline-block;
+    }
+
+    .media.is-right .media-left,
+    .media.is-left .media-right {
+        display: none; /* Ẩn avatar không cần thiết */
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('toggleMembersButton');
+            const groupMembers = document.getElementById('groupMembers');
+
+            if (toggleButton) {
+                toggleButton.addEventListener('click', () => {
+                    if (groupMembers.style.display === 'none') {
+                        groupMembers.style.display = 'block';
+                    } else {
+                        groupMembers.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const inviteButton = document.getElementById('inviteMemberButton');
+            const inviteForm = document.getElementById('inviteMemberForm');
+
+            if (inviteButton) {
+                inviteButton.addEventListener('click', () => {
+                    if (inviteForm.style.display === 'none') {
+                        inviteForm.style.display = 'block';
+                    } else {
+                        inviteForm.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.start().then(() => {
+            console.log("Connected to SignalR Hub");
+
+            // Tham gia vào group chat
+            const groupName = "@Model.ChatId";
+            connection.invoke("JoinGroup", groupName).catch(err => console.error("JoinGroup error:", err));
+        }).catch(err => console.error("SignalR connection error:", err));
+
+
+        connection.on("ReceiveMessage", (userName, messageContent, userId, timestamp) => {
+            const chatMessages = document.getElementById("chat-messages");
+            const isCurrentUser = userId === parseInt("@Model.CurrentUserId");
+
+            const newMessage = document.createElement("article");
+            newMessage.className = `media ${isCurrentUser ? "is-right" : "is-left"}`;
+
+            if (!isCurrentUser) {
+                const figure = document.createElement("figure");
+                figure.className = "media-left";
+                figure.innerHTML = `
+                            <p class="image is-48x48">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=48&background=E5E5E5&color=707070" alt="Avatar">
+                            </p>`;
+                newMessage.appendChild(figure);
+            }
+
+            const mediaContent = document.createElement("div");
+            mediaContent.className = "media-content";
+            mediaContent.innerHTML = `
+                        <div class="content">
+                            <p>
+                                <strong>${userName}</strong>
+                                <small>${new Date(timestamp).toLocaleString()}</small>
+                                <br />
+                                ${messageContent}
+                            </p>
+                        </div>`;
+            newMessage.appendChild(mediaContent);
+
+            if (isCurrentUser) {
+                const mediaRight = document.createElement("div");
+                mediaRight.className = "media-right";
+                mediaRight.innerHTML = `
+                            <form method="post" asp-page-handler="DeleteMessage">
+                                <input type="hidden" name="messageId" value="0" />
+                                <button type="submit" class="button is-danger is-small">Delete</button>
+                            </form>`;
+                newMessage.appendChild(mediaRight);
+            }
+
+            chatMessages.appendChild(newMessage);
+
+              const noMessagesElement = document.querySelector(".has-text-grey");
+                if (noMessagesElement) {
+                    noMessagesElement.style.display = "none";
+                }
+
+            // Tự động cuộn xuống cuối khi có tin nhắn mới
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        // Lắng nghe sự kiện khi thành viên bị xóa
+        connection.on("RemovedFromGroup", (chatId, teamId) => {
+            alert("You have been removed from the group.");
+            window.location.href = `/Teams/Members/Index?teamId=${teamId}`;
+        });
+
+        // Lắng nghe sự kiện khi thành viên bị xóa
+        connection.on("MemberRemoved", (userId) => {
+            const memberElement = document.querySelector(`[data-user-id="${userId}"]`);
+            if (memberElement) {
+                memberElement.remove();
+            }
+        });
+
+        // Lắng nghe sự kiện khi thành viên rời nhóm
+        connection.on("MemberLeft", (userId) => {
+            const memberElement = document.querySelector(`[data-user-id="${userId}"]`);
+            if (memberElement) {
+                memberElement.remove();
+            }
+        });
+
+        window.onload = () => {
+            const chatMessages = document.getElementById("chat-messages");
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        };
+    </script>
+}
